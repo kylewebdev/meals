@@ -80,22 +80,26 @@ src/
 ## Patterns
 
 ### Data Fetching
+
 - Use **server components** for initial data loading (direct DB queries via Drizzle)
 - Use **server actions** for mutations (forms, button actions)
 - Client-side fetching only when needed for real-time or interactive features
 - Keep data fetching close to where data is consumed (fetch in the page/layout, pass via props)
 
 ### Error Handling
+
 - Server actions return `{ success: true, data }` or `{ success: false, error }` — no thrown errors for expected failures
 - Use `notFound()` and `redirect()` from `next/navigation` for page-level errors
 - Validate all user input at the server action boundary with Zod
 
 ### Auth & Authorization
+
 - Protect routes via middleware or layout-level auth checks
 - Server actions must verify the session before performing any mutation
 - Role checks (admin, cooking group) happen in server actions, not in the UI
 
 ### Database
+
 - All schema changes go through Drizzle migrations — never modify the DB directly
 - Use Drizzle's relational query API for reads; insert/update/delete use the core API
 - Foreign keys and constraints enforced at the DB level, not just in application code

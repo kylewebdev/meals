@@ -17,6 +17,7 @@
 ## Conventions Reference
 
 See `docs/system/conventions.md` for:
+
 - Code style and formatting rules
 - Naming conventions
 - File organization patterns
