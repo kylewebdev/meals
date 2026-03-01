@@ -14,7 +14,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@better-fetch/fetch": "^1.1.21",
     "@neondatabase/serverless": "^1.0.2",
     "better-auth": "^1.5.0",
     "drizzle-orm": "^0.45.1",

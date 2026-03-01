@@ -1,32 +1,22 @@
-import { betterFetch } from '@better-fetch/fetch';
-import { type Session } from 'better-auth/types';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const authRoutes = ['/login', '/register'];
-const publicRoutes = ['/api/auth'];
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Allow auth API routes through
-  if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.next();
-  }
-
-  const { data: session } = await betterFetch<Session>('/api/auth/get-session', {
-    baseURL: request.nextUrl.origin,
-    headers: {
-      cookie: request.headers.get('cookie') || '',
-    },
-  });
+  const sessionCookie =
+    request.cookies.get('better-auth.session_token') ??
+    request.cookies.get('__Secure-better-auth.session_token');
 
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  if (!session && !isAuthRoute) {
+  // No session cookie → redirect to login (unless already on an auth route)
+  if (!sessionCookie && !isAuthRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (session && isAuthRoute) {
+  // Has session cookie + on auth route → redirect to dashboard
+  if (sessionCookie && isAuthRoute) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
@@ -34,5 +24,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/auth).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
 };
