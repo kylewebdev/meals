@@ -41,7 +41,7 @@ Full conventions documented in `docs/system/conventions.md`.
 
 - [x] Create Neon project and configure `DATABASE_URL`
 - [x] Install and configure Drizzle ORM + drizzle-kit
-- [x] Define the core schema in `src/lib/db/schema.ts` (households, members, weeks, meal_plan_entries, suggestions, votes, rsvps)
+- [x] Define the core schema in `src/lib/db/schema.ts` (households, weeks, meal_plan_entries, invites, auth tables)
 - [x] Run initial migration
 
 ### Step 3: Set up auth
@@ -56,64 +56,58 @@ Full conventions documented in `docs/system/conventions.md`.
 
 ## Phase 1 — MVP
 
-> The minimum usable version: households can see who's cooking, post meals, and RSVP. Follows the priority order from PRD §8.
+> The minimum usable version: households can browse recipes, see who's cooking, select meals from the catalog, and coordinate logistics. Follows the priority order from PRD §8.
 
 ### Step 4: Household setup & management
 
-- [ ] Admin can create the co-op and name it
-- [ ] Admin can add/remove households
-- [ ] Admin can add/remove members to households
+- [ ] Admin can create/remove households
+- [ ] Admin can designate a head of household for each household
+- [ ] Head of household can invite members to their household
+- [ ] Head of household can remove members from their household
 - [ ] Members can view their household profile
+- [ ] Schema migration: add `head_id` to households, update invites to support head-of-household invitations
 
-### Step 5: Rotation schedule & calendar view
+### Step 5: Recipe catalog
+
+- [ ] Schema migration: add `recipes`, `recipe_ingredients` tables
+- [ ] Admin can create a recipe (name, description, instructions, servings, prep/cook time)
+- [ ] Admin can add ingredients to a recipe (name, quantity, unit, per-ingredient nutrition)
+- [ ] Per-recipe nutrition summary (computed from ingredients, with manual override option)
+- [ ] Admin can edit and remove recipes
+- [ ] Optional tags/categories on recipes (e.g., "vegetarian", "quick")
+- [ ] All members can browse and view the recipe catalog
+
+### Step 6: Rotation schedule & calendar view
 
 - [ ] Admin sets the rotation order across households
 - [ ] Auto-generate future weeks based on the rotation
 - [ ] Calendar/timeline view showing which household cooks each week
 - [ ] Current week highlighted
 
-### Step 6: Weekly meal plan posting
+### Step 7: Weekly meal plan posting
 
-- [ ] Cooking group can post lunch & dinner for each day (Mon–Sun)
-- [ ] Cooking group can update the plan during the week
-- [ ] All members can view current and past meal plans
+- [ ] Schema migration: update `meal_plan_entries` to reference `recipe_id`, add modification fields
+- [ ] Cooking household selects recipes from the catalog for lunch & dinner each day (Mon–Sun)
+- [ ] Cooking household can note recipe modifications with updated nutrition
+- [ ] Cooking household can update the plan during the week
+- [ ] All members can view current and past meal plans with recipe details + nutrition
+- [ ] Headcount derived from household membership (no manual RSVP)
 
-### Step 7: RSVP / headcount
+### Step 8: Pickup / delivery notes
 
-- [ ] Each household submits a headcount per week
-- [ ] Cooking group sees a dashboard with total + per-household breakdown
-- [ ] Configurable RSVP cutoff date
-- [ ] Members can update RSVP until cutoff
-
-### Step 8: Meal suggestion & voting
-
-- [ ] Any member can suggest a meal (name + optional description)
-- [ ] Members can upvote suggestions
-- [ ] Suggestions board sorted by votes or recency
-- [ ] Optional: mark a suggestion as "fulfilled" once cooked
-
-### Step 9: Expense logging
-
-- [ ] Cooking group logs total grocery cost for their week
-- [ ] Optional notes or receipt photo
-- [ ] All members can view cost history across weeks
-
-### Step 10: Pickup / delivery notes
-
-- [ ] Cooking group posts pickup location, times, and notes
+- [ ] Cooking household posts pickup location, times, and notes
 - [ ] Info displayed prominently on the weekly view
 
-### Step 11: Dietary profiles & aggregated summary
+### Step 9: Dietary profiles & aggregated summary
 
 - [ ] Members set allergies, dietary preferences, and free-text notes on their profile
-- [ ] Cooking group sees an aggregated dietary summary based on who RSVP'd
+- [ ] Cooking household sees an aggregated dietary summary across all participating households
 
-### Step 12: Notifications (in-app)
+### Step 10: Notifications (in-app)
 
-- [ ] Reminder to cooking group before their week starts
-- [ ] RSVP reminders to all households
+- [ ] Reminder to cooking household before their week starts
 - [ ] Alert when meal plan is posted
-- [ ] Optional alert for new meal suggestions
+- [ ] Optional alert when a new recipe is added to the catalog
 
 ---
 
@@ -122,14 +116,11 @@ Full conventions documented in `docs/system/conventions.md`.
 > Features from PRD §9, to be prioritized after MVP launch.
 
 - [ ] **Swap requests** — households can swap cooking weeks
-- [ ] **Recipe storage** — attach full recipes to meal plans, building a family recipe book
-- [ ] **Grocery list sharing** — cooking group shares their shopping list
+- [ ] **Grocery list generation** — auto-generate a shopping list from selected recipes, scaled to headcount
 - [ ] **Ratings / feedback** — thumbs-up-only ratings on the week's meals
 - [ ] **Photo sharing** — cooking group or members post meal photos
-- [ ] **Balance tracking** — optional cost splitting proportional to headcount
+- [ ] **Recipe import** — import recipes from external sources (URLs, structured data)
 - [ ] **Push notifications** — via PWA or native wrapper
-- [ ] **Per-day RSVP** — headcount varies by day of the week
-- [ ] **Recurring dietary events** — e.g., "Fridays are meatless for Household C"
 
 ---
 
@@ -146,4 +137,5 @@ Full conventions documented in `docs/system/conventions.md`.
 ## Notes
 
 - The PRD is thorough and stable — see `docs/system/context/PRD.md` for full requirements and data model
+- Schema changes needed: `suggestions`, `votes`, and `rsvps` tables from Phase 0 are no longer in the PRD — remove in the Step 4 migration
 - Next step: Phase 1, Step 4 — Household setup & management
