@@ -2,10 +2,10 @@
 
 ## Status
 
-**Project state: Ready for Phase 0**
+**Project state: Phase 0 complete — ready for Phase 1**
 Last updated: 2026-03-01
 
-All key decisions are resolved. The project contains scaffolding docs and conventions. No source code yet — ready to bootstrap.
+Phase 0 bootstrap is done: Next.js app scaffolded, database schema migrated to Neon, Better Auth configured with email/password login and invite-based registration.
 
 ---
 
@@ -32,25 +32,25 @@ Full conventions documented in `docs/system/conventions.md`.
 
 ### Step 1: Initialize the project
 
-- [ ] Scaffold Next.js 15 app with TypeScript, Tailwind CSS v4, and pnpm
-- [ ] Configure ESLint + Prettier
-- [ ] Initialize git repository and make initial commit
+- [x] Scaffold Next.js 15 app with TypeScript, Tailwind CSS v4, and pnpm
+- [x] Configure ESLint + Prettier
+- [x] Initialize git repository and make initial commit
 - [x] Fill in `docs/system/conventions.md` with chosen patterns
 
 ### Step 2: Set up the database and ORM
 
-- [ ] Create Neon project and configure `DATABASE_URL`
-- [ ] Install and configure Drizzle ORM + drizzle-kit
-- [ ] Define the core schema in `src/lib/db/schema.ts` (households, members, weeks, meal_plan_entries, suggestions, votes, rsvps)
-- [ ] Run initial migration
+- [x] Create Neon project and configure `DATABASE_URL`
+- [x] Install and configure Drizzle ORM + drizzle-kit
+- [x] Define the core schema in `src/lib/db/schema.ts` (households, members, weeks, meal_plan_entries, suggestions, votes, rsvps)
+- [x] Run initial migration
 
 ### Step 3: Set up auth
 
-- [ ] Install and configure auth library (Better Auth or Auth.js)
-- [ ] Implement magic link + email/password login
-- [ ] Implement invite-based signup (admin creates invite → member registers)
-- [ ] Role system: admin vs. member (cooking group role is derived from the rotation)
-- [ ] Auth middleware to protect `(app)` route group
+- [x] Install and configure auth library (Better Auth)
+- [x] Implement email/password login
+- [x] Implement invite-based signup (admin creates invite → member registers)
+- [x] Role system: admin vs. member (cooking group role is derived from the rotation)
+- [x] Auth middleware to protect `(app)` route group
 
 ---
 
@@ -139,11 +139,11 @@ Full conventions documented in `docs/system/conventions.md`.
 - [x] AI assistant entry points — `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`
 - [x] Tech stack decisions resolved (Next.js 15, Neon Postgres, Drizzle, Tailwind v4, Vercel)
 - [x] Conventions documented in `docs/system/conventions.md`
+- [x] Phase 0 — Project Bootstrap (Next.js scaffold, Drizzle ORM + Neon, Better Auth)
 
 ---
 
 ## Notes
 
 - The PRD is thorough and stable — see `docs/system/context/PRD.md` for full requirements and data model
-- The project is not yet a git repository (no git history detected)
-- Next step: Phase 0, Step 1 — scaffold the Next.js app and make the initial commit
+- Next step: Phase 1, Step 4 — Household setup & management
