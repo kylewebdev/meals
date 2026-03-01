@@ -110,8 +110,6 @@ export const weeks = pgTable(
     pickupLocation: text('pickup_location'),
     pickupTimes: text('pickup_times'),
     pickupNotes: text('pickup_notes'),
-    expenseAmount: integer('expense_amount'),
-    expenseNotes: text('expense_notes'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
