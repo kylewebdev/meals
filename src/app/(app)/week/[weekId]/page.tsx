@@ -8,7 +8,7 @@ import { SwapDaySection } from '@/components/swap/swap-day-section';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { formatWeekRange } from '@/lib/schedule-utils';
+import { formatWeekRange, getPortionCount } from '@/lib/schedule-utils';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
@@ -68,7 +68,7 @@ export default async function WeekDetailPage({
         week.swapDays.map((sd) => (
           <div key={sd.id} className="space-y-2">
             <div className="flex items-center justify-end">
-              <PortionDisplay headcount={headcount} />
+              <PortionDisplay portions={getPortionCount(headcount, sd.coversFrom, sd.coversTo)} />
             </div>
             <SwapDaySection
               label={sd.label}
