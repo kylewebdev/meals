@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth-utils';
 import { getCurrentWeek } from '@/lib/queries/schedule';
 import { getDashboardStats } from '@/lib/queries/dashboard';
-import { getHeadcount, getUpcomingSwapDays } from '@/lib/queries/contributions';
+import { getUpcomingSwapDays } from '@/lib/queries/contributions';
 import { ensureWeeksExist } from '@/actions/schedule';
 import { DashboardStatsRow } from '@/components/dashboard/dashboard-stats';
 import { MyTasks } from '@/components/dashboard/my-tasks';
@@ -24,8 +24,6 @@ export default async function DashboardPage() {
     getDashboardStats(userHouseholdId ?? null),
   ]);
 
-  const headcount = await getHeadcount(currentWeek?.id);
-
   const upcomingSwapDays = userHouseholdId
     ? await getUpcomingSwapDays(userHouseholdId)
     : [];
@@ -38,7 +36,7 @@ export default async function DashboardPage() {
       <DashboardStatsRow stats={stats} />
 
       {userHouseholdId && upcomingSwapDays.length > 0 ? (
-        <MyTasks swapDays={upcomingSwapDays} headcount={headcount} />
+        <MyTasks swapDays={upcomingSwapDays} />
       ) : !currentWeek ? (
         <EmptyState
           title="No week scheduled"
