@@ -12,14 +12,14 @@ export function RecipeSearch() {
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
     if (deferredQuery) {
       params.set('q', deferredQuery);
+      router.replace(`${pathname}?${params.toString()}`);
     } else {
-      params.delete('q');
+      router.replace(pathname);
     }
-    router.replace(`${pathname}?${params.toString()}`);
-  }, [deferredQuery, pathname, router, searchParams]);
+  }, [deferredQuery, pathname, router]);
 
   return (
     <Input
