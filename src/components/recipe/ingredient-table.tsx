@@ -31,6 +31,7 @@ export function IngredientTable({
   editable,
   scaleFactor,
 }: IngredientTableProps) {
+  const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newQuantity, setNewQuantity] = useState('');
@@ -78,6 +79,24 @@ export function IngredientTable({
 
   return (
     <div>
+      {editable && !editing && (
+        <div className="mb-3 flex justify-end">
+          <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+            Edit
+          </Button>
+        </div>
+      )}
+      {editing && (
+        <div className="mb-3 flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setEditing(false); setAdding(false); resetForm(); }}
+          >
+            Done
+          </Button>
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -89,7 +108,7 @@ export function IngredientTable({
               <th className="hidden pb-2 font-medium md:table-cell">Protein</th>
               <th className="hidden pb-2 font-medium md:table-cell">Carbs</th>
               <th className="hidden pb-2 font-medium md:table-cell">Fat</th>
-              {editable && <th className="pb-2" />}
+              {editing && <th className="pb-2" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -116,7 +135,7 @@ export function IngredientTable({
                 <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.proteinG != null ? `${ing.proteinG}g` : '—'}</td>
                 <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.carbsG != null ? `${ing.carbsG}g` : '—'}</td>
                 <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.fatG != null ? `${ing.fatG}g` : '—'}</td>
-                {editable && (
+                {editing && (
                   <td className="py-2 text-right">
                     <Button
                       variant="ghost"
@@ -134,13 +153,13 @@ export function IngredientTable({
         </table>
       </div>
 
-      {editable && !adding && (
+      {editing && !adding && (
         <Button variant="secondary" size="sm" className="mt-3" onClick={() => setAdding(true)}>
           Add ingredient
         </Button>
       )}
 
-      {editable && adding && (
+      {editing && adding && (
         <form onSubmit={handleAdd} className="mt-3 space-y-2">
           <div className="flex flex-wrap items-end gap-2">
             <Input
