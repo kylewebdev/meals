@@ -5,6 +5,7 @@ import { AddMemberForm } from '@/components/household/add-member-form';
 import { HeadSelector } from '@/components/household/head-selector';
 import { InviteForm } from '@/components/household/invite-form';
 import { MemberList } from '@/components/household/member-list';
+import { PendingInviteList } from '@/components/household/pending-invite-list';
 import { RenameHouseholdForm } from '@/components/household/rename-household-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -106,17 +107,7 @@ export default async function AdminHouseholdDetailPage({
             <CardContent>
               <InviteForm householdId={householdId} />
               {pendingInvites.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="mb-2 text-sm font-medium text-zinc-500">Pending invites</h4>
-                  <ul className="space-y-1">
-                    {pendingInvites.map((invite) => (
-                      <li key={invite.id} className="flex items-center gap-2 text-sm">
-                        <span>{invite.email}</span>
-                        <Badge variant="outline">{invite.role}</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <PendingInviteList invites={pendingInvites} householdId={householdId} />
               )}
             </CardContent>
           </Card>

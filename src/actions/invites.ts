@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { invites } from '@/lib/db/schema';
 import { requireHouseholdHead, requireSession } from '@/lib/auth-utils';
+import { and, eq, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 export async function createInvite(data: {
@@ -16,6 +17,17 @@ export async function createInvite(data: {
 
   const email = data.email.trim().toLowerCase();
   if (!email) return { success: false as const, error: 'Email is required' };
+
+  // Invalidate any existing unused invites for this email + household
+  await db
+    .delete(invites)
+    .where(
+      and(
+        eq(invites.email, email),
+        eq(invites.householdId, data.householdId),
+        isNull(invites.usedAt),
+      ),
+    );
 
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -35,4 +47,17 @@ export async function createInvite(data: {
   revalidatePath(`/admin/households/${data.householdId}`);
   revalidatePath('/household');
   return { success: true as const, data: { inviteUrl, token, expiresAt } };
+}
+
+export async function removeInvite(inviteId: string, householdId: string) {
+  const auth = await requireHouseholdHead(householdId);
+  if (!auth.success) return auth;
+
+  await db
+    .delete(invites)
+    .where(and(eq(invites.id, inviteId), eq(invites.householdId, householdId)));
+
+  revalidatePath(`/admin/households/${householdId}`);
+  revalidatePath('/household');
+  return { success: true as const, data: null };
 }

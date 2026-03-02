@@ -1,5 +1,6 @@
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { invites, user, account } from '@/lib/db/schema';
+import { invites, user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -40,40 +41,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Hash the password using Web Crypto API
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashedPassword = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-
-  // Create user and account in a transaction-like flow
-  const userId = crypto.randomUUID();
-  const now = new Date();
-
-  await db.insert(user).values({
-    id: userId,
-    name,
-    email,
-    emailVerified: true,
-    householdId: invite.householdId,
-    role: invite.role,
-    createdAt: now,
-    updatedAt: now,
+  // Create user via Better Auth so password is hashed correctly
+  const ctx = await auth.api.signUpEmail({
+    body: { email, name, password },
   });
 
-  await db.insert(account).values({
-    id: crypto.randomUUID(),
-    accountId: userId,
-    providerId: 'credential',
-    userId,
-    password: hashedPassword,
-    createdAt: now,
-    updatedAt: now,
-  });
+  if (!ctx.user) {
+    return NextResponse.json({ error: 'Failed to create account' }, { status: 500 });
+  }
+
+  // Assign household and role from the invite
+  await db
+    .update(user)
+    .set({ householdId: invite.householdId, role: invite.role })
+    .where(eq(user.id, ctx.user.id));
 
   // Mark invite as used
-  await db.update(invites).set({ usedAt: now }).where(eq(invites.id, invite.id));
+  await db.update(invites).set({ usedAt: new Date() }).where(eq(invites.id, invite.id));
 
   return NextResponse.json({ success: true });
 }
