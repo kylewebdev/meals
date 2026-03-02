@@ -64,6 +64,13 @@
       "when": 1772700000000,
       "tag": "0008_per_household_recipes",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1772424797942,
+      "tag": "0009_absent_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

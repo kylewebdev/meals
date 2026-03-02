@@ -184,10 +184,6 @@ export const recipes = pgTable(
     servings: integer('servings'),
     prepTimeMinutes: integer('prep_time_minutes'),
     cookTimeMinutes: integer('cook_time_minutes'),
-    calories: integer('calories'),
-    proteinG: integer('protein_g'),
-    carbsG: integer('carbs_g'),
-    fatG: integer('fat_g'),
     tags: text('tags').array(),
     status: recipeStatusEnum('status').notNull().default('pending'),
     createdBy: text('created_by')

@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { weekOptOuts, weeks } from '@/lib/db/schema';
 import { eq, gte, lte, and, lt } from 'drizzle-orm';
+import { computeNutrition } from './recipes';
 
 interface ScheduleWeek {
   id: string;
@@ -102,6 +103,43 @@ export interface CurrentWeek {
   }[];
 }
 
+interface RawCurrentWeekRecipe {
+  id: string;
+  name: string;
+  ingredients: { calories: number | null; proteinG: number | null; carbsG: number | null; fatG: number | null }[];
+}
+
+interface RawCurrentWeekContribution {
+  id: string;
+  householdId: string;
+  recipeId: string | null;
+  dishName: string | null;
+  notes: string | null;
+  servings: number | null;
+  household: { id: string; name: string };
+  recipe: RawCurrentWeekRecipe | null;
+}
+
+interface RawCurrentWeekSwapDay {
+  id: string;
+  dayOfWeek: number;
+  label: string;
+  coversFrom: number;
+  coversTo: number;
+  location: string | null;
+  time: string | null;
+  notes: string | null;
+  contributions: RawCurrentWeekContribution[];
+}
+
+interface RawCurrentWeek {
+  id: string;
+  startDate: Date;
+  status: string;
+  swapMode: string;
+  swapDays: RawCurrentWeekSwapDay[];
+}
+
 export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
   const now = new Date();
   const day = now.getDay();
@@ -113,7 +151,7 @@ export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
   sunday.setDate(monday.getDate() + 6);
   sunday.setHours(23, 59, 59, 999);
 
-  return db.query.weeks.findFirst({
+  const row = await db.query.weeks.findFirst({
     where: and(gte(weeks.startDate, monday), lte(weeks.startDate, sunday)),
     with: {
       swapDays: {
@@ -122,9 +160,11 @@ export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
             with: {
               household: { columns: { id: true, name: true } },
               recipe: {
-                columns: {
-                  id: true, name: true, calories: true,
-                  proteinG: true, carbsG: true, fatG: true,
+                columns: { id: true, name: true },
+                with: {
+                  ingredients: {
+                    columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
+                  },
                 },
               },
             },
@@ -133,7 +173,24 @@ export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
         orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
       },
     },
-  }) as unknown as Promise<CurrentWeek | undefined>;
+  }) as unknown as RawCurrentWeek | undefined;
+
+  if (!row) return undefined;
+
+  return {
+    ...row,
+    swapDays: row.swapDays.map((sd) => ({
+      ...sd,
+      contributions: sd.contributions.map((c) => ({
+        ...c,
+        recipe: c.recipe ? {
+          id: c.recipe.id,
+          name: c.recipe.name,
+          ...computeNutrition(c.recipe.ingredients),
+        } : null,
+      })),
+    })),
+  };
 }
 
 export interface AdminContribution {

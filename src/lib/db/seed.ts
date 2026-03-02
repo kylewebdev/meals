@@ -1,6 +1,6 @@
 import { db } from './index';
 import { recipes, recipeIngredients, user } from './schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 // ─── Recipe seed data ──────────────────────────────────────────
 
@@ -11,15 +11,15 @@ type RecipeSeed = {
   servings: number;
   prepTimeMinutes: number;
   cookTimeMinutes: number;
-  calories: number;
-  proteinG: number;
-  carbsG: number;
-  fatG: number;
   tags: string[];
   ingredients: {
     name: string;
     quantity: string;
     unit: string;
+    calories: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
     sortOrder: number;
   }[];
 };
@@ -33,20 +33,16 @@ const RECIPES: RecipeSeed[] = [
     servings: 6,
     prepTimeMinutes: 10,
     cookTimeMinutes: 25,
-    calories: 850,
-    proteinG: 45,
-    carbsG: 70,
-    fatG: 42,
     tags: ['chicken', 'pasta', 'meal-prep'],
     ingredients: [
-      { name: 'fettuccine', quantity: '1', unit: 'lb', sortOrder: 0 },
-      { name: 'boneless skinless chicken breasts', quantity: '2', unit: 'lbs', sortOrder: 1 },
-      { name: 'butter', quantity: '4', unit: 'tbsp', sortOrder: 2 },
-      { name: 'heavy cream', quantity: '2', unit: 'cups', sortOrder: 3 },
-      { name: 'grated parmesan', quantity: '1.5', unit: 'cups', sortOrder: 4 },
-      { name: 'garlic cloves (minced)', quantity: '4', unit: 'whole', sortOrder: 5 },
-      { name: 'salt', quantity: '1', unit: 'tsp', sortOrder: 6 },
-      { name: 'black pepper', quantity: '0.5', unit: 'tsp', sortOrder: 7 },
+      { name: 'fettuccine', quantity: '1', unit: 'lb', calories: 1680, proteinG: 56, carbsG: 336, fatG: 8, sortOrder: 0 },
+      { name: 'boneless skinless chicken breasts', quantity: '2', unit: 'lbs', calories: 880, proteinG: 176, carbsG: 0, fatG: 20, sortOrder: 1 },
+      { name: 'butter', quantity: '4', unit: 'tbsp', calories: 400, proteinG: 0, carbsG: 0, fatG: 44, sortOrder: 2 },
+      { name: 'heavy cream', quantity: '2', unit: 'cups', calories: 800, proteinG: 6, carbsG: 6, fatG: 88, sortOrder: 3 },
+      { name: 'grated parmesan', quantity: '1.5', unit: 'cups', calories: 640, proteinG: 56, carbsG: 6, fatG: 42, sortOrder: 4 },
+      { name: 'garlic cloves (minced)', quantity: '4', unit: 'whole', calories: 16, proteinG: 1, carbsG: 4, fatG: 0, sortOrder: 5 },
+      { name: 'salt', quantity: '1', unit: 'tsp', calories: 0, proteinG: 0, carbsG: 0, fatG: 0, sortOrder: 6 },
+      { name: 'black pepper', quantity: '0.5', unit: 'tsp', calories: 3, proteinG: 0, carbsG: 1, fatG: 0, sortOrder: 7 },
     ],
   },
   {
@@ -57,17 +53,13 @@ const RECIPES: RecipeSeed[] = [
     servings: 6,
     prepTimeMinutes: 10,
     cookTimeMinutes: 20,
-    calories: 850,
-    proteinG: 42,
-    carbsG: 100,
-    fatG: 28,
     tags: ['chicken', 'meal-prep', 'bowls'],
     ingredients: [
-      { name: 'boneless skinless chicken breasts', quantity: '2.5', unit: 'lbs', sortOrder: 0 },
-      { name: 'long grain rice', quantity: '3', unit: 'cups', sortOrder: 1 },
-      { name: 'BBQ sauce', quantity: '1.5', unit: 'cups', sortOrder: 2 },
-      { name: 'shredded cheddar cheese', quantity: '1.5', unit: 'cups', sortOrder: 3 },
-      { name: 'corn kernels', quantity: '2', unit: 'cups', sortOrder: 4 },
+      { name: 'boneless skinless chicken breasts', quantity: '2.5', unit: 'lbs', calories: 1100, proteinG: 220, carbsG: 0, fatG: 24, sortOrder: 0 },
+      { name: 'long grain rice', quantity: '3', unit: 'cups', calories: 1800, proteinG: 36, carbsG: 396, fatG: 4, sortOrder: 1 },
+      { name: 'BBQ sauce', quantity: '1.5', unit: 'cups', calories: 420, proteinG: 0, carbsG: 96, fatG: 2, sortOrder: 2 },
+      { name: 'shredded cheddar cheese', quantity: '1.5', unit: 'cups', calories: 680, proteinG: 42, carbsG: 2, fatG: 56, sortOrder: 3 },
+      { name: 'corn kernels', quantity: '2', unit: 'cups', calories: 260, proteinG: 8, carbsG: 60, fatG: 4, sortOrder: 4 },
     ],
   },
   {
@@ -78,21 +70,17 @@ const RECIPES: RecipeSeed[] = [
     servings: 6,
     prepTimeMinutes: 10,
     cookTimeMinutes: 25,
-    calories: 800,
-    proteinG: 40,
-    carbsG: 95,
-    fatG: 25,
     tags: ['chicken', 'meal-prep', 'bowls', 'teriyaki'],
     ingredients: [
-      { name: 'boneless skinless chicken thighs', quantity: '2.5', unit: 'lbs', sortOrder: 0 },
-      { name: 'long grain rice', quantity: '3', unit: 'cups', sortOrder: 1 },
-      { name: 'broccoli florets', quantity: '6', unit: 'cups', sortOrder: 2 },
-      { name: 'soy sauce', quantity: '0.33', unit: 'cup', sortOrder: 3 },
-      { name: 'brown sugar', quantity: '0.25', unit: 'cup', sortOrder: 4 },
-      { name: 'rice vinegar', quantity: '2', unit: 'tbsp', sortOrder: 5 },
-      { name: 'garlic cloves (minced)', quantity: '3', unit: 'whole', sortOrder: 6 },
-      { name: 'fresh ginger (grated)', quantity: '1', unit: 'tbsp', sortOrder: 7 },
-      { name: 'cornstarch', quantity: '1', unit: 'tbsp', sortOrder: 8 },
+      { name: 'boneless skinless chicken thighs', quantity: '2.5', unit: 'lbs', calories: 1200, proteinG: 180, carbsG: 0, fatG: 52, sortOrder: 0 },
+      { name: 'long grain rice', quantity: '3', unit: 'cups', calories: 1800, proteinG: 36, carbsG: 396, fatG: 4, sortOrder: 1 },
+      { name: 'broccoli florets', quantity: '6', unit: 'cups', calories: 204, proteinG: 18, carbsG: 42, fatG: 2, sortOrder: 2 },
+      { name: 'soy sauce', quantity: '0.33', unit: 'cup', calories: 30, proteinG: 4, carbsG: 3, fatG: 0, sortOrder: 3 },
+      { name: 'brown sugar', quantity: '0.25', unit: 'cup', calories: 210, proteinG: 0, carbsG: 54, fatG: 0, sortOrder: 4 },
+      { name: 'rice vinegar', quantity: '2', unit: 'tbsp', calories: 6, proteinG: 0, carbsG: 0, fatG: 0, sortOrder: 5 },
+      { name: 'garlic cloves (minced)', quantity: '3', unit: 'whole', calories: 12, proteinG: 1, carbsG: 3, fatG: 0, sortOrder: 6 },
+      { name: 'fresh ginger (grated)', quantity: '1', unit: 'tbsp', calories: 5, proteinG: 0, carbsG: 1, fatG: 0, sortOrder: 7 },
+      { name: 'cornstarch', quantity: '1', unit: 'tbsp', calories: 30, proteinG: 0, carbsG: 7, fatG: 0, sortOrder: 8 },
     ],
   },
   {
@@ -103,22 +91,18 @@ const RECIPES: RecipeSeed[] = [
     servings: 6,
     prepTimeMinutes: 15,
     cookTimeMinutes: 15,
-    calories: 850,
-    proteinG: 45,
-    carbsG: 85,
-    fatG: 30,
     tags: ['beef', 'meal-prep', 'stir-fry'],
     ingredients: [
-      { name: 'flank steak', quantity: '2', unit: 'lbs', sortOrder: 0 },
-      { name: 'broccoli florets', quantity: '6', unit: 'cups', sortOrder: 1 },
-      { name: 'long grain rice', quantity: '3', unit: 'cups', sortOrder: 2 },
-      { name: 'soy sauce', quantity: '0.33', unit: 'cup', sortOrder: 3 },
-      { name: 'oyster sauce', quantity: '2', unit: 'tbsp', sortOrder: 4 },
-      { name: 'sesame oil', quantity: '1', unit: 'tbsp', sortOrder: 5 },
-      { name: 'cornstarch', quantity: '2', unit: 'tbsp', sortOrder: 6 },
-      { name: 'garlic cloves (minced)', quantity: '4', unit: 'whole', sortOrder: 7 },
-      { name: 'brown sugar', quantity: '1', unit: 'tbsp', sortOrder: 8 },
-      { name: 'vegetable oil', quantity: '2', unit: 'tbsp', sortOrder: 9 },
+      { name: 'flank steak', quantity: '2', unit: 'lbs', calories: 1440, proteinG: 192, carbsG: 0, fatG: 64, sortOrder: 0 },
+      { name: 'broccoli florets', quantity: '6', unit: 'cups', calories: 204, proteinG: 18, carbsG: 42, fatG: 2, sortOrder: 1 },
+      { name: 'long grain rice', quantity: '3', unit: 'cups', calories: 1800, proteinG: 36, carbsG: 396, fatG: 4, sortOrder: 2 },
+      { name: 'soy sauce', quantity: '0.33', unit: 'cup', calories: 30, proteinG: 4, carbsG: 3, fatG: 0, sortOrder: 3 },
+      { name: 'oyster sauce', quantity: '2', unit: 'tbsp', calories: 18, proteinG: 0, carbsG: 4, fatG: 0, sortOrder: 4 },
+      { name: 'sesame oil', quantity: '1', unit: 'tbsp', calories: 120, proteinG: 0, carbsG: 0, fatG: 14, sortOrder: 5 },
+      { name: 'cornstarch', quantity: '2', unit: 'tbsp', calories: 60, proteinG: 0, carbsG: 14, fatG: 0, sortOrder: 6 },
+      { name: 'garlic cloves (minced)', quantity: '4', unit: 'whole', calories: 16, proteinG: 1, carbsG: 4, fatG: 0, sortOrder: 7 },
+      { name: 'brown sugar', quantity: '1', unit: 'tbsp', calories: 52, proteinG: 0, carbsG: 14, fatG: 0, sortOrder: 8 },
+      { name: 'vegetable oil', quantity: '2', unit: 'tbsp', calories: 240, proteinG: 0, carbsG: 0, fatG: 28, sortOrder: 9 },
     ],
   },
   {
@@ -129,21 +113,17 @@ const RECIPES: RecipeSeed[] = [
     servings: 6,
     prepTimeMinutes: 15,
     cookTimeMinutes: 25,
-    calories: 850,
-    proteinG: 42,
-    carbsG: 90,
-    fatG: 32,
     tags: ['beef', 'pasta', 'meal-prep'],
     ingredients: [
-      { name: 'ground beef (80/20)', quantity: '2', unit: 'lbs', sortOrder: 0 },
-      { name: 'spaghetti', quantity: '1', unit: 'lb', sortOrder: 1 },
-      { name: 'marinara sauce', quantity: '32', unit: 'oz', sortOrder: 2 },
-      { name: 'breadcrumbs', quantity: '0.5', unit: 'cup', sortOrder: 3 },
-      { name: 'egg', quantity: '1', unit: 'whole', sortOrder: 4 },
-      { name: 'grated parmesan', quantity: '0.5', unit: 'cup', sortOrder: 5 },
-      { name: 'garlic cloves (minced)', quantity: '3', unit: 'whole', sortOrder: 6 },
-      { name: 'Italian seasoning', quantity: '1', unit: 'tbsp', sortOrder: 7 },
-      { name: 'salt', quantity: '1', unit: 'tsp', sortOrder: 8 },
+      { name: 'ground beef (80/20)', quantity: '2', unit: 'lbs', calories: 2080, proteinG: 160, carbsG: 0, fatG: 160, sortOrder: 0 },
+      { name: 'spaghetti', quantity: '1', unit: 'lb', calories: 1680, proteinG: 56, carbsG: 336, fatG: 8, sortOrder: 1 },
+      { name: 'marinara sauce', quantity: '32', unit: 'oz', calories: 280, proteinG: 8, carbsG: 40, fatG: 8, sortOrder: 2 },
+      { name: 'breadcrumbs', quantity: '0.5', unit: 'cup', calories: 220, proteinG: 6, carbsG: 40, fatG: 4, sortOrder: 3 },
+      { name: 'egg', quantity: '1', unit: 'whole', calories: 70, proteinG: 6, carbsG: 0, fatG: 5, sortOrder: 4 },
+      { name: 'grated parmesan', quantity: '0.5', unit: 'cup', calories: 215, proteinG: 19, carbsG: 2, fatG: 14, sortOrder: 5 },
+      { name: 'garlic cloves (minced)', quantity: '3', unit: 'whole', calories: 12, proteinG: 1, carbsG: 3, fatG: 0, sortOrder: 6 },
+      { name: 'Italian seasoning', quantity: '1', unit: 'tbsp', calories: 5, proteinG: 0, carbsG: 1, fatG: 0, sortOrder: 7 },
+      { name: 'salt', quantity: '1', unit: 'tsp', calories: 0, proteinG: 0, carbsG: 0, fatG: 0, sortOrder: 8 },
     ],
   },
   {
@@ -154,20 +134,16 @@ const RECIPES: RecipeSeed[] = [
     servings: 8,
     prepTimeMinutes: 10,
     cookTimeMinutes: 480,
-    calories: 900,
-    proteinG: 45,
-    carbsG: 95,
-    fatG: 35,
     tags: ['pork', 'meal-prep', 'slow-cooker', 'bowls'],
     ingredients: [
-      { name: 'pork shoulder/butt', quantity: '4', unit: 'lbs', sortOrder: 0 },
-      { name: 'BBQ sauce', quantity: '2', unit: 'cups', sortOrder: 1 },
-      { name: 'long grain rice', quantity: '4', unit: 'cups', sortOrder: 2 },
-      { name: 'shredded cheddar cheese', quantity: '2', unit: 'cups', sortOrder: 3 },
-      { name: 'baked beans', quantity: '28', unit: 'oz', sortOrder: 4 },
-      { name: 'smoked paprika', quantity: '1', unit: 'tbsp', sortOrder: 5 },
-      { name: 'garlic powder', quantity: '1', unit: 'tsp', sortOrder: 6 },
-      { name: 'onion powder', quantity: '1', unit: 'tsp', sortOrder: 7 },
+      { name: 'pork shoulder/butt', quantity: '4', unit: 'lbs', calories: 3520, proteinG: 256, carbsG: 0, fatG: 272, sortOrder: 0 },
+      { name: 'BBQ sauce', quantity: '2', unit: 'cups', calories: 560, proteinG: 0, carbsG: 128, fatG: 2, sortOrder: 1 },
+      { name: 'long grain rice', quantity: '4', unit: 'cups', calories: 2400, proteinG: 48, carbsG: 528, fatG: 4, sortOrder: 2 },
+      { name: 'shredded cheddar cheese', quantity: '2', unit: 'cups', calories: 910, proteinG: 56, carbsG: 4, fatG: 74, sortOrder: 3 },
+      { name: 'baked beans', quantity: '28', unit: 'oz', calories: 840, proteinG: 42, carbsG: 154, fatG: 6, sortOrder: 4 },
+      { name: 'smoked paprika', quantity: '1', unit: 'tbsp', calories: 20, proteinG: 1, carbsG: 4, fatG: 1, sortOrder: 5 },
+      { name: 'garlic powder', quantity: '1', unit: 'tsp', calories: 10, proteinG: 0, carbsG: 2, fatG: 0, sortOrder: 6 },
+      { name: 'onion powder', quantity: '1', unit: 'tsp', calories: 8, proteinG: 0, carbsG: 2, fatG: 0, sortOrder: 7 },
     ],
   },
   {
@@ -178,21 +154,17 @@ const RECIPES: RecipeSeed[] = [
     servings: 6,
     prepTimeMinutes: 10,
     cookTimeMinutes: 15,
-    calories: 800,
-    proteinG: 38,
-    carbsG: 85,
-    fatG: 30,
     tags: ['chicken', 'meal-prep', 'rice'],
     ingredients: [
-      { name: 'boneless skinless chicken breasts', quantity: '1.5', unit: 'lbs', sortOrder: 0 },
-      { name: 'cooked rice (day-old)', quantity: '8', unit: 'cups', sortOrder: 1 },
-      { name: 'eggs', quantity: '4', unit: 'whole', sortOrder: 2 },
-      { name: 'butter', quantity: '4', unit: 'tbsp', sortOrder: 3 },
-      { name: 'soy sauce', quantity: '0.25', unit: 'cup', sortOrder: 4 },
-      { name: 'sesame oil', quantity: '1', unit: 'tbsp', sortOrder: 5 },
-      { name: 'frozen peas and carrots', quantity: '2', unit: 'cups', sortOrder: 6 },
-      { name: 'green onions (sliced)', quantity: '4', unit: 'whole', sortOrder: 7 },
-      { name: 'garlic powder', quantity: '1', unit: 'tsp', sortOrder: 8 },
+      { name: 'boneless skinless chicken breasts', quantity: '1.5', unit: 'lbs', calories: 660, proteinG: 132, carbsG: 0, fatG: 14, sortOrder: 0 },
+      { name: 'cooked rice (day-old)', quantity: '8', unit: 'cups', calories: 1600, proteinG: 32, carbsG: 352, fatG: 4, sortOrder: 1 },
+      { name: 'eggs', quantity: '4', unit: 'whole', calories: 280, proteinG: 24, carbsG: 2, fatG: 20, sortOrder: 2 },
+      { name: 'butter', quantity: '4', unit: 'tbsp', calories: 400, proteinG: 0, carbsG: 0, fatG: 44, sortOrder: 3 },
+      { name: 'soy sauce', quantity: '0.25', unit: 'cup', calories: 22, proteinG: 3, carbsG: 2, fatG: 0, sortOrder: 4 },
+      { name: 'sesame oil', quantity: '1', unit: 'tbsp', calories: 120, proteinG: 0, carbsG: 0, fatG: 14, sortOrder: 5 },
+      { name: 'frozen peas and carrots', quantity: '2', unit: 'cups', calories: 160, proteinG: 8, carbsG: 30, fatG: 2, sortOrder: 6 },
+      { name: 'green onions (sliced)', quantity: '4', unit: 'whole', calories: 20, proteinG: 1, carbsG: 4, fatG: 0, sortOrder: 7 },
+      { name: 'garlic powder', quantity: '1', unit: 'tsp', calories: 10, proteinG: 0, carbsG: 2, fatG: 0, sortOrder: 8 },
     ],
   },
   {
@@ -203,21 +175,17 @@ const RECIPES: RecipeSeed[] = [
     servings: 8,
     prepTimeMinutes: 15,
     cookTimeMinutes: 35,
-    calories: 950,
-    proteinG: 40,
-    carbsG: 80,
-    fatG: 50,
     tags: ['pasta', 'meal-prep', 'baked', 'comfort-food'],
     ingredients: [
-      { name: 'elbow macaroni', quantity: '1', unit: 'lb', sortOrder: 0 },
-      { name: 'bacon or chicken breast', quantity: '1', unit: 'lb', sortOrder: 1 },
-      { name: 'shredded cheddar cheese', quantity: '3', unit: 'cups', sortOrder: 2 },
-      { name: 'shredded mozzarella', quantity: '1', unit: 'cup', sortOrder: 3 },
-      { name: 'whole milk', quantity: '3', unit: 'cups', sortOrder: 4 },
-      { name: 'butter', quantity: '4', unit: 'tbsp', sortOrder: 5 },
-      { name: 'all-purpose flour', quantity: '0.25', unit: 'cup', sortOrder: 6 },
-      { name: 'breadcrumbs', quantity: '0.5', unit: 'cup', sortOrder: 7 },
-      { name: 'mustard powder', quantity: '1', unit: 'tsp', sortOrder: 8 },
+      { name: 'elbow macaroni', quantity: '1', unit: 'lb', calories: 1680, proteinG: 56, carbsG: 336, fatG: 8, sortOrder: 0 },
+      { name: 'bacon or chicken breast', quantity: '1', unit: 'lb', calories: 800, proteinG: 80, carbsG: 0, fatG: 52, sortOrder: 1 },
+      { name: 'shredded cheddar cheese', quantity: '3', unit: 'cups', calories: 1360, proteinG: 84, carbsG: 4, fatG: 112, sortOrder: 2 },
+      { name: 'shredded mozzarella', quantity: '1', unit: 'cup', calories: 320, proteinG: 24, carbsG: 4, fatG: 24, sortOrder: 3 },
+      { name: 'whole milk', quantity: '3', unit: 'cups', calories: 450, proteinG: 24, carbsG: 36, fatG: 24, sortOrder: 4 },
+      { name: 'butter', quantity: '4', unit: 'tbsp', calories: 400, proteinG: 0, carbsG: 0, fatG: 44, sortOrder: 5 },
+      { name: 'all-purpose flour', quantity: '0.25', unit: 'cup', calories: 110, proteinG: 4, carbsG: 24, fatG: 0, sortOrder: 6 },
+      { name: 'breadcrumbs', quantity: '0.5', unit: 'cup', calories: 220, proteinG: 6, carbsG: 40, fatG: 4, sortOrder: 7 },
+      { name: 'mustard powder', quantity: '1', unit: 'tsp', calories: 10, proteinG: 1, carbsG: 1, fatG: 1, sortOrder: 8 },
     ],
   },
 ];
@@ -234,12 +202,43 @@ async function seed() {
     process.exit(1);
   }
 
-  // ─── Seed recipes ──────────────────────────────────────────
-  const existingRecipes = await db.select({ id: recipes.id }).from(recipes);
-  if (existingRecipes.length > 0) {
-    console.log(`Skipping recipes — ${existingRecipes.length} already exist.`);
-  } else {
-    for (const r of RECIPES) {
+  // ─── Upsert recipes ─────────────────────────────────────────
+  const seedNames = RECIPES.map((r) => r.name);
+  const existingRecipes = await db
+    .select({ id: recipes.id, name: recipes.name })
+    .from(recipes)
+    .where(inArray(recipes.name, seedNames));
+  const existingByName = new Map(existingRecipes.map((r) => [r.name, r.id]));
+
+  let created = 0;
+  let updated = 0;
+
+  for (const r of RECIPES) {
+    const existingId = existingByName.get(r.name);
+    let recipeId: string;
+
+    if (existingId) {
+      // Update existing recipe
+      await db
+        .update(recipes)
+        .set({
+          description: r.description,
+          instructions: r.instructions,
+          servings: r.servings,
+          prepTimeMinutes: r.prepTimeMinutes,
+          cookTimeMinutes: r.cookTimeMinutes,
+          tags: r.tags,
+          updatedAt: new Date(),
+        })
+        .where(eq(recipes.id, existingId));
+      recipeId = existingId;
+
+      // Delete old ingredients, then re-insert
+      await db.delete(recipeIngredients).where(eq(recipeIngredients.recipeId, recipeId));
+      updated++;
+      console.log(`  ~ ${r.name} (updated)`);
+    } else {
+      // Insert new recipe
       const [recipe] = await db
         .insert(recipes)
         .values({
@@ -249,29 +248,32 @@ async function seed() {
           servings: r.servings,
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
-          calories: r.calories,
-          proteinG: r.proteinG,
-          carbsG: r.carbsG,
-          fatG: r.fatG,
           tags: r.tags,
           createdBy: admin.id,
         })
         .returning() as (typeof recipes.$inferSelect)[];
-
-      await db.insert(recipeIngredients).values(
-        r.ingredients.map((ing) => ({
-          recipeId: recipe.id,
-          name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
-          sortOrder: ing.sortOrder,
-        })),
-      );
-
-      console.log(`  + ${r.name} (${r.ingredients.length} ingredients)`);
+      recipeId = recipe.id;
+      created++;
+      console.log(`  + ${r.name} (created)`);
     }
-    console.log(`Seeded ${RECIPES.length} recipes.`);
+
+    // Insert ingredients
+    await db.insert(recipeIngredients).values(
+      r.ingredients.map((ing) => ({
+        recipeId,
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        calories: ing.calories,
+        proteinG: ing.proteinG,
+        carbsG: ing.carbsG,
+        fatG: ing.fatG,
+        sortOrder: ing.sortOrder,
+      })),
+    );
   }
+
+  console.log(`Seed recipes: ${created} created, ${updated} updated.`);
 
   console.log('Seed complete.');
 }

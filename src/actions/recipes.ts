@@ -191,7 +191,6 @@ export async function addIngredient(recipeId: string, data: IngredientInput) {
     .returning() as (typeof recipeIngredients.$inferSelect)[];
   const ingredient = ingResult[0];
 
-  await recomputeNutrition(recipeId);
   revalidatePath(`/recipes/${recipeId}`);
   return { success: true as const, data: ingredient };
 }
@@ -218,7 +217,6 @@ export async function updateIngredient(
     })
     .where(eq(recipeIngredients.id, ingredientId));
 
-  await recomputeNutrition(recipeId);
   revalidatePath(`/recipes/${recipeId}`);
   return { success: true as const, data: null };
 }
@@ -229,7 +227,6 @@ export async function removeIngredient(ingredientId: string, recipeId: string) {
 
   await db.delete(recipeIngredients).where(eq(recipeIngredients.id, ingredientId));
 
-  await recomputeNutrition(recipeId);
   revalidatePath(`/recipes/${recipeId}`);
   return { success: true as const, data: null };
 }
@@ -278,39 +275,4 @@ export async function reviewRecipe(
   }
 
   return { success: true as const, data: null };
-}
-
-async function recomputeNutrition(recipeId: string) {
-  const ingredients = await db
-    .select({
-      calories: recipeIngredients.calories,
-      proteinG: recipeIngredients.proteinG,
-      carbsG: recipeIngredients.carbsG,
-      fatG: recipeIngredients.fatG,
-    })
-    .from(recipeIngredients)
-    .where(eq(recipeIngredients.recipeId, recipeId));
-
-  let calories = 0;
-  let proteinG = 0;
-  let carbsG = 0;
-  let fatG = 0;
-  for (const ing of ingredients) {
-    calories += ing.calories ?? 0;
-    proteinG += ing.proteinG ?? 0;
-    carbsG += ing.carbsG ?? 0;
-    fatG += ing.fatG ?? 0;
-  }
-  const totals = { calories, proteinG, carbsG, fatG };
-
-  await db
-    .update(recipes)
-    .set({
-      calories: totals.calories || null,
-      proteinG: totals.proteinG || null,
-      carbsG: totals.carbsG || null,
-      fatG: totals.fatG || null,
-      updatedAt: new Date(),
-    })
-    .where(eq(recipes.id, recipeId));
 }
