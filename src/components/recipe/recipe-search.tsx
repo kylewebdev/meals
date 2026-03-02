@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 
 export function RecipeSearch() {
   const router = useRouter();
@@ -10,15 +10,18 @@ export function RecipeSearch() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
   const deferredQuery = useDeferredValue(query);
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   useEffect(() => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParamsRef.current.toString());
     if (deferredQuery) {
       params.set('q', deferredQuery);
-      router.replace(`${pathname}?${params.toString()}`);
     } else {
-      router.replace(pathname);
+      params.delete('q');
     }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
   }, [deferredQuery, pathname, router]);
 
   return (

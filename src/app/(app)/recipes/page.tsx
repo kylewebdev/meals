@@ -3,6 +3,7 @@ import { getRecipes } from '@/lib/queries/recipes';
 import { getRecipeRatingSummaries } from '@/lib/queries/ratings';
 import { RecipeGrid } from '@/components/recipe/recipe-grid';
 import { RecipeSearch } from '@/components/recipe/recipe-search';
+import { RecipeFilters } from '@/components/recipe/recipe-filters';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
@@ -11,12 +12,12 @@ import { redirect } from 'next/navigation';
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; rating?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const { q } = await searchParams;
+  const { q, rating } = await searchParams;
   let allRecipes = await getRecipes();
   const summaries = await getRecipeRatingSummaries();
   const ratingsMap = new Map(summaries.map((s) => [s.recipeId, s]));
@@ -29,6 +30,20 @@ export default async function RecipesPage({
         r.description?.toLowerCase().includes(query) ||
         r.tags?.some((t) => t.toLowerCase().includes(query)),
     );
+  }
+
+  if (rating === 'loved') {
+    allRecipes = allRecipes.filter((r) => {
+      const s = ratingsMap.get(r.id);
+      return s && s.love > 0;
+    });
+  } else if (rating === 'disliked') {
+    allRecipes = allRecipes.filter((r) => {
+      const s = ratingsMap.get(r.id);
+      return s && s.dislike > 0;
+    });
+  } else if (rating === 'unrated') {
+    allRecipes = allRecipes.filter((r) => !ratingsMap.has(r.id));
   }
 
   return (
@@ -45,12 +60,19 @@ export default async function RecipesPage({
         </div>
       </div>
 
-      <RecipeSearch />
+      <div className="flex flex-wrap items-center gap-3">
+        <RecipeSearch />
+        <RecipeFilters />
+      </div>
 
       {allRecipes.length === 0 ? (
         <EmptyState
-          title={q ? 'No recipes found' : 'No recipes yet'}
-          description={q ? 'Try a different search term.' : 'Submit your first recipe to get started.'}
+          title={q || rating ? 'No recipes found' : 'No recipes yet'}
+          description={
+            q || rating
+              ? 'Try a different search or filter.'
+              : 'Submit your first recipe to get started.'
+          }
         />
       ) : (
         <RecipeGrid recipes={allRecipes} ratingsMap={ratingsMap} />
