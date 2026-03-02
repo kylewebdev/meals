@@ -17,7 +17,7 @@ export function NutritionSummary({ calories, proteinG, carbsG, fatG, scaleFactor
   if (!hasData) return null;
 
   return (
-    <div className="grid grid-cols-4 gap-4 rounded-lg bg-zinc-50 p-4 text-center dark:bg-zinc-900">
+    <div className="grid max-w-2xl grid-cols-2 gap-4 rounded-lg bg-zinc-50 p-4 text-center dark:bg-zinc-900">
       <div>
         <p className="text-lg font-semibold">{scale(calories, scaleFactor)}</p>
         <p className="text-xs text-zinc-500">Calories</p>
