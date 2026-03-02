@@ -16,7 +16,6 @@ import {
 export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
 export const mealTypeEnum = pgEnum('meal_type', ['lunch', 'dinner']);
-export const suggestionStatusEnum = pgEnum('suggestion_status', ['open', 'fulfilled']);
 
 // ─── Auth tables (Better Auth managed) ──────────────────────────
 
@@ -28,6 +27,9 @@ export const user = pgTable('user', {
   image: text('image'),
   householdId: text('household_id').references(() => households.id),
   role: userRoleEnum('role').notNull().default('member'),
+  allergies: text('allergies').array(),
+  dietaryPreferences: text('dietary_preferences').array(),
+  dietaryNotes: text('dietary_notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -91,6 +93,7 @@ export const households = pgTable('households', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 255 }).notNull(),
+  headId: text('head_id'), // FK to user.id — circular ref handled via relations
   rotationPosition: integer('rotation_position').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -127,59 +130,92 @@ export const mealPlanEntries = pgTable(
       .references(() => weeks.id, { onDelete: 'cascade' }),
     dayOfWeek: integer('day_of_week').notNull(),
     mealType: mealTypeEnum('meal_type').notNull(),
-    name: varchar('name', { length: 255 }).notNull(),
+    name: varchar('name', { length: 255 }),
     description: text('description'),
+    recipeId: text('recipe_id').references(() => recipes.id),
+    isModified: boolean('is_modified').notNull().default(false),
+    modificationNotes: text('modification_notes'),
+    modifiedCalories: integer('modified_calories'),
+    modifiedProteinG: integer('modified_protein_g'),
+    modifiedCarbsG: integer('modified_carbs_g'),
+    modifiedFatG: integer('modified_fat_g'),
   },
   (table) => [index('meal_plan_entries_week_id_idx').on(table.weekId)],
 );
 
-export const suggestions = pgTable('suggestions', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  authorId: text('author_id')
-    .notNull()
-    .references(() => user.id),
-  name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  status: suggestionStatusEnum('status').notNull().default('open'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
-export const votes = pgTable(
-  'votes',
+export const recipes = pgTable(
+  'recipes',
   {
     id: text('id')
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    suggestionId: text('suggestion_id')
-      .notNull()
-      .references(() => suggestions.id, { onDelete: 'cascade' }),
-    memberId: text('member_id')
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    instructions: text('instructions'),
+    servings: integer('servings'),
+    prepTimeMinutes: integer('prep_time_minutes'),
+    cookTimeMinutes: integer('cook_time_minutes'),
+    calories: integer('calories'),
+    proteinG: integer('protein_g'),
+    carbsG: integer('carbs_g'),
+    fatG: integer('fat_g'),
+    tags: text('tags').array(),
+    createdBy: text('created_by')
       .notNull()
       .references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (table) => [unique('votes_suggestion_member_unique').on(table.suggestionId, table.memberId)],
+  (table) => [index('recipes_created_by_idx').on(table.createdBy)],
 );
 
-export const rsvps = pgTable(
-  'rsvps',
+export const recipeIngredients = pgTable(
+  'recipe_ingredients',
   {
     id: text('id')
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    weekId: text('week_id')
+    recipeId: text('recipe_id')
       .notNull()
-      .references(() => weeks.id, { onDelete: 'cascade' }),
-    householdId: text('household_id')
-      .notNull()
-      .references(() => households.id),
-    headcount: integer('headcount').notNull(),
-    notes: text('notes'),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+      .references(() => recipes.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    quantity: varchar('quantity', { length: 50 }),
+    unit: varchar('unit', { length: 50 }),
+    calories: integer('calories'),
+    proteinG: integer('protein_g'),
+    carbsG: integer('carbs_g'),
+    fatG: integer('fat_g'),
+    sortOrder: integer('sort_order').notNull().default(0),
   },
-  (table) => [unique('rsvps_week_household_unique').on(table.weekId, table.householdId)],
+  (table) => [index('recipe_ingredients_recipe_id_idx').on(table.recipeId)],
+);
+
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'cooking_reminder',
+  'meal_plan_posted',
+  'new_recipe',
+]);
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    type: notificationTypeEnum('type').notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    body: text('body'),
+    linkUrl: text('link_url'),
+    readAt: timestamp('read_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('notifications_user_id_idx').on(table.userId),
+    index('notifications_user_unread_idx').on(table.userId, table.readAt),
+  ],
 );
 
 export const invites = pgTable('invites', {
@@ -192,6 +228,7 @@ export const invites = pgTable('invites', {
     .references(() => households.id),
   role: userRoleEnum('role').notNull().default('member'),
   token: text('token').notNull().unique(),
+  invitedBy: text('invited_by').references(() => user.id),
   expiresAt: timestamp('expires_at').notNull(),
   usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -203,8 +240,8 @@ export const userRelations = relations(user, ({ one, many }) => ({
   household: one(households, { fields: [user.householdId], references: [households.id] }),
   sessions: many(session),
   accounts: many(account),
-  suggestions: many(suggestions),
-  votes: many(votes),
+  recipes: many(recipes),
+  notifications: many(notifications),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -215,38 +252,38 @@ export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, { fields: [account.userId], references: [user.id] }),
 }));
 
-export const householdRelations = relations(households, ({ many }) => ({
+export const householdRelations = relations(households, ({ one, many }) => ({
+  head: one(user, { fields: [households.headId], references: [user.id] }),
   members: many(user),
   weeks: many(weeks),
-  rsvps: many(rsvps),
   invites: many(invites),
 }));
 
 export const weekRelations = relations(weeks, ({ one, many }) => ({
   household: one(households, { fields: [weeks.householdId], references: [households.id] }),
   mealPlanEntries: many(mealPlanEntries),
-  rsvps: many(rsvps),
 }));
 
 export const mealPlanEntryRelations = relations(mealPlanEntries, ({ one }) => ({
   week: one(weeks, { fields: [mealPlanEntries.weekId], references: [weeks.id] }),
+  recipe: one(recipes, { fields: [mealPlanEntries.recipeId], references: [recipes.id] }),
 }));
 
-export const suggestionRelations = relations(suggestions, ({ one, many }) => ({
-  author: one(user, { fields: [suggestions.authorId], references: [user.id] }),
-  votes: many(votes),
+export const recipeRelations = relations(recipes, ({ one, many }) => ({
+  creator: one(user, { fields: [recipes.createdBy], references: [user.id] }),
+  ingredients: many(recipeIngredients),
+  mealPlanEntries: many(mealPlanEntries),
 }));
 
-export const voteRelations = relations(votes, ({ one }) => ({
-  suggestion: one(suggestions, { fields: [votes.suggestionId], references: [suggestions.id] }),
-  member: one(user, { fields: [votes.memberId], references: [user.id] }),
+export const recipeIngredientRelations = relations(recipeIngredients, ({ one }) => ({
+  recipe: one(recipes, { fields: [recipeIngredients.recipeId], references: [recipes.id] }),
 }));
 
-export const rsvpRelations = relations(rsvps, ({ one }) => ({
-  week: one(weeks, { fields: [rsvps.weekId], references: [weeks.id] }),
-  household: one(households, { fields: [rsvps.householdId], references: [households.id] }),
+export const notificationRelations = relations(notifications, ({ one }) => ({
+  user: one(user, { fields: [notifications.userId], references: [user.id] }),
 }));
 
 export const inviteRelations = relations(invites, ({ one }) => ({
   household: one(households, { fields: [invites.householdId], references: [households.id] }),
+  inviter: one(user, { fields: [invites.invitedBy], references: [user.id] }),
 }));

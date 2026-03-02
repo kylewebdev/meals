@@ -25,6 +25,24 @@ export const auth = betterAuth({
         defaultValue: 'member',
         input: false,
       },
+      allergies: {
+        type: 'string[]',
+        required: false,
+        defaultValue: null,
+        input: false,
+      },
+      dietaryPreferences: {
+        type: 'string[]',
+        required: false,
+        defaultValue: null,
+        input: false,
+      },
+      dietaryNotes: {
+        type: 'string',
+        required: false,
+        defaultValue: null,
+        input: false,
+      },
     },
   },
 });
