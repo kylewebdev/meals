@@ -1,8 +1,11 @@
+'use client';
+
 import { PortionDisplay } from '@/components/contributions/portion-display';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatWeekRange } from '@/lib/schedule-utils';
 import type { UpcomingSwapDay } from '@/lib/queries/contributions';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface MyTasksProps {
   swapDays: UpcomingSwapDay[];
@@ -10,6 +13,8 @@ interface MyTasksProps {
 }
 
 export function MyTasks({ swapDays, headcount }: MyTasksProps) {
+  const router = useRouter();
+
   if (swapDays.length === 0) return null;
 
   return (
@@ -19,10 +24,18 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
       </CardHeader>
       <CardContent className="space-y-3">
         {swapDays.map((sd) => (
-          <Link
+          <div
             key={sd.id}
-            href={`/week/${sd.weekId}`}
-            className="block rounded-lg border border-zinc-200 px-4 py-3 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/week/${sd.weekId}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push(`/week/${sd.weekId}`);
+              }
+            }}
+            className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-3 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
           >
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -32,9 +45,13 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
                 </span>
               </div>
               {sd.assignedRecipe ? (
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                <Link
+                  href={`/recipes/${sd.assignedRecipe.id}?weekId=${sd.weekId}`}
+                  className="block text-sm font-medium text-blue-700 hover:underline dark:text-blue-400"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {sd.assignedRecipe.name}
-                </p>
+                </Link>
               ) : (
                 <p className="text-sm text-zinc-400">No recipe assigned</p>
               )}
@@ -44,7 +61,7 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
                 coversTo={sd.coversTo}
               />
             </div>
-          </Link>
+          </div>
         ))}
       </CardContent>
     </Card>
