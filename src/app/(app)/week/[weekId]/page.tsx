@@ -1,6 +1,8 @@
 import { getSession } from '@/lib/auth-utils';
 import { getWeekWithContributions, getHeadcount } from '@/lib/queries/contributions';
 import { WeekNutritionSummary } from '@/components/contributions/week-nutrition-summary';
+import { WeekNutritionChart } from '@/components/contributions/week-nutrition-chart';
+import { PortionDisplay } from '@/components/contributions/portion-display';
 import { HeadcountDisplay } from '@/components/contributions/headcount-display';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
 import { Badge } from '@/components/ui/badge';
@@ -65,22 +67,33 @@ export default async function WeekDetailPage({
         />
       ) : (
         week.swapDays.map((sd) => (
-          <SwapDaySection
-            key={sd.id}
-            label={sd.label}
-            dayOfWeek={sd.dayOfWeek}
-            coversFrom={sd.coversFrom}
-            coversTo={sd.coversTo}
-            location={sd.location}
-            time={sd.time}
-            notes={sd.notes}
-            contributions={sd.contributions}
-          />
+          <div key={sd.id} className="space-y-2">
+            <div className="flex items-center justify-end">
+              <PortionDisplay
+                headcount={headcount}
+                coversFrom={sd.coversFrom}
+                coversTo={sd.coversTo}
+              />
+            </div>
+            <SwapDaySection
+              label={sd.label}
+              dayOfWeek={sd.dayOfWeek}
+              coversFrom={sd.coversFrom}
+              coversTo={sd.coversTo}
+              location={sd.location}
+              time={sd.time}
+              notes={sd.notes}
+              contributions={sd.contributions}
+            />
+          </div>
         ))
       )}
 
       {totalContributions > 0 && (
-        <WeekNutritionSummary swapDays={week.swapDays} />
+        <>
+          <WeekNutritionChart swapDays={week.swapDays} />
+          <WeekNutritionSummary swapDays={week.swapDays} />
+        </>
       )}
     </div>
   );

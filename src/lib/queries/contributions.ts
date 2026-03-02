@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { contributions, swapDays, user, weekOptOuts, weeks } from '@/lib/db/schema';
-import { and, eq, count, isNull } from 'drizzle-orm';
+import { and, eq, count, isNull, inArray, gte } from 'drizzle-orm';
 
 export interface ContributionItem {
   id: string;
@@ -122,6 +122,67 @@ export async function getHouseholdContribution(
       },
     },
   }) as unknown as Promise<ContributionItem[]>;
+}
+
+export interface UpcomingSwapDay {
+  id: string;
+  weekId: string;
+  dayOfWeek: number;
+  label: string;
+  coversFrom: number;
+  coversTo: number;
+  weekStartDate: Date;
+  weekStatus: string;
+  hasContribution: boolean;
+}
+
+export async function getUpcomingSwapDays(householdId: string): Promise<UpcomingSwapDay[]> {
+  // Get active + upcoming weeks
+  const activeWeeks = await db.query.weeks.findMany({
+    where: inArray(weeks.status, ['active', 'upcoming']),
+    with: {
+      swapDays: {
+        with: {
+          contributions: {
+            columns: { id: true, householdId: true },
+          },
+        },
+        orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
+      },
+    },
+    orderBy: (w, { asc }) => [asc(w.startDate)],
+  }) as unknown as {
+    id: string;
+    startDate: Date;
+    status: string;
+    swapDays: {
+      id: string;
+      dayOfWeek: number;
+      label: string;
+      coversFrom: number;
+      coversTo: number;
+      contributions: { id: string; householdId: string }[];
+    }[];
+  }[];
+
+  const result: UpcomingSwapDay[] = [];
+  for (const week of activeWeeks) {
+    for (const sd of week.swapDays) {
+      result.push({
+        id: sd.id,
+        weekId: week.id,
+        dayOfWeek: sd.dayOfWeek,
+        label: sd.label,
+        coversFrom: sd.coversFrom,
+        coversTo: sd.coversTo,
+        weekStartDate: week.startDate,
+        weekStatus: week.status,
+        hasContribution: sd.contributions.some((c) => c.householdId === householdId),
+      });
+    }
+  }
+
+  return result;
 }
 
 export async function getHeadcount(weekId?: string): Promise<number> {

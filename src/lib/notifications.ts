@@ -52,3 +52,26 @@ export async function notifyNewRecipe(recipeId: string, recipeName: string) {
     });
   }
 }
+
+export async function notifyRecipeReviewed(
+  recipeId: string,
+  recipeName: string,
+  creatorId: string,
+  approved: boolean,
+  feedback?: string,
+) {
+  const title = approved
+    ? 'Your recipe was approved!'
+    : 'Your recipe needs changes';
+  const body = approved
+    ? `"${recipeName}" has been approved and is now in the recipe catalog.`
+    : `"${recipeName}" was not approved.${feedback ? ` Feedback: ${feedback}` : ''}`;
+
+  await db.insert(notifications).values({
+    userId: creatorId,
+    type: 'recipe_reviewed',
+    title,
+    body,
+    linkUrl: `/recipes/${recipeId}`,
+  });
+}

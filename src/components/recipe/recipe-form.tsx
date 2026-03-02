@@ -19,9 +19,10 @@ interface RecipeFormProps {
     cookTimeMinutes: number | null;
     tags: string[] | null;
   };
+  isAdmin?: boolean;
 }
 
-export function RecipeForm({ recipe }: RecipeFormProps) {
+export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
   const router = useRouter();
   const isEdit = !!recipe;
 
@@ -67,10 +68,18 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
 
     if (isEdit) {
       router.push(`/recipes/${recipe.id}`);
-    } else {
+    } else if (isAdmin) {
       router.push(`/recipes/${res.data!.id}`);
+    } else {
+      router.push('/recipes/mine');
     }
   };
+
+  const submitLabel = isEdit
+    ? 'Save Changes'
+    : isAdmin
+      ? 'Create Recipe'
+      : 'Submit for Review';
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
@@ -147,7 +156,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
 
       <div className="flex gap-3">
         <Button type="submit" loading={loading}>
-          {isEdit ? 'Save Changes' : 'Create Recipe'}
+          {submitLabel}
         </Button>
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancel

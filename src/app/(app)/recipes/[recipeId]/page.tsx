@@ -1,8 +1,9 @@
-import { deleteRecipe } from '@/actions/recipes';
 import { getSession } from '@/lib/auth-utils';
 import { getRecipe } from '@/lib/queries/recipes';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
 import { NutritionSummary } from '@/components/recipe/nutrition-summary';
+import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
+import { ReviewActions } from '@/components/recipe/review-actions';
 import { TagList } from '@/components/recipe/tag-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -23,6 +24,15 @@ export default async function RecipeDetailPage({
   if (!recipe) notFound();
 
   const isAdmin = session.user.role === 'admin';
+  const isCreator = recipe.createdBy === session.user.id;
+
+  // Non-admin, non-creator can't see unapproved recipes
+  if (recipe.status !== 'approved' && !isAdmin && !isCreator) {
+    notFound();
+  }
+
+  const canEdit = isAdmin || (isCreator && recipe.status !== 'approved');
+  const canDelete = isAdmin || (isCreator && recipe.status !== 'approved');
   const totalTime = (recipe.prepTimeMinutes ?? 0) + (recipe.cookTimeMinutes ?? 0);
 
   return (
@@ -33,15 +43,29 @@ export default async function RecipeDetailPage({
         </Link>
         <span className="text-zinc-300">/</span>
         <h2 className="text-2xl font-bold">{recipe.name}</h2>
+        {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
       </div>
 
-      {isAdmin && (
+      {(canEdit || canDelete) && (
         <div className="flex gap-2">
-          <Link href={`/recipes/${recipeId}/edit`}>
-            <Button variant="secondary">Edit</Button>
-          </Link>
-          <DeleteRecipeButton recipeId={recipeId} />
+          {canEdit && (
+            <Link href={`/recipes/${recipeId}/edit`}>
+              <Button variant="secondary">Edit</Button>
+            </Link>
+          )}
+          {canDelete && <DeleteRecipeButton recipeId={recipeId} />}
         </div>
+      )}
+
+      {isAdmin && recipe.status === 'pending' && (
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold">Admin Review</h3>
+          </CardHeader>
+          <CardContent>
+            <ReviewActions recipeId={recipeId} />
+          </CardContent>
+        </Card>
       )}
 
       {recipe.description && (
@@ -75,10 +99,10 @@ export default async function RecipeDetailPage({
             <IngredientTable
               ingredients={recipe.ingredients}
               recipeId={recipeId}
-              editable={isAdmin}
+              editable={canEdit}
             />
           )}
-          {isAdmin && recipe.ingredients.length === 0 && (
+          {canEdit && recipe.ingredients.length === 0 && (
             <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
           )}
         </CardContent>

@@ -9,6 +9,52 @@ interface ScheduleWeek {
   swapMode: string;
 }
 
+export interface ScheduleContribution {
+  id: string;
+  householdId: string;
+  household: { id: string; name: string };
+}
+
+export interface ScheduleSwapDay {
+  id: string;
+  dayOfWeek: number;
+  label: string;
+  coversFrom: number;
+  coversTo: number;
+  contributions: ScheduleContribution[];
+}
+
+export interface ScheduleWeekWithContributions {
+  id: string;
+  startDate: Date;
+  status: string;
+  swapMode: string;
+  swapDays: ScheduleSwapDay[];
+}
+
+export async function getScheduleWithContributions(
+  startDate: Date,
+  endDate: Date,
+): Promise<ScheduleWeekWithContributions[]> {
+  return db.query.weeks.findMany({
+    where: and(gte(weeks.startDate, startDate), lte(weeks.startDate, endDate)),
+    with: {
+      swapDays: {
+        with: {
+          contributions: {
+            columns: { id: true, householdId: true },
+            with: {
+              household: { columns: { id: true, name: true } },
+            },
+          },
+        },
+        orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
+      },
+    },
+    orderBy: (w, { asc }) => [asc(w.startDate)],
+  }) as unknown as Promise<ScheduleWeekWithContributions[]>;
+}
+
 export async function getSchedule(startDate?: Date, endDate?: Date): Promise<ScheduleWeek[]> {
   const conditions = [];
   if (startDate) conditions.push(gte(weeks.startDate, startDate));

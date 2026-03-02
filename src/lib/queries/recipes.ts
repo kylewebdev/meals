@@ -14,6 +14,7 @@ export interface RecipeListItem {
   carbsG: number | null;
   fatG: number | null;
   tags: string[] | null;
+  status: string;
   createdAt: Date;
 }
 
@@ -30,6 +31,7 @@ export interface RecipeDetail {
   carbsG: number | null;
   fatG: number | null;
   tags: string[] | null;
+  status: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +51,7 @@ export interface RecipeDetail {
 
 export async function getRecipes(): Promise<RecipeListItem[]> {
   return db.query.recipes.findMany({
+    where: eq(recipes.status, 'approved'),
     columns: {
       id: true,
       name: true,
@@ -61,6 +64,7 @@ export async function getRecipes(): Promise<RecipeListItem[]> {
       carbsG: true,
       fatG: true,
       tags: true,
+      status: true,
       createdAt: true,
     },
     orderBy: (r, { desc }) => [desc(r.createdAt)],
@@ -79,4 +83,48 @@ export async function getRecipe(id: string): Promise<RecipeDetail | undefined> {
       },
     },
   }) as unknown as Promise<RecipeDetail | undefined>;
+}
+
+export async function getPendingRecipes(): Promise<RecipeListItem[]> {
+  return db.query.recipes.findMany({
+    where: eq(recipes.status, 'pending'),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      servings: true,
+      prepTimeMinutes: true,
+      cookTimeMinutes: true,
+      calories: true,
+      proteinG: true,
+      carbsG: true,
+      fatG: true,
+      tags: true,
+      status: true,
+      createdAt: true,
+    },
+    orderBy: (r, { asc }) => [asc(r.createdAt)],
+  }) as unknown as Promise<RecipeListItem[]>;
+}
+
+export async function getMyRecipes(userId: string): Promise<RecipeListItem[]> {
+  return db.query.recipes.findMany({
+    where: eq(recipes.createdBy, userId),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      servings: true,
+      prepTimeMinutes: true,
+      cookTimeMinutes: true,
+      calories: true,
+      proteinG: true,
+      carbsG: true,
+      fatG: true,
+      tags: true,
+      status: true,
+      createdAt: true,
+    },
+    orderBy: (r, { desc }) => [desc(r.createdAt)],
+  }) as unknown as Promise<RecipeListItem[]>;
 }

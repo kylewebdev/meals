@@ -16,7 +16,6 @@ export default async function RecipesPage({
   if (!session) redirect('/login');
 
   const { q } = await searchParams;
-  const isAdmin = session.user.role === 'admin';
   let allRecipes = await getRecipes();
 
   if (q) {
@@ -33,11 +32,14 @@ export default async function RecipesPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Recipes</h2>
-        {isAdmin && (
-          <Link href="/recipes/new">
-            <Button>Add Recipe</Button>
+        <div className="flex gap-2">
+          <Link href="/recipes/mine">
+            <Button variant="secondary">My Submissions</Button>
           </Link>
-        )}
+          <Link href="/recipes/new">
+            <Button>Submit Recipe</Button>
+          </Link>
+        </div>
       </div>
 
       <RecipeSearch />
@@ -45,7 +47,7 @@ export default async function RecipesPage({
       {allRecipes.length === 0 ? (
         <EmptyState
           title={q ? 'No recipes found' : 'No recipes yet'}
-          description={q ? 'Try a different search term.' : 'Add your first recipe to get started.'}
+          description={q ? 'Try a different search term.' : 'Submit your first recipe to get started.'}
         />
       ) : (
         <RecipeGrid recipes={allRecipes} />

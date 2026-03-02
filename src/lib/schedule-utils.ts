@@ -37,3 +37,45 @@ export function formatWeekRange(startDate: Date): string {
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
   return `${startDate.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
 }
+
+/**
+ * Returns a 2D array of dates for a month calendar grid (Mon-Sun columns).
+ * Pads with adjacent month dates to fill complete rows.
+ */
+export function getMonthCalendarDates(year: number, month: number): Date[][] {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  // Get the Monday of the week containing the 1st
+  const startOffset = (firstDay.getDay() + 6) % 7; // Mon=0, Sun=6
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(gridStart.getDate() - startOffset);
+
+  // Get the Sunday of the week containing the last day
+  const endOffset = (7 - ((lastDay.getDay() + 6) % 7 + 1)) % 7;
+  const gridEnd = new Date(lastDay);
+  gridEnd.setDate(gridEnd.getDate() + endOffset);
+
+  const rows: Date[][] = [];
+  const current = new Date(gridStart);
+
+  while (current <= gridEnd) {
+    const row: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      row.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+/**
+ * Calculate total portions for a swap day.
+ * headcount x number of days covered.
+ */
+export function getPortionCount(headcount: number, coversFrom: number, coversTo: number): number {
+  const days = coversTo - coversFrom + 1;
+  return headcount * days;
+}

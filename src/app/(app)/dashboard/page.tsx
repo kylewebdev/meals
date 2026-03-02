@@ -1,12 +1,14 @@
 import { getSession } from '@/lib/auth-utils';
 import { getCurrentWeek } from '@/lib/queries/schedule';
-import { getHeadcount } from '@/lib/queries/contributions';
+import { getHeadcount, getUpcomingSwapDays } from '@/lib/queries/contributions';
+import { MyTasks } from '@/components/dashboard/my-tasks';
+import { PortionDisplay } from '@/components/contributions/portion-display';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { formatWeekRange } from '@/lib/schedule-utils';
+import { formatWeekRange, getPortionCount } from '@/lib/schedule-utils';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -16,22 +18,30 @@ export default async function DashboardPage() {
 
   const currentWeek = await getCurrentWeek();
   const headcount = await getHeadcount(currentWeek?.id);
-
   const userHouseholdId = session.user.householdId;
+
+  const upcomingSwapDays = userHouseholdId
+    ? await getUpcomingSwapDays(userHouseholdId)
+    : [];
+
   const totalContributions = currentWeek?.swapDays.reduce(
     (sum, sd) => sum + sd.contributions.length,
     0,
   ) ?? 0;
 
-  // Check if the user's household has contributed to all swap days
-  const missingSwapDays = currentWeek?.swapDays.filter(
-    (sd) => userHouseholdId && !sd.contributions.some((c) => c.householdId === userHouseholdId),
-  ) ?? [];
+  const totalPortions = currentWeek?.swapDays.reduce(
+    (sum, sd) => sum + getPortionCount(headcount, sd.coversFrom, sd.coversTo),
+    0,
+  ) ?? 0;
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Dashboard</h2>
       <p className="text-zinc-600 dark:text-zinc-400">Welcome back, {session.user.name}.</p>
+
+      {userHouseholdId && upcomingSwapDays.length > 0 && (
+        <MyTasks swapDays={upcomingSwapDays} headcount={headcount} />
+      )}
 
       {currentWeek ? (
         <>
@@ -60,37 +70,36 @@ export default async function DashboardPage() {
                   <span className="text-sm text-zinc-500">Contributions: </span>
                   <span className="font-medium">{totalContributions}</span>
                 </div>
+                {totalPortions > 0 && (
+                  <div className="rounded bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                    <span className="text-sm text-zinc-500">Total portions: </span>
+                    <span className="font-medium">{totalPortions}</span>
+                  </div>
+                )}
               </div>
-
-              {missingSwapDays.length > 0 && userHouseholdId && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
-                  <p className="text-sm text-amber-800 dark:text-amber-300">
-                    Your household hasn&apos;t contributed to:{' '}
-                    {missingSwapDays.map((sd) => sd.label).join(', ')}.{' '}
-                    <Link
-                      href={`/week/${currentWeek.id}/edit`}
-                      className="font-medium underline"
-                    >
-                      Post your dish
-                    </Link>
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
 
           {currentWeek.swapDays.map((sd) => (
-            <SwapDaySection
-              key={sd.id}
-              label={sd.label}
-              dayOfWeek={sd.dayOfWeek}
-              coversFrom={sd.coversFrom}
-              coversTo={sd.coversTo}
-              location={sd.location}
-              time={sd.time}
-              notes={sd.notes}
-              contributions={sd.contributions}
-            />
+            <div key={sd.id} className="space-y-2">
+              <div className="flex items-center justify-end">
+                <PortionDisplay
+                  headcount={headcount}
+                  coversFrom={sd.coversFrom}
+                  coversTo={sd.coversTo}
+                />
+              </div>
+              <SwapDaySection
+                label={sd.label}
+                dayOfWeek={sd.dayOfWeek}
+                coversFrom={sd.coversFrom}
+                coversTo={sd.coversTo}
+                location={sd.location}
+                time={sd.time}
+                notes={sd.notes}
+                contributions={sd.contributions}
+              />
+            </div>
           ))}
         </>
       ) : (

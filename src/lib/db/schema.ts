@@ -16,6 +16,7 @@ import {
 export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
 export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
+export const recipeStatusEnum = pgEnum('recipe_status', ['pending', 'approved', 'rejected']);
 
 // ─── Auth tables (Better Auth managed) ──────────────────────────
 
@@ -184,13 +185,17 @@ export const recipes = pgTable(
     carbsG: integer('carbs_g'),
     fatG: integer('fat_g'),
     tags: text('tags').array(),
+    status: recipeStatusEnum('status').notNull().default('pending'),
     createdBy: text('created_by')
       .notNull()
       .references(() => user.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (table) => [index('recipes_created_by_idx').on(table.createdBy)],
+  (table) => [
+    index('recipes_created_by_idx').on(table.createdBy),
+    index('recipes_status_idx').on(table.status),
+  ],
 );
 
 export const recipeIngredients = pgTable(
@@ -221,6 +226,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'opt_out_reset',
   'contribution_reminder',
   'contribution_posted',
+  'recipe_reviewed',
 ]);
 
 export const notifications = pgTable(
