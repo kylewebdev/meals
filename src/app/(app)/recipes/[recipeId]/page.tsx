@@ -60,8 +60,8 @@ export default async function RecipeDetailPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
-          &larr; Recipes
+        <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="text-sm text-zinc-500 hover:text-zinc-700">
+          &larr; {weekId ? 'Back to Week' : 'Recipes'}
         </Link>
         <div className="mt-1 flex items-center gap-3">
           <h2 className="text-2xl font-bold">{recipe.name}</h2>

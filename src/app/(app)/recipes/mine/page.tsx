@@ -19,6 +19,9 @@ export default async function MyRecipesPage() {
 
   return (
     <div className="space-y-6">
+      <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
+        &larr; Recipes
+      </Link>
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">My Recipes</h2>
         <Link href="/recipes/new">

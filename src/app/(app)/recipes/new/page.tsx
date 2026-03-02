@@ -1,5 +1,6 @@
 import { getSession } from '@/lib/auth-utils';
 import { RecipeForm } from '@/components/recipe/recipe-form';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function NewRecipePage() {
@@ -10,6 +11,9 @@ export default async function NewRecipePage() {
 
   return (
     <div className="space-y-6">
+      <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
+        &larr; Recipes
+      </Link>
       <h2 className="text-2xl font-bold">
         {isAdmin ? 'New Recipe' : 'Submit Recipe'}
       </h2>
