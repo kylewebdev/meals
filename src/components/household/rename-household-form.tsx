@@ -36,7 +36,7 @@ export function RenameHouseholdForm({ householdId, currentName }: RenameHousehol
         />
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       </div>
-      <Button type="submit" size="sm" loading={loading} disabled={name.trim() === currentName}>
+      <Button type="submit" loading={loading} disabled={name.trim() === currentName}>
         Rename
       </Button>
     </form>

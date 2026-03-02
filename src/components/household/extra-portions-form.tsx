@@ -42,7 +42,7 @@ export function ExtraPortionsForm({ householdId, currentExtraPortions }: ExtraPo
           />
           {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         </div>
-        <Button type="submit" size="sm" loading={loading} disabled={value === currentExtraPortions}>
+        <Button type="submit" loading={loading} disabled={value === currentExtraPortions}>
           Save
         </Button>
       </div>
