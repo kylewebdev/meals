@@ -18,14 +18,10 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
   if (swapDays.length === 0) return null;
 
   return (
-    <Card>
+    <Card className="max-w-2xl">
       <CardHeader className="flex flex-row items-center justify-between">
         <h3 className="font-semibold">Your Assigned Recipes</h3>
-        <PortionDisplay
-          headcount={headcount}
-          coversFrom={swapDays[0].coversFrom}
-          coversTo={swapDays[0].coversTo}
-        />
+        <PortionDisplay headcount={headcount} />
       </CardHeader>
       <CardContent className="space-y-3">
         {swapDays.map((sd) => (

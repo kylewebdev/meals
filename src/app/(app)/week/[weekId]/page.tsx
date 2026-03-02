@@ -68,11 +68,7 @@ export default async function WeekDetailPage({
         week.swapDays.map((sd) => (
           <div key={sd.id} className="space-y-2">
             <div className="flex items-center justify-end">
-              <PortionDisplay
-                headcount={headcount}
-                coversFrom={sd.coversFrom}
-                coversTo={sd.coversTo}
-              />
+              <PortionDisplay headcount={headcount} />
             </div>
             <SwapDaySection
               label={sd.label}
