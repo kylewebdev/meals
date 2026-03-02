@@ -3,7 +3,7 @@ import { getRecipe } from '@/lib/queries/recipes';
 import { getRecipeRatings } from '@/lib/queries/ratings';
 import { getScalingContext } from '@/lib/queries/scaling-context';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
-import { NutritionSummary } from '@/components/recipe/nutrition-summary';
+import { NutritionChart } from '@/components/recipe/nutrition-chart';
 import { RatingList } from '@/components/recipe/rating-list';
 import { RatingWidget } from '@/components/recipe/rating-widget';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
@@ -109,12 +109,12 @@ export default async function RecipeDetailPage({
             <h3 className="font-semibold">Nutrition</h3>
           </CardHeader>
           <CardContent>
-            <NutritionSummary
+            <NutritionChart
               calories={recipe.calories}
               proteinG={recipe.proteinG}
               carbsG={recipe.carbsG}
               fatG={recipe.fatG}
-              className="max-w-none"
+              layout="split"
             />
           </CardContent>
         </Card>

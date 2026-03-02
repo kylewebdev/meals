@@ -1,6 +1,5 @@
 import { getSession } from '@/lib/auth-utils';
 import { getWeekWithContributions, getHeadcount } from '@/lib/queries/contributions';
-import { WeekNutritionSummary } from '@/components/contributions/week-nutrition-summary';
 import { WeekNutritionChart } from '@/components/contributions/week-nutrition-chart';
 import { PortionDisplay } from '@/components/contributions/portion-display';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
@@ -79,10 +78,7 @@ export default async function WeekDetailPage({
       )}
 
       {totalContributions > 0 && (
-        <>
-          <WeekNutritionChart swapDays={week.swapDays} />
-          <WeekNutritionSummary swapDays={week.swapDays} />
-        </>
+        <WeekNutritionChart swapDays={week.swapDays} />
       )}
     </div>
   );
