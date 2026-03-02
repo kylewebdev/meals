@@ -239,60 +239,6 @@ export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
   };
 }
 
-export interface AdminContribution {
-  id: string;
-  householdId: string;
-  household: { id: string; name: string };
-  recipe: { id: string; name: string } | null;
-}
-
-export interface AdminSwapDay {
-  id: string;
-  label: string;
-  dayOfWeek: number;
-  contributions: AdminContribution[];
-}
-
-export interface AdminWeek {
-  id: string;
-  startDate: Date;
-  status: string;
-  swapMode: string;
-  swapDays: AdminSwapDay[];
-  _count: { contributions: number };
-}
-
-export async function getAllWeeks(): Promise<AdminWeek[]> {
-  const rawWeeks = await db.query.weeks.findMany({
-    with: {
-      contributions: { columns: { id: true } },
-      swapDays: {
-        columns: { id: true, label: true, dayOfWeek: true },
-        with: {
-          contributions: {
-            columns: { id: true, householdId: true },
-            with: {
-              household: { columns: { id: true, name: true } },
-              recipe: { columns: { id: true, name: true } },
-            },
-          },
-        },
-        orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
-      },
-    },
-    orderBy: (w, { asc }) => [asc(w.startDate)],
-  }) as unknown as (Omit<AdminWeek, '_count'> & { contributions: { id: string }[] })[];
-
-  return rawWeeks.map((w) => ({
-    id: w.id,
-    startDate: w.startDate,
-    status: w.status,
-    swapMode: w.swapMode,
-    swapDays: w.swapDays,
-    _count: { contributions: w.contributions.length },
-  }));
-}
-
 // ─── Opt-out queries ──────────────────────────────────────────
 
 export async function getOptOutStatus(userId: string, weekId: string): Promise<boolean> {

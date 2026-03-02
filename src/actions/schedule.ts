@@ -12,17 +12,6 @@ import {
 import { eq, gte, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-export async function deleteWeek(weekId: string) {
-  const auth = await requireAdmin();
-  if (!auth.success) return auth;
-
-  await db.delete(weeks).where(eq(weeks.id, weekId));
-
-  revalidatePath('/schedule');
-  revalidatePath('/admin/swap-config');
-  return { success: true as const, data: null };
-}
-
 /**
  * Auto-populate weeks from swap_settings.startDate through end of next month.
  * Creates weeks, swap_days (with recipe assignments), and contributions for

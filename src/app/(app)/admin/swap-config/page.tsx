@@ -6,13 +6,10 @@ import {
   getHouseholdsInOrder,
   getOrCreateSwapSettings,
 } from '@/lib/queries/swap-settings';
-import { getAllWeeks } from '@/lib/queries/schedule';
 import { SettingsForm } from '@/components/schedule/settings-form';
 import { RecipeOrderList } from '@/components/schedule/recipe-order-list';
 import { HouseholdOrderList } from '@/components/schedule/household-order-list';
-import { AdminWeekList } from '@/components/schedule/admin-week-list';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -22,13 +19,12 @@ export default async function AdminSwapConfigPage() {
 
   const settings = await getOrCreateSwapSettings();
 
-  const [orderedRecipes, allRecipes, orderedHouseholds, allHouseholds, weeksList] =
+  const [orderedRecipes, allRecipes, orderedHouseholds, allHouseholds] =
     await Promise.all([
       getApprovedRecipesInOrder(settings.recipeOrder as string[]),
       getAllApprovedRecipes(),
       getHouseholdsInOrder(settings.householdOrder as string[]),
       getAllHouseholds(),
-      getAllWeeks(),
     ]);
 
   return (
@@ -82,25 +78,6 @@ export default async function AdminSwapConfigPage() {
             allHouseholds={allHouseholds}
             mode={settings.householdOrderMode as string}
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Scheduled Weeks ({weeksList.length})</h3>
-          <p className="text-sm text-zinc-500">
-            Weeks auto-populate through end of next month when pages load.
-          </p>
-        </CardHeader>
-        <CardContent>
-          {weeksList.length === 0 ? (
-            <EmptyState
-              title="No weeks yet"
-              description="Configure settings above, then visit the schedule page to auto-generate weeks."
-            />
-          ) : (
-            <AdminWeekList weeks={weeksList} />
-          )}
         </CardContent>
       </Card>
     </div>
