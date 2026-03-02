@@ -8,10 +8,9 @@ interface AppShellProps {
   userName: string;
   userRole: string;
   notificationSlot?: ReactNode;
-  optOutBanner?: ReactNode;
 }
 
-export function AppShell({ children, userName, userRole, notificationSlot, optOutBanner }: AppShellProps) {
+export function AppShell({ children, userName, userRole, notificationSlot }: AppShellProps) {
   const isAdmin = userRole === 'admin';
 
   return (
@@ -34,7 +33,6 @@ export function AppShell({ children, userName, userRole, notificationSlot, optOu
           </div>
         </div>
       </header>
-      {optOutBanner}
       <main className="mx-auto max-w-5xl p-4 md:p-6">{children}</main>
     </div>
   );

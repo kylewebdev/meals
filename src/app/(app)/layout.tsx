@@ -1,12 +1,10 @@
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { notifications, weekOptOuts } from '@/lib/db/schema';
+import { notifications } from '@/lib/db/schema';
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/layout/providers';
-import { OptOutBanner } from '@/components/layout/opt-out-banner';
 import { NotificationBell } from '@/components/notifications/notification-bell';
-import { getUserCurrentWeekOptOut, getUnnotifiedResets } from '@/lib/queries/schedule';
-import { and, eq, isNull, count, inArray } from 'drizzle-orm';
+import { and, eq, isNull, count } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -19,8 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const userId = session.user.id;
 
-  // Check opt-out status and unnotified resets in parallel with notification queries
-  const [unreadResult, recentNotifications, currentOptOut, unnotifiedResets] = await Promise.all([
+  const [unreadResult, recentNotifications] = await Promise.all([
     db
       .select({ count: count() })
       .from(notifications)
@@ -31,34 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       orderBy: (n, { desc }) => [desc(n.createdAt)],
       limit: 20,
     }),
-    getUserCurrentWeekOptOut(userId),
-    getUnnotifiedResets(userId),
   ]);
-
-  // Handle reset notifications for past-week opt-outs
-  if (unnotifiedResets.length > 0) {
-    const resetIds = unnotifiedResets.map((r) => r.id);
-
-    await Promise.all([
-      // Create notifications for each reset
-      db.insert(notifications).values(
-        unnotifiedResets.map((r) => ({
-          userId,
-          type: 'opt_out_reset' as const,
-          title: "You're back in!",
-          body: "Your opt-out has reset — you're opted in for this week's meals.",
-          linkUrl: '/profile',
-        })),
-      ),
-      // Mark them as notified
-      db
-        .update(weekOptOuts)
-        .set({ resetNotified: true })
-        .where(inArray(weekOptOuts.id, resetIds)),
-    ]);
-  }
-
-  const isOptedOut = !!currentOptOut;
 
   return (
     <Providers>
@@ -71,7 +41,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             notifications={recentNotifications}
           />
         }
-        optOutBanner={isOptedOut ? <OptOutBanner /> : undefined}
       >
         {children}
       </AppShell>

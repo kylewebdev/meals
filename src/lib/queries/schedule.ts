@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { weekOptOuts, weeks } from '@/lib/db/schema';
-import { eq, gte, lte, and, lt } from 'drizzle-orm';
+import { weeks } from '@/lib/db/schema';
+import { gte, lte, and } from 'drizzle-orm';
 import { computeNutrition } from './recipes';
 
 interface ScheduleWeek {
@@ -237,79 +237,4 @@ export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
       })),
     })),
   };
-}
-
-// ─── Opt-out queries ──────────────────────────────────────────
-
-export async function getOptOutStatus(userId: string, weekId: string): Promise<boolean> {
-  const record = await db.query.weekOptOuts.findFirst({
-    where: and(eq(weekOptOuts.userId, userId), eq(weekOptOuts.weekId, weekId)),
-  });
-  return !!record;
-}
-
-export interface OptOutRecord {
-  id: string;
-  userId: string;
-  weekId: string;
-  resetNotified: boolean;
-  createdAt: Date;
-}
-
-export async function getUserCurrentWeekOptOut(
-  userId: string,
-): Promise<OptOutRecord | undefined> {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-  monday.setHours(0, 0, 0, 0);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
-  const currentWeek = await db.query.weeks.findFirst({
-    where: and(gte(weeks.startDate, monday), lte(weeks.startDate, sunday)),
-    columns: { id: true },
-  });
-
-  if (!currentWeek) return undefined;
-
-  return db.query.weekOptOuts.findFirst({
-    where: and(
-      eq(weekOptOuts.userId, userId),
-      eq(weekOptOuts.weekId, currentWeek.id),
-    ),
-  }) as unknown as Promise<OptOutRecord | undefined>;
-}
-
-export interface UnnotifiedReset {
-  id: string;
-  weekId: string;
-}
-
-export async function getUnnotifiedResets(userId: string): Promise<UnnotifiedReset[]> {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-  monday.setHours(0, 0, 0, 0);
-
-  const results = await db
-    .select({
-      id: weekOptOuts.id,
-      weekId: weekOptOuts.weekId,
-    })
-    .from(weekOptOuts)
-    .innerJoin(weeks, eq(weekOptOuts.weekId, weeks.id))
-    .where(
-      and(
-        eq(weekOptOuts.userId, userId),
-        eq(weekOptOuts.resetNotified, false),
-        lt(weeks.startDate, monday),
-      ),
-    );
-
-  return results;
 }

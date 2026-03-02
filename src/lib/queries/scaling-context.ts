@@ -1,8 +1,8 @@
 import { db } from '@/lib/db';
-import { contributions, households, user, weekOptOuts } from '@/lib/db/schema';
+import { contributions, households, user } from '@/lib/db/schema';
 import { getPortionCount } from '@/lib/schedule-utils';
 import { getHeadcount } from './contributions';
-import { and, count, eq, isNull, isNotNull, sum } from 'drizzle-orm';
+import { and, count, eq, isNotNull, sum } from 'drizzle-orm';
 
 export interface HouseholdPortion {
   householdId: string;
@@ -23,7 +23,6 @@ export interface ScalingContext {
 }
 
 async function getHouseholdPortions(
-  weekId: string,
   coversFrom: number,
   coversTo: number,
 ): Promise<HouseholdPortion[]> {
@@ -37,11 +36,7 @@ async function getHouseholdPortions(
     })
     .from(user)
     .innerJoin(households, eq(user.householdId, households.id))
-    .leftJoin(
-      weekOptOuts,
-      and(eq(weekOptOuts.userId, user.id), eq(weekOptOuts.weekId, weekId)),
-    )
-    .where(and(isNull(weekOptOuts.id), isNotNull(user.householdId)))
+    .where(isNotNull(user.householdId))
     .groupBy(households.id, households.name, households.extraPortions)
     .orderBy(households.name);
 
@@ -84,9 +79,8 @@ export async function getScalingContext(
   if (!contribution) return null;
 
   const [headcount, householdPortions] = await Promise.all([
-    getHeadcount(weekId),
+    getHeadcount(),
     getHouseholdPortions(
-      weekId,
       contribution.swapDay.coversFrom,
       contribution.swapDay.coversTo,
     ),

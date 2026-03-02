@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { contributions, households, swapDays, user, weekOptOuts, weeks } from '@/lib/db/schema';
-import { and, eq, count, isNull, inArray, gte, sum, sql } from 'drizzle-orm';
+import { contributions, households, swapDays, user, weeks } from '@/lib/db/schema';
+import { and, eq, count, inArray, gte, sum } from 'drizzle-orm';
 import { computeNutrition } from './recipes';
 
 export interface ContributionItem {
@@ -225,36 +225,10 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
   return result;
 }
 
-export async function getHeadcount(weekId?: string): Promise<number> {
-  if (!weekId) {
-    const [[userResult], [hhResult]] = await Promise.all([
-      db.select({ total: sum(user.portionsPerMeal) }).from(user),
-      db.select({ total: sum(households.extraPortions) }).from(households),
-    ]);
-    return (Number(userResult?.total) || 0) + (Number(hhResult?.total) || 0);
-  }
-
-  // Users not opted out of this week
-  const [userResult] = await db
-    .select({ total: sum(user.portionsPerMeal) })
-    .from(user)
-    .leftJoin(
-      weekOptOuts,
-      and(eq(weekOptOuts.userId, user.id), eq(weekOptOuts.weekId, weekId)),
-    )
-    .where(isNull(weekOptOuts.id));
-
-  // Extra portions from households that have at least one non-opted-out member
-  const [hhResult] = await db
-    .select({ total: sum(households.extraPortions) })
-    .from(households)
-    .where(
-      sql`exists (
-        select 1 from "user" u
-        left join "week_opt_outs" woo on woo."user_id" = u."id" and woo."week_id" = ${weekId}
-        where u."household_id" = ${households.id} and woo."id" is null
-      )`,
-    );
-
+export async function getHeadcount(): Promise<number> {
+  const [[userResult], [hhResult]] = await Promise.all([
+    db.select({ total: sum(user.portionsPerMeal) }).from(user),
+    db.select({ total: sum(households.extraPortions) }).from(households),
+  ]);
   return (Number(userResult?.total) || 0) + (Number(hhResult?.total) || 0);
 }
