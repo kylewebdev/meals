@@ -2,10 +2,10 @@
 
 ## Status
 
-**Project state: Phase 0 complete — ready for Phase 1**
+**Project state: Phase 2 complete — ready for Phase 3**
 Last updated: 2026-03-01
 
-Phase 0 bootstrap is done: Next.js app scaffolded, database schema migrated to Neon, Better Auth configured with email/password login and invite-based registration.
+Phases 0–2 are done: Next.js app scaffolded, database schema migrated to Neon, Better Auth configured, full UI built out with households, recipes, dietary profiles, notifications, and the swap model restructure (single/dual swap modes, contributions, swap day logistics, week nutrition summary).
 
 ---
 
@@ -13,129 +13,138 @@ Phase 0 bootstrap is done: Next.js app scaffolded, database schema migrated to N
 
 | Decision            | Choice                                                                   |
 | ------------------- | ------------------------------------------------------------------------ |
-| **Framework**       | Next.js 15 (App Router) + TypeScript                                     |
+| **Framework**       | Next.js 16 (App Router) + TypeScript                                     |
 | **Database**        | Postgres via Neon                                                        |
 | **ORM**             | Drizzle ORM                                                              |
-| **Auth**            | Magic link + email/password (Better Auth or Auth.js), invite-only signup |
+| **Auth**            | Email/password (Better Auth), invite-only signup                         |
 | **Styling**         | Tailwind CSS v4                                                          |
 | **Hosting**         | Vercel                                                                   |
 | **Package manager** | pnpm                                                                     |
-| **PWA**             | Deferred to Phase 2 — mobile-responsive from day one                     |
+| **Meal model**      | Swap model (everyone cooks, meet to swap) — not rotation                 |
+| **PWA**             | Deferred — mobile-responsive from day one                                |
 
 Full conventions documented in `docs/system/conventions.md`.
 
 ---
 
-## Phase 0 — Project Bootstrap
+## Phase 0 — Project Bootstrap (COMPLETE)
 
 > Set up the development environment and foundational project structure.
 
-### Step 1: Initialize the project
-
-- [x] Scaffold Next.js 15 app with TypeScript, Tailwind CSS v4, and pnpm
+- [x] Scaffold Next.js app with TypeScript, Tailwind CSS v4, and pnpm
 - [x] Configure ESLint + Prettier
 - [x] Initialize git repository and make initial commit
 - [x] Fill in `docs/system/conventions.md` with chosen patterns
-
-### Step 2: Set up the database and ORM
-
 - [x] Create Neon project and configure `DATABASE_URL`
 - [x] Install and configure Drizzle ORM + drizzle-kit
-- [x] Define the core schema in `src/lib/db/schema.ts` (households, weeks, meal_plan_entries, invites, auth tables)
+- [x] Define the core schema in `src/lib/db/schema.ts`
 - [x] Run initial migration
-
-### Step 3: Set up auth
-
-- [x] Install and configure auth library (Better Auth)
-- [x] Implement email/password login
-- [x] Implement invite-based signup (admin creates invite → member registers)
-- [x] Role system: admin vs. member (cooking group role is derived from the rotation)
+- [x] Install and configure Better Auth with email/password
+- [x] Implement invite-based signup (admin creates invite, member registers)
+- [x] Role system: admin vs. member
 - [x] Auth middleware to protect `(app)` route group
 
 ---
 
-## Phase 1 — MVP
+## Phase 1 — MVP Features (COMPLETE)
 
-> The minimum usable version: households can browse recipes, see who's cooking, select meals from the catalog, and coordinate logistics. Follows the priority order from PRD §8.
+> Core UI, household management, recipes, dietary profiles, and notifications.
 
-### Step 4: Household setup & management
-
-- [ ] Admin can create/remove households
-- [ ] Admin can designate a head of household for each household
-- [ ] Head of household can invite members to their household
-- [ ] Head of household can remove members from their household
-- [ ] Members can view their household profile
-- [ ] Schema migration: add `head_id` to households, update invites to support head-of-household invitations
-
-### Step 5: Recipe catalog
-
-- [ ] Schema migration: add `recipes`, `recipe_ingredients` tables
-- [ ] Admin can create a recipe (name, description, instructions, servings, prep/cook time)
-- [ ] Admin can add ingredients to a recipe (name, quantity, unit, per-ingredient nutrition)
-- [ ] Per-recipe nutrition summary (computed from ingredients, with manual override option)
-- [ ] Admin can edit and remove recipes
-- [ ] Optional tags/categories on recipes (e.g., "vegetarian", "quick")
-- [ ] All members can browse and view the recipe catalog
-
-### Step 6: Rotation schedule & calendar view
-
-- [ ] Admin sets the rotation order across households
-- [ ] Auto-generate future weeks based on the rotation
-- [ ] Calendar/timeline view showing which household cooks each week
-- [ ] Current week highlighted
-
-### Step 7: Weekly meal plan posting
-
-- [ ] Schema migration: update `meal_plan_entries` to reference `recipe_id`, add modification fields
-- [ ] Cooking household selects recipes from the catalog for lunch & dinner each day (Mon–Sun)
-- [ ] Cooking household can note recipe modifications with updated nutrition
-- [ ] Cooking household can update the plan during the week
-- [ ] All members can view current and past meal plans with recipe details + nutrition
-- [ ] Headcount derived from household membership (no manual RSVP)
-
-### Step 8: Pickup / delivery notes
-
-- [ ] Cooking household posts pickup location, times, and notes
-- [ ] Info displayed prominently on the weekly view
-
-### Step 9: Dietary profiles & aggregated summary
-
-- [ ] Members set allergies, dietary preferences, and free-text notes on their profile
-- [ ] Cooking household sees an aggregated dietary summary across all participating households
-
-### Step 10: Notifications (in-app)
-
-- [ ] Reminder to cooking household before their week starts
-- [ ] Alert when meal plan is posted
-- [ ] Optional alert when a new recipe is added to the catalog
+- [x] Admin can create/remove households
+- [x] Admin can designate a head of household
+- [x] Head of household can invite/remove members
+- [x] Members can view their household profile
+- [x] Recipe catalog — admin CRUD with ingredients, nutrition, tags
+- [x] All members can browse and view the recipe catalog
+- [x] Dietary profiles — allergies, preferences, free-text notes on user profile
+- [x] Aggregated dietary summary for meal planning
+- [x] In-app notifications (contribution reminders, new recipes, opt-out resets)
+- [x] App shell and navigation
 
 ---
 
-## Phase 2 — Enhancements (Post-MVP)
+## Phase 2 — Swap Model Restructure (COMPLETE)
+
+> Replaced the old rotation model (one household cooks per week) with the swap model (everyone cooks, meet to swap).
+
+- [x] New schema: `weeks` with `swap_mode` (single/dual), no `household_id`
+- [x] New table: `swap_days` — per-week swap day config with logistics (location, time, notes)
+- [x] New table: `contributions` — one per household per swap day (recipe or dish_name, notes, servings)
+- [x] Dropped old tables: `meal_plan_entries`, `suggestions`, `votes`, `rsvps`
+- [x] Dropped old enum: `meal_type`
+- [x] Removed `rotation_position` from households
+- [x] Contribution posting per household per swap day
+- [x] Swap day logistics (admin-managed)
+- [x] Week nutrition summary across contributions
+- [x] Schedule calendar shows swap mode instead of cooking household
+- [x] Week opt-outs (households can sit out a week)
+
+---
+
+## Phase 3 — Polish & Remaining MVP Gaps
+
+> Fill in remaining gaps, improve UX, and prepare for real-world use.
+
+### Step 1: Dashboard & week detail improvements
+
+- [ ] Dashboard home page: current week at a glance with swap mode, logistics, contributions
+- [ ] Week detail page: full view with all contributions, nutrition breakdown, dietary summary
+- [ ] Quick-add contribution from dashboard
+
+### Step 2: Headcount & portioning
+
+- [ ] Derive headcount from household membership
+- [ ] Support additional non-account members per household (e.g., kids)
+- [ ] Show total headcount on week view so households know how many servings to prepare
+
+### Step 3: Admin swap configuration UX
+
+- [ ] Admin can configure swap mode and swap days for upcoming weeks
+- [ ] Admin can set default swap day logistics
+- [ ] Auto-generate upcoming weeks with default swap configuration
+
+### Step 4: Notification improvements
+
+- [ ] Contribution reminder before swap day
+- [ ] Alert when all households have posted contributions for a swap day
+- [ ] Notification preferences per user
+
+### Step 5: PWA support
+
+- [ ] Service worker + web app manifest
+- [ ] Installable on mobile devices
+- [ ] Offline-capable for viewing cached data
+
+---
+
+## Phase 4 — Enhancements (Post-MVP)
 
 > Features from PRD §9, to be prioritized after MVP launch.
 
-- [ ] **Swap requests** — households can swap cooking weeks
-- [ ] **Grocery list generation** — auto-generate a shopping list from selected recipes, scaled to headcount
-- [ ] **Ratings / feedback** — thumbs-up-only ratings on the week's meals
-- [ ] **Photo sharing** — cooking group or members post meal photos
+- [ ] **Grocery list generation** — auto-generate a shopping list from contribution recipe, scaled to headcount
+- [ ] **Ratings / feedback** — thumbs-up ratings on contributions
+- [ ] **Photo sharing** — households post photos of their dishes
 - [ ] **Recipe import** — import recipes from external sources (URLs, structured data)
 - [ ] **Push notifications** — via PWA or native wrapper
+- [ ] **Per-day opt-out** — individual members can mark specific days they won't be eating
+- [ ] **Cost sharing** — track and split ingredient costs across households
 
 ---
 
 ## Completed Work
 
-- [x] Project scaffolding — docs structure (`docs/system/`), assistant instructions, PRD, conventions template, build plan template
+- [x] Project scaffolding — docs structure, assistant instructions, PRD, conventions, build plan
 - [x] AI assistant entry points — `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`
-- [x] Tech stack decisions resolved (Next.js 15, Neon Postgres, Drizzle, Tailwind v4, Vercel)
+- [x] Tech stack decisions resolved
 - [x] Conventions documented in `docs/system/conventions.md`
-- [x] Phase 0 — Project Bootstrap (Next.js scaffold, Drizzle ORM + Neon, Better Auth)
+- [x] Phase 0 — Project Bootstrap
+- [x] Phase 1 — MVP Features (UI, households, recipes, dietary, notifications)
+- [x] Phase 2 — Swap Model Restructure (single/dual swap, contributions, swap day logistics)
 
 ---
 
 ## Notes
 
-- The PRD is thorough and stable — see `docs/system/context/PRD.md` for full requirements and data model
-- Schema changes needed: `suggestions`, `votes`, and `rsvps` tables from Phase 0 are no longer in the PRD — remove in the Step 4 migration
-- Next step: Phase 1, Step 4 — Household setup & management
+- The PRD has been updated to reflect the swap model — see `docs/system/context/PRD.md`
+- Old rotation-based tables and enums have been dropped via migrations 0002 and 0005
+- Next step: Phase 3 — polish, headcount, admin UX, and PWA

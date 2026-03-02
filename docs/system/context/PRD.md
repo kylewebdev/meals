@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-A web app that helps an extended family coordinate a weekly meal prep rotation. Each week, one household is responsible for preparing lunch and dinner for the entire family. The rotation cycles through 5–6 households. The app provides scheduling, a curated recipe catalog with full nutritional data, RSVP tracking, and logistics coordination.
+A web app that helps an extended family coordinate a weekly meal-swap co-op. Every household cooks one dish (or two in dual-swap weeks) and they all meet up to swap, so each family goes home with a variety of meals. The app coordinates scheduling, swap logistics, a shared recipe catalog with nutritional data, and contribution tracking across 5–6 households.
 
 ---
 
@@ -10,27 +10,36 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
 
 ### Households (Groups)
 
-- A **household** is the basic unit of the rotation. Each household takes a turn cooking for the full week.
+- A **household** is the basic unit of the co-op. Every household participates every week.
 - Each household contains one or more **individual members**, each with their own login.
 - Each household has a designated **head of household** who manages membership for their household.
 
-### Rotation Cycle
+### Swap Model
 
-- The rotation is a repeating weekly schedule across all participating households (5–6 groups).
-- A full cycle lasts 5–6 weeks before repeating.
-- The admin can reorder the rotation, add new households, or remove households at any time.
+- **Every household cooks every week.** There is no rotation — everyone contributes.
+- Each household prepares one dish per swap day and brings it to the swap meetup.
+- The week's **swap mode** determines how many swap days occur:
+  - **Single swap:** One swap day (Sunday) covers the full week (Mon–Fri). Each household makes 1 dish.
+  - **Dual swap:** Two swap days. Saturday swap covers Mon–Tue; Wednesday swap covers Wed–Fri. Each household makes 2 dishes total (one per swap day).
+- At the swap, households exchange portions so everyone goes home with a variety of meals for the covered days.
+
+### Contributions
+
+- A **contribution** is what a household brings to a specific swap day — one dish per household per swap day.
+- A contribution can reference a recipe from the catalog or just be a free-text dish name.
+- Contributions include optional notes and serving count.
+
+### Swap Days
+
+- A **swap day** is a scheduled meetup within a week where households physically exchange food.
+- Each swap day has logistics info: location, time, and notes (managed by the admin).
+- Swap days define a coverage range (e.g., "covers Mon–Fri" or "covers Mon–Tue").
 
 ### Recipe Catalog
 
-- Admins maintain a **curated recipe catalog** — the set of approved meals that households rotate through.
+- A shared **recipe catalog** of approved meals that any household can choose from when posting their contribution.
 - Each recipe includes full **nutritional facts** (per-ingredient and per-recipe summary), preparation instructions, and serving details.
-- The catalog is the single source of truth for what can be planned each week.
-
-### Weekly Responsibility
-
-- The assigned household preps **lunch and dinner** for the entire family for that week.
-- They **select meals from the recipe catalog** when posting their weekly plan.
-- They may **modify a recipe** for their week (e.g., swap an ingredient, add a side), but must document the changes and update the nutritional facts. The household that modifies a recipe accepts the additional ingredient costs.
+- Using a catalog recipe for a contribution is optional — households can also enter a free-text dish name.
 
 ---
 
@@ -39,7 +48,7 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
 ### Admin
 
 - One designated user (or a small number) who manages the system.
-- **Can:** Create/remove households, set/modify the rotation order, manage the recipe catalog, designate heads of household, resolve disputes, manage system settings.
+- **Can:** Create/remove households, configure swap days and swap mode for each week, manage the recipe catalog, designate heads of household, resolve disputes, manage system settings.
 
 ### Head of Household
 
@@ -49,12 +58,7 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
 ### Household Member
 
 - Any individual within a household.
-- **Can:** Log in, browse the recipe catalog, view the schedule.
-
-### Cooking Group (role is temporary — assigned by the rotation)
-
-- The household currently on cooking duty for the week.
-- **Can (in addition to member abilities):** Select recipes for the week's meal plan, note any recipe modifications (with updated nutrition), post pickup/delivery notes, mark meals as complete.
+- **Can:** Log in, browse the recipe catalog, view the schedule, post their household's contribution for the week.
 
 ---
 
@@ -63,13 +67,13 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
 ### 4.1 Schedule / Calendar View
 
 - A clear calendar or timeline view showing:
-  - **Which household** is cooking each week
-  - **What meals** are planned (once the cooking group posts their plan)
+  - **Swap mode** for each week (single or dual)
+  - **Swap day details** — when and where the swap meetups happen
+  - **Contributions** — what each household is bringing (once posted)
   - **Current week** highlighted
 - Users can look ahead to see upcoming weeks and look back at past weeks.
-- The rotation auto-generates future weeks based on the set order.
 
-### 4.2 Recipe Catalog (Admin-Managed)
+### 4.2 Recipe Catalog
 
 - Admins create and maintain a catalog of approved recipes.
 - Each recipe includes:
@@ -83,30 +87,31 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
 - Only admins can add, edit, or remove recipes from the catalog.
 - All members can browse the catalog at any time.
 
-### 4.3 Weekly Meal Plan
+### 4.3 Weekly Contributions
 
-- Each week has a dedicated page/card where the cooking group posts their plan.
-- Fields per day (Monday–Sunday):
-  - **Lunch** — selected from the recipe catalog
-  - **Dinner** — selected from the recipe catalog
-- The cooking group can update the plan throughout the week if things change.
-- Past weeks' meal plans remain visible as a history/reference.
+- Every household posts what they're bringing to each swap day.
+- A contribution includes:
+  - **Dish** — selected from the recipe catalog OR entered as a free-text dish name
+  - **Notes** — any additional info (e.g., "extra spicy batch", "nut-free version")
+  - **Servings** — how many servings they're making
+- One contribution per household per swap day (enforced by unique constraint).
+- Households can update their contribution until the swap day passes.
+- Past weeks' contributions remain visible as history/reference.
 
-### 4.4 Recipe Modifications
+### 4.4 Swap Day Logistics
 
-- When posting their meal plan, the cooking household may **modify a recipe** for a specific day.
-- Modifications must include:
-  - **What changed** — free-text description of ingredient swaps, additions, or removals
-  - **Updated nutrition** — the modified nutritional facts reflecting the changes
-- The original recipe in the catalog is never altered — modifications are tied to that specific meal plan entry.
-- The household making modifications accepts any additional ingredient costs incurred by deviating from the planned recipe.
+- Each swap day has logistics info managed by the admin:
+  - **Location** (e.g., "123 Oak St — Aunt Maria's house")
+  - **Time** (e.g., "5:00 PM")
+  - **Notes** (e.g., "Bring your own containers", "Park in the back")
+- This info is displayed prominently on the weekly view.
 
 ### 4.5 Household Headcount
 
 - Headcount is **derived from household membership** — each household's member count determines their portion.
-- No manual RSVP headcount is needed. The cooking group sees the total number of people across all households.
-- Also a household should be able to elect if they have a kid or another member that's not going to have an account for that household as an additional person for a meal.
-- Optional: a household can mark themselves as **out for the week** if they won't be participating.
+- No manual RSVP headcount is needed. Each household knows how many portions to prepare based on total family size.
+- A household should be able to indicate if they have a kid or another member that's not going to have an account for that household as an additional person for a meal.
+- Optional: a household can mark themselves as **out for the week** if they won't be participating (week opt-outs).
 
 ### 4.6 Dietary Restrictions & Allergies
 
@@ -114,21 +119,19 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
   - Allergies (e.g., peanuts, shellfish, dairy)
   - Dietary preferences (e.g., vegetarian, halal, gluten-free)
   - Free-text notes (e.g., "doesn't like spicy food")
-- The cooking group sees an **aggregated dietary summary** when planning their week — a quick-glance list of everything they need to accommodate across all participating households.
+- All households see an **aggregated dietary summary** when planning their contribution — a quick-glance list of everything they need to accommodate across all participating households.
 
-### 4.7 Pickup / Delivery Notes
+### 4.7 Week Nutrition Summary
 
-- Each week, the cooking group posts logistics info:
-  - **Pickup location** (e.g., "123 Oak St — Aunt Maria's house")
-  - **Pickup times** or schedule (e.g., "Meals ready by 5pm daily" or specific per-day times)
-  - **Additional notes** (e.g., "Bring your own containers" or "I'll drop off to anyone who can't pick up")
-- This info is displayed prominently on the weekly view.
+- Each week shows an aggregated nutrition summary across all contributions.
+- Nutrition data comes from linked catalog recipes (contributions with free-text dish names won't have nutrition data unless the recipe is linked).
 
 ### 4.8 Notifications
 
-- **Reminders to the upcoming cooking group:** "Your cooking week starts in 3 days" (configurable).
-- **Meal plan posted:** Alert all members when the cooking group publishes their menu.
+- **Contribution reminder:** "Don't forget to post what you're bringing this week."
+- **Contribution posted:** Alert members when a household posts their contribution.
 - **New recipe added:** Optional notification when an admin adds a new recipe to the catalog.
+- **Opt-out reset:** Notification when a household's opt-out status resets for a new week.
 - Delivery method: In-app notifications at minimum. Email or push notifications as a future enhancement.
 
 ---
@@ -137,33 +140,33 @@ A web app that helps an extended family coordinate a weekly meal prep rotation. 
 
 ### 5.1 New Family Onboarding
 
-1. Admin creates households, sets the rotation order, and designates a head for each household.
-2. Head of household invites their own members via email or share link.
+1. Admin creates households and designates a head for each household.
+2. Head of household invites their own members via email invite link.
 3. Each member creates an account, joins their household, and fills out their dietary profile.
 
 ### 5.2 Typical Weekly Cycle
 
-| Timeframe               | Action                                                                                    |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| **Sunday (prior week)**  | Cooking group reviews household counts + dietary summary, browses recipe catalog           |
-| **Sunday–Monday**        | Cooking group selects recipes for the week, notes any modifications, posts pickup details  |
-| **Monday–Sunday**        | Cooking group preps and distributes meals                                                  |
-| **Next Monday**          | Rotation advances to the next household                                                    |
+| Timeframe              | Action                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| **Before swap day**    | All households decide what they'll cook, browse recipe catalog, check dietary summary       |
+| **Before swap day**    | Each household posts their contribution (dish, notes, servings)                             |
+| **Swap day**           | Households meet at the designated location/time and exchange dishes                         |
+| **After swap**         | Families enjoy a variety of meals for the covered days                                      |
 
-_(These timings are defaults — the admin can configure cutoff days.)_
+_(In dual-swap weeks, this cycle happens twice: once for the Saturday swap and once for the Wednesday swap.)_
 
-### 5.3 Selecting Recipes for the Week
+### 5.3 Posting a Contribution
 
-1. Cooking group navigates to the weekly meal plan page.
-2. For each day (Mon–Sun), selects a recipe from the catalog for lunch and dinner.
-3. If modifying a recipe, notes the changes and updates the nutritional facts.
-4. Publishes the plan — all members are notified.
+1. Household member navigates to the current week view.
+2. For each swap day, selects a recipe from the catalog or enters a dish name.
+3. Adds optional notes and serving count.
+4. Saves the contribution — other members can see it on the week view.
 
-### 5.4 Swap Requests (Future Enhancement)
+### 5.4 Admin Configuring a Week
 
-- If a household can't cook their assigned week, they can request a swap with another household.
-- The other household accepts or declines.
-- Admin can also manually reassign weeks.
+1. Admin navigates to the swap config page.
+2. Sets the swap mode for the week (single or dual).
+3. Configures swap day logistics (location, time, notes) for each swap day.
 
 ---
 
@@ -171,17 +174,18 @@ _(These timings are defaults — the admin can configure cutoff days.)_
 
 ### Household
 
-- `id`, `name`, `rotation_position`, `head_id` (user), `members[]`
+- `id`, `name`, `head_id` (user), `members[]`
 
 ### Member (User)
 
-- `id`, `name`, `email`, `household_id`, `role` (admin/member), `dietary_info`
+- `id`, `name`, `email`, `household_id`, `role` (admin/member)
+- `allergies[]`, `dietary_preferences[]`, `dietary_notes`
 
 ### Recipe
 
 - `id`, `name`, `description`, `instructions`, `servings`, `prep_time_minutes`, `cook_time_minutes`
 - `calories`, `protein_g`, `carbs_g`, `fat_g` (per-serving summary — computed from ingredients or manually overridden)
-- `tags[]`, `created_by` (admin), `created_at`, `updated_at`
+- `tags[]`, `created_by`, `created_at`, `updated_at`
 
 ### Recipe Ingredient
 
@@ -191,27 +195,35 @@ _(These timings are defaults — the admin can configure cutoff days.)_
 
 ### Week
 
-- `id`, `start_date`, `household_id` (assigned cooking group), `status` (upcoming/active/complete)
-- `pickup_notes`
+- `id`, `start_date`, `status` (upcoming/active/complete), `swap_mode` (single/dual)
 
-### Meal Plan Entry
+### Swap Day
 
-- `id`, `week_id`, `day_of_week`, `meal_type` (lunch/dinner), `recipe_id`
-- `is_modified`, `modification_notes` (what changed)
-- `modified_calories`, `modified_protein_g`, `modified_carbs_g`, `modified_fat_g` (updated nutrition if modified)
+- `id`, `week_id`, `day_of_week`, `label`, `covers_from`, `covers_to`
+- `location`, `time`, `notes`
+
+### Contribution
+
+- `id`, `week_id`, `household_id`, `swap_day_id`
+- `recipe_id` (optional), `dish_name` (optional — used when not linking a catalog recipe)
+- `notes`, `servings`
+
+### Week Opt-Out
+
+- `id`, `user_id`, `week_id`, `reset_notified`
 
 ---
 
 ## 7. Pages / Screens
 
-1. **Dashboard (Home)** — Current week at a glance: who's cooking, the meal plan (with recipe details + nutrition), pickup info.
-2. **Schedule** — Calendar/timeline view of the full rotation, past and future.
-3. **Week Detail** — Full view of a specific week: meal plan with recipes, nutrition breakdown, any modifications noted, dietary summary, pickup notes.
+1. **Dashboard (Home)** — Current week at a glance: swap mode, swap day logistics, all contributions, nutrition summary.
+2. **Schedule** — Calendar/timeline view of weeks, past and future, showing swap modes and contribution status.
+3. **Week Detail** — Full view of a specific week: swap days with logistics, all household contributions, nutrition breakdown, dietary summary.
 4. **Recipe Catalog** — Browsable list of all approved recipes with nutrition info. Admins can add/edit/remove recipes here.
 5. **Recipe Detail** — Full recipe view: ingredients with per-ingredient nutrition, total nutrition summary, instructions, prep/cook time.
-6. **Household Profile** — Manage household members, view your upcoming cooking weeks.
+6. **Household Profile** — Manage household members, view contribution history.
 7. **Member Profile** — Personal settings, dietary info, notification preferences.
-8. **Admin Panel** — Manage households, rotation order, recipe catalog, system settings, and member roles.
+8. **Admin Panel** — Manage households, swap configuration, recipe catalog, system settings, and member roles.
 
 ---
 
@@ -223,9 +235,9 @@ Build in this order:
 
 1. User auth + household setup
 2. Recipe catalog (admin CRUD, ingredients, nutrition)
-3. Rotation schedule + calendar view
-4. Weekly meal plan posting (select from recipes, modifications)
-5. Pickup/delivery notes
+3. Swap schedule + calendar view (swap mode config, swap days)
+4. Contribution posting (link recipe or free-text dish, per swap day)
+5. Swap day logistics (location, time, notes)
 6. Dietary profiles + aggregated summary
 7. Notifications
 
@@ -236,16 +248,17 @@ Build in this order:
 
 ### Auth
 
-- Email/password or magic link (keep it simple for less tech-savvy family members).
-- Invite-based signup — only people invited by the admin can join.
+- Email/password (keep it simple for less tech-savvy family members).
+- Invite-based signup — only people invited by an admin or head of household can join.
 
 ---
 
 ## 9. Future Enhancements (Post-MVP)
 
-- **Swap requests** — households can swap weeks with each other.
-- **Grocery list generation** — auto-generate a shopping list from selected recipes, scaled to headcount.
-- **Photo sharing** — cooking group or members post photos of the meals.
+- **Grocery list generation** — auto-generate a shopping list from your contribution recipe, scaled to headcount.
+- **Photo sharing** — households post photos of their dishes.
 - **Recipe import** — import recipes from external sources (URLs, structured data) to speed up catalog building.
 - **Push notifications** — via PWA or native app wrapper.
 - **Per-day opt-out** — individual members can mark specific days they won't be eating.
+- **Ratings / feedback** — thumbs-up ratings on contributions.
+- **Cost sharing** — track and split ingredient costs across households.
