@@ -117,6 +117,7 @@ function RegisterForm() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded border px-3 py-2"
           />
+          <p className="mt-1 text-xs text-zinc-500">Must be at least 8 characters</p>
         </div>
 
         <button
