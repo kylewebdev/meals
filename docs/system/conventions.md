@@ -7,7 +7,7 @@ src/
   app/
     (auth)/               # Login, register
     (app)/                # Authenticated routes
-      admin/              #   swap-config, recipe-review, recipe-ratings, users, households
+      admin/              #   swap-config, recipe-review, recipe-ratings, rotation, users, households
       dashboard/
       household/
       profile/
@@ -31,7 +31,7 @@ src/
     db/
       schema.ts           # 15 tables, single source of truth
       index.ts            # Neon serverless client
-      migrations/         # 0000–0012
+      migrations/         # 0000–0013
     queries/              # Read-only, by domain
     auth.ts               # Better Auth server config
     auth-client.ts        # Better Auth client

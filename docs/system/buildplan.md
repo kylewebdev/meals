@@ -5,7 +5,7 @@ Phases 0–4 complete. Last updated: 2026-03-01
 
 ## What's Built
 - **Phase 0:** Auth, scaffold, Drizzle + Neon, invite-based signup
-- **Phase 1:** Households, recipes (CRUD + ingredients + nutrition), dietary profiles, notifications, app shell
+- **Phase 1:** Households, recipes (CRUD + ingredients + nutrition), notifications, app shell
 - **Phase 2:** Swap model (weeks, swap_days, contributions, opt-outs)
 - **Phase 3:** Dashboard, schedule calendar, recipe submissions (member submit → admin review), admin swap config
 - **Phase 3.5:** Auto-schedule engine — Latin-square recipe rotation, auto-populated weeks, per-contribution recipe assignment
@@ -31,4 +31,4 @@ Grocery list generation, photo sharing, recipe import, push notifications, per-d
 **Auth:** user, session, account, verification
 **App:** households, weeks, swap_days, contributions, recipes, recipe_ingredients, recipe_ratings, notifications, invites, week_opt_outs, swap_settings
 **Enums:** user_role, week_status, swap_mode, recipe_status, household_order_mode, notification_type, recipe_rating_value
-**Migrations:** 0000–0012 (14 files)
+**Migrations:** 0000–0013 (15 files)
