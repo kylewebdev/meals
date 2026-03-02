@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { NavLink } from './nav-link';
+import { UserMenu } from './user-menu';
 
 interface AppShellProps {
   children: ReactNode;
@@ -28,7 +29,7 @@ export function AppShell({ children, userName, userRole, notificationSlot }: App
           </div>
           <div className="flex items-center gap-4">
             {notificationSlot}
-            <span className="text-sm text-zinc-500">{userName}</span>
+            <UserMenu userName={userName} />
           </div>
         </div>
       </header>
