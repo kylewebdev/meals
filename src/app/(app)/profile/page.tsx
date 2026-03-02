@@ -33,7 +33,7 @@ export default async function ProfilePage() {
     : false;
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold">My Profile</h2>
 
       <Card>

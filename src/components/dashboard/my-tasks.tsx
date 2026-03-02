@@ -18,7 +18,7 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
   if (swapDays.length === 0) return null;
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <h3 className="font-semibold">Your Assigned Recipes</h3>
       </CardHeader>

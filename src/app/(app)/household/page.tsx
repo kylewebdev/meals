@@ -14,7 +14,7 @@ export default async function HouseholdPage() {
   const householdId = session.user.householdId;
   if (!householdId) {
     return (
-      <div className="max-w-2xl space-y-6">
+      <div className="space-y-6">
         <h2 className="text-2xl font-bold">My Household</h2>
         <EmptyState
           title="Not assigned to a household"
@@ -32,7 +32,7 @@ export default async function HouseholdPage() {
   const canManage = isHead || isAdmin;
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold">{household.name}</h2>
 
       <Card>

@@ -2,6 +2,7 @@
 
 import { optOutOfWeek, optBackIn } from '@/actions/profile';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface OptOutToggleProps {
@@ -11,6 +12,7 @@ interface OptOutToggleProps {
 }
 
 export function OptOutToggle({ currentWeekId, weekLabel, isOptedOut: initial }: OptOutToggleProps) {
+  const { toast } = useToast();
   const [isOptedOut, setIsOptedOut] = useState(initial);
   const [loading, setLoading] = useState(false);
 
@@ -25,9 +27,11 @@ export function OptOutToggle({ currentWeekId, weekLabel, isOptedOut: initial }: 
     if (isOptedOut) {
       await optBackIn(currentWeekId);
       setIsOptedOut(false);
+      toast('Opted back in');
     } else {
       await optOutOfWeek(currentWeekId);
       setIsOptedOut(true);
+      toast('Opted out of this week');
     }
     setLoading(false);
   };

@@ -2,6 +2,7 @@
 
 import { updateUserRole } from '@/actions/members';
 import { Select } from '@/components/ui/select';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface RoleSelectProps {
@@ -11,6 +12,7 @@ interface RoleSelectProps {
 }
 
 export function RoleSelect({ userId, currentRole, isSelf }: RoleSelectProps) {
+  const { toast } = useToast();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,6 +28,8 @@ export function RoleSelect({ userId, currentRole, isSelf }: RoleSelectProps) {
     if (!result.success) {
       setError(result.error);
       e.target.value = currentRole;
+    } else {
+      toast('Role updated');
     }
   }
 

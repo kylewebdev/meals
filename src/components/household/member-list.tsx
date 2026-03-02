@@ -3,6 +3,7 @@
 import { removeMember } from '@/actions/members';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface Member {
@@ -21,12 +22,14 @@ interface MemberListProps {
 }
 
 export function MemberList({ members, householdId, headId, canManage, currentUserId }: MemberListProps) {
+  const { toast } = useToast();
   const [removing, setRemoving] = useState<string | null>(null);
 
   const handleRemove = async (userId: string) => {
     setRemoving(userId);
     await removeMember(userId, householdId);
     setRemoving(null);
+    toast('Member removed');
   };
 
   return (

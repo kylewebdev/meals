@@ -4,6 +4,7 @@ import { setHouseholdHead } from '@/actions/households';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface Member {
@@ -18,6 +19,7 @@ interface HeadSelectorProps {
 }
 
 export function HeadSelector({ householdId, members, currentHeadId }: HeadSelectorProps) {
+  const { toast } = useToast();
   const [selectedId, setSelectedId] = useState(currentHeadId ?? '');
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +27,7 @@ export function HeadSelector({ householdId, members, currentHeadId }: HeadSelect
     setLoading(true);
     await setHouseholdHead(householdId, selectedId || null);
     setLoading(false);
+    toast('Household head updated');
   };
 
   return (

@@ -4,6 +4,7 @@ import { addIngredient, removeIngredient, updateIngredient } from '@/actions/rec
 import { scaleQuantity } from '@/lib/quantity-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface Ingredient {
@@ -31,6 +32,7 @@ export function IngredientTable({
   editable,
   scaleFactor,
 }: IngredientTableProps) {
+  const { toast } = useToast();
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -69,12 +71,14 @@ export function IngredientTable({
     resetForm();
     setAdding(false);
     setLoading(false);
+    toast('Ingredient added');
   };
 
   const handleRemove = async (ingredientId: string) => {
     setRemovingId(ingredientId);
     await removeIngredient(ingredientId, recipeId);
     setRemovingId(null);
+    toast('Ingredient removed');
   };
 
   return (

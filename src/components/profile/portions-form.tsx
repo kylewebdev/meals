@@ -1,6 +1,7 @@
 'use client';
 
 import { updatePortionsPerMeal } from '@/actions/profile';
+import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -11,6 +12,7 @@ interface PortionsFormProps {
 }
 
 export function PortionsForm({ currentPortions }: PortionsFormProps) {
+  const { toast } = useToast();
   const [portions, setPortions] = useState(currentPortions);
   const [loading, setLoading] = useState(false);
 
@@ -20,6 +22,7 @@ export function PortionsForm({ currentPortions }: PortionsFormProps) {
     setLoading(true);
     await updatePortionsPerMeal(value);
     setLoading(false);
+    toast('Portions updated');
   };
 
   return (

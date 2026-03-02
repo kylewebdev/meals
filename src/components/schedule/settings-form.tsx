@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface SettingsFormProps {
@@ -34,12 +35,13 @@ export function SettingsForm({
     defaultLocation: defaultLocation ?? '',
     defaultTime: defaultTime ?? '',
   });
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ message?: string; error?: string } | null>(null);
+  const [error, setError] = useState('');
 
   const handleSave = async () => {
     setLoading(true);
-    setResult(null);
+    setError('');
     const res = await updateSwapSettings({
       startDate: form.startDate,
       swapMode: form.swapMode as 'single' | 'dual',
@@ -48,9 +50,9 @@ export function SettingsForm({
       defaultTime: form.defaultTime,
     });
     if (res.success) {
-      setResult({ message: 'Settings saved' });
+      toast('Settings saved');
     } else {
-      setResult({ error: res.error });
+      setError(res.error);
     }
     setLoading(false);
   };
@@ -111,8 +113,7 @@ export function SettingsForm({
 
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} loading={loading}>Save Settings</Button>
-        {result?.message && <span className="text-sm text-green-600">{result.message}</span>}
-        {result?.error && <span className="text-sm text-red-600">{result.error}</span>}
+        {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </div>
   );

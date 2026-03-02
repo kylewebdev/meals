@@ -3,6 +3,7 @@
 import { reviewRecipe } from '@/actions/recipes';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -12,6 +13,7 @@ interface ReviewActionsProps {
 
 export function ReviewActions({ recipeId }: ReviewActionsProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [showReject, setShowReject] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,7 @@ export function ReviewActions({ recipeId }: ReviewActionsProps) {
       setLoading(false);
       return;
     }
+    toast('Recipe approved');
     router.refresh();
   };
 
@@ -38,6 +41,7 @@ export function ReviewActions({ recipeId }: ReviewActionsProps) {
       setLoading(false);
       return;
     }
+    toast('Recipe sent back for changes');
     router.refresh();
   };
 

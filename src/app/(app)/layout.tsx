@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { notifications, weekOptOuts } from '@/lib/db/schema';
 import { AppShell } from '@/components/layout/app-shell';
+import { Providers } from '@/components/layout/providers';
 import { OptOutBanner } from '@/components/layout/opt-out-banner';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { getUserCurrentWeekOptOut, getUnnotifiedResets } from '@/lib/queries/schedule';
@@ -60,18 +61,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isOptedOut = !!currentOptOut;
 
   return (
-    <AppShell
-      userName={session.user.name}
-      userRole={session.user.role ?? 'member'}
-      notificationSlot={
-        <NotificationBell
-          unreadCount={unreadResult?.count ?? 0}
-          notifications={recentNotifications}
-        />
-      }
-      optOutBanner={isOptedOut ? <OptOutBanner /> : undefined}
-    >
-      {children}
-    </AppShell>
+    <Providers>
+      <AppShell
+        userName={session.user.name}
+        userRole={session.user.role ?? 'member'}
+        notificationSlot={
+          <NotificationBell
+            unreadCount={unreadResult?.count ?? 0}
+            notifications={recentNotifications}
+          />
+        }
+        optOutBanner={isOptedOut ? <OptOutBanner /> : undefined}
+      >
+        {children}
+      </AppShell>
+    </Providers>
   );
 }

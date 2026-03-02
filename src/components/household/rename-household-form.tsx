@@ -3,6 +3,7 @@
 import { renameHousehold } from '@/actions/households';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface RenameHouseholdFormProps {
@@ -11,6 +12,7 @@ interface RenameHouseholdFormProps {
 }
 
 export function RenameHouseholdForm({ householdId, currentName }: RenameHouseholdFormProps) {
+  const { toast } = useToast();
   const [name, setName] = useState(currentName);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +24,11 @@ export function RenameHouseholdForm({ householdId, currentName }: RenameHousehol
     setLoading(true);
     setError('');
     const res = await renameHousehold(householdId, name);
-    if (!res.success) setError(res.error);
+    if (!res.success) {
+      setError(res.error);
+    } else {
+      toast('Household renamed');
+    }
     setLoading(false);
   };
 

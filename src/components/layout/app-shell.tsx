@@ -16,7 +16,7 @@ export function AppShell({ children, userName, userRole, notificationSlot, optOu
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
+      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2 md:gap-6">
             <MobileNav />
@@ -35,7 +35,7 @@ export function AppShell({ children, userName, userRole, notificationSlot, optOu
         </div>
       </header>
       {optOutBanner}
-      <main className="p-6">{children}</main>
+      <main className="mx-auto max-w-5xl p-6">{children}</main>
     </div>
   );
 }

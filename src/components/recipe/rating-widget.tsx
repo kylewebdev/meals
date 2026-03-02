@@ -3,6 +3,7 @@
 import { rateRecipe } from '@/actions/ratings';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -20,6 +21,7 @@ const ratingOptions = [
 
 export function RatingWidget({ recipeId, currentRating, currentComment }: RatingWidgetProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [selected, setSelected] = useState<'love' | 'fine' | 'dislike' | null>(
     currentRating ?? null,
   );
@@ -39,6 +41,7 @@ export function RatingWidget({ recipeId, currentRating, currentComment }: Rating
       return;
     }
     setLoading(false);
+    toast('Rating saved');
     router.refresh();
   };
 
@@ -53,6 +56,7 @@ export function RatingWidget({ recipeId, currentRating, currentComment }: Rating
       return;
     }
     setLoading(false);
+    toast('Rating saved');
     router.refresh();
   };
 

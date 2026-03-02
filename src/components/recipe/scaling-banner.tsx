@@ -24,7 +24,7 @@ export function ScalingBanner({
 }: ScalingBannerProps) {
   return (
     <div className={cn(
-      'max-w-2xl rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950',
+      'rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950',
       className,
     )}>
       <p className="text-sm font-medium text-blue-900 dark:text-blue-100">

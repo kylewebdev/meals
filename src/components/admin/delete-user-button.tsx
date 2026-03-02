@@ -3,6 +3,7 @@
 import { deleteUser } from '@/actions/members';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface DeleteUserButtonProps {
@@ -12,6 +13,7 @@ interface DeleteUserButtonProps {
 }
 
 export function DeleteUserButton({ userId, userName, isSelf }: DeleteUserButtonProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +29,7 @@ export function DeleteUserButton({ userId, userName, isSelf }: DeleteUserButtonP
       return;
     }
 
+    toast('User removed');
     setOpen(false);
   }
 

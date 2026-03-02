@@ -3,6 +3,7 @@
 import { assignMemberToHousehold } from '@/actions/members';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface User {
@@ -19,6 +20,7 @@ interface AddMemberFormProps {
 }
 
 export function AddMemberForm({ householdId, allUsers, currentMemberIds }: AddMemberFormProps) {
+  const { toast } = useToast();
   const [selectedUserId, setSelectedUserId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,6 +38,7 @@ export function AddMemberForm({ householdId, allUsers, currentMemberIds }: AddMe
       setError(res.error);
     } else {
       setSelectedUserId('');
+      toast('Member added');
     }
     setLoading(false);
   };

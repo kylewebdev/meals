@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -24,6 +25,7 @@ interface RecipeFormProps {
 
 export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const isEdit = !!recipe;
 
   const [name, setName] = useState(recipe?.name ?? '');
@@ -67,10 +69,13 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
     }
 
     if (isEdit) {
+      toast('Recipe updated');
       router.push(`/recipes/${recipe.id}`);
     } else if (isAdmin) {
+      toast('Recipe created');
       router.push(`/recipes/${res.data!.id}`);
     } else {
+      toast('Recipe submitted for review');
       router.push('/recipes/mine');
     }
   };
@@ -82,7 +87,7 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
       : 'Submit for Review';
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <div>

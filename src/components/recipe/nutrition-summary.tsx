@@ -21,7 +21,7 @@ export function NutritionSummary({ calories, proteinG, carbsG, fatG, scaleFactor
 
   return (
     <div className={cn(
-      'grid max-w-2xl grid-cols-2 gap-4 rounded-lg bg-zinc-50 p-4 text-center dark:bg-zinc-900',
+      'grid grid-cols-2 gap-4 rounded-lg bg-zinc-50 p-4 text-center dark:bg-zinc-900',
       className,
     )}>
       <div>

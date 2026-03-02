@@ -4,9 +4,11 @@ import { createHousehold } from '@/actions/households';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 export function CreateHouseholdForm() {
+  const { toast } = useToast();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,6 +24,7 @@ export function CreateHouseholdForm() {
       setError(res.error);
     } else {
       setName('');
+      toast('Household created');
     }
     setLoading(false);
   };

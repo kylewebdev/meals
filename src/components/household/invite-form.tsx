@@ -4,6 +4,7 @@ import { createInvite } from '@/actions/invites';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface InviteFormProps {
@@ -12,6 +13,7 @@ interface InviteFormProps {
 
 export function InviteForm({ householdId }: InviteFormProps) {
   const [email, setEmail] = useState('');
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ url?: string; error?: string } | null>(null);
 
@@ -25,6 +27,7 @@ export function InviteForm({ householdId }: InviteFormProps) {
     if (res.success) {
       setResult({ url: res.data.inviteUrl });
       setEmail('');
+      toast('Invite sent');
     } else {
       setResult({ error: res.error });
     }

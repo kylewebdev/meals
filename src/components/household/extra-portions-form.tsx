@@ -3,6 +3,7 @@
 import { updateExtraPortions } from '@/actions/households';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface ExtraPortionsFormProps {
@@ -12,6 +13,7 @@ interface ExtraPortionsFormProps {
 
 export function ExtraPortionsForm({ householdId, currentExtraPortions }: ExtraPortionsFormProps) {
   const [value, setValue] = useState(currentExtraPortions);
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -22,7 +24,11 @@ export function ExtraPortionsForm({ householdId, currentExtraPortions }: ExtraPo
     setLoading(true);
     setError('');
     const res = await updateExtraPortions(householdId, value);
-    if (!res.success) setError(res.error);
+    if (!res.success) {
+      setError(res.error);
+    } else {
+      toast('Extra portions updated');
+    }
     setLoading(false);
   };
 
