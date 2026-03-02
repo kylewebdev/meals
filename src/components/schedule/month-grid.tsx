@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { getMonthCalendarDates } from '@/lib/schedule-utils';
-import { SwapDayChip } from './swap-day-chip';
+import { SwapDayDetail } from './swap-day-detail';
 import type { ScheduleWeekWithContributions } from '@/lib/queries/schedule';
 import Link from 'next/link';
 
@@ -13,7 +13,7 @@ interface MonthGridProps {
 
 const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export function MonthGrid({ year, month, weeks, householdCount }: MonthGridProps) {
+export function MonthGrid({ year, month, weeks }: MonthGridProps) {
   const rows = getMonthCalendarDates(year, month);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -98,11 +98,13 @@ export function MonthGrid({ year, month, weeks, householdCount }: MonthGridProps
                   {date.getDate()}
                 </span>
                 {swapDays?.map((sd) => (
-                  <SwapDayChip
+                  <SwapDayDetail
                     key={sd.id}
                     label={sd.label}
-                    contributionCount={sd.contributions.length}
-                    totalHouseholds={householdCount}
+                    contributions={sd.contributions.map((c) => ({
+                      householdName: c.household.name,
+                      recipeName: c.recipe?.name ?? null,
+                    }))}
                   />
                 ))}
               </div>

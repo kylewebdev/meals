@@ -133,18 +133,21 @@ export interface UpcomingSwapDay {
   coversTo: number;
   weekStartDate: Date;
   weekStatus: string;
-  hasContribution: boolean;
+  assignedRecipe: { id: string; name: string } | null;
 }
 
 export async function getUpcomingSwapDays(householdId: string): Promise<UpcomingSwapDay[]> {
-  // Get active + upcoming weeks
+  // Get active + upcoming weeks with contributions filtered to this household
   const activeWeeks = await db.query.weeks.findMany({
     where: inArray(weeks.status, ['active', 'upcoming']),
     with: {
       swapDays: {
         with: {
           contributions: {
-            columns: { id: true, householdId: true },
+            where: eq(contributions.householdId, householdId),
+            with: {
+              recipe: { columns: { id: true, name: true } },
+            },
           },
         },
         orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
@@ -161,13 +164,16 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
       label: string;
       coversFrom: number;
       coversTo: number;
-      contributions: { id: string; householdId: string }[];
+      contributions: {
+        recipe: { id: string; name: string } | null;
+      }[];
     }[];
   }[];
 
   const result: UpcomingSwapDay[] = [];
   for (const week of activeWeeks) {
     for (const sd of week.swapDays) {
+      const myContribution = sd.contributions[0];
       result.push({
         id: sd.id,
         weekId: week.id,
@@ -177,7 +183,7 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
         coversTo: sd.coversTo,
         weekStartDate: week.startDate,
         weekStatus: week.status,
-        hasContribution: sd.contributions.some((c) => c.householdId === householdId),
+        assignedRecipe: myContribution?.recipe ?? null,
       });
     }
   }

@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/auth-utils';
 import { getCurrentWeek } from '@/lib/queries/schedule';
 import { getHeadcount, getUpcomingSwapDays } from '@/lib/queries/contributions';
+import { ensureWeeksExist } from '@/actions/schedule';
 import { MyTasks } from '@/components/dashboard/my-tasks';
 import { PortionDisplay } from '@/components/contributions/portion-display';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
@@ -15,6 +16,9 @@ import { redirect } from 'next/navigation';
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
+
+  // Auto-populate weeks through end of next month
+  await ensureWeeksExist();
 
   const currentWeek = await getCurrentWeek();
   const headcount = await getHeadcount(currentWeek?.id);
@@ -67,7 +71,7 @@ export default async function DashboardPage() {
                   <span className="font-medium">{headcount}</span>
                 </div>
                 <div className="rounded bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-                  <span className="text-sm text-zinc-500">Contributions: </span>
+                  <span className="text-sm text-zinc-500">Households cooking: </span>
                   <span className="font-medium">{totalContributions}</span>
                 </div>
                 {totalPortions > 0 && (
@@ -105,11 +109,15 @@ export default async function DashboardPage() {
       ) : (
         <EmptyState
           title="No week scheduled"
-          description="An admin needs to generate the schedule."
+          description={
+            session.user.role === 'admin'
+              ? 'Configure swap settings to start auto-generating weeks.'
+              : 'An admin needs to configure the swap settings.'
+          }
           action={
             session.user.role === 'admin' ? (
               <Link href="/admin/swap-config">
-                <Button variant="secondary">Set Up Schedule</Button>
+                <Button variant="secondary">Configure Swap Settings</Button>
               </Link>
             ) : undefined
           }

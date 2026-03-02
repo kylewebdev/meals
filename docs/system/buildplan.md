@@ -1,11 +1,13 @@
+Here is the updated build plan:
+
 # Build Plan — meals
 
 ## Status
 
-**Project state: Phase 2 complete — ready for Phase 3**
+**Project state: Phase 3 complete, Phase 3.5 (auto-schedule) complete — remaining gaps in headcount, notifications, and PWA**
 Last updated: 2026-03-01
 
-Phases 0–2 are done: Next.js app scaffolded, database schema migrated to Neon, Better Auth configured, full UI built out with households, recipes, dietary profiles, notifications, and the swap model restructure (single/dual swap modes, contributions, swap day logistics, week nutrition summary).
+Phases 0–3 are done. Phase 3.5 restructured the scheduling model: weeks now auto-populate through end of next month, recipes rotate deterministically across swap days, and all households are auto-assigned to cook every swap day. Manual contribution posting removed. Remaining work: non-account household members (headcount gap), notification triggers/preferences, and PWA.
 
 ---
 
@@ -21,6 +23,8 @@ Phases 0–2 are done: Next.js app scaffolded, database schema migrated to Neon,
 | **Hosting**         | Vercel                                                                   |
 | **Package manager** | pnpm                                                                     |
 | **Meal model**      | Swap model (everyone cooks, meet to swap) — not rotation                 |
+| **Scheduling**      | Auto-schedule: recipe rotation + auto-populate through end of next month |
+| **Charts**          | Recharts (added in Phase 3 for nutrition charts)                         |
 | **PWA**             | Deferred — mobile-responsive from day one                                |
 
 Full conventions documented in `docs/system/conventions.md`.
@@ -81,39 +85,80 @@ Full conventions documented in `docs/system/conventions.md`.
 
 ---
 
-## Phase 3 — Polish & Remaining MVP Gaps
+## Phase 3 — Polish & Remaining MVP Gaps (IN PROGRESS)
 
 > Fill in remaining gaps, improve UX, and prepare for real-world use.
 
-### Step 1: Dashboard & week detail improvements
+### Step 1: Dashboard & week detail improvements (COMPLETE)
 
-- [ ] Dashboard home page: current week at a glance with swap mode, logistics, contributions
-- [ ] Week detail page: full view with all contributions, nutrition breakdown, dietary summary
-- [ ] Quick-add contribution from dashboard
+- [x] Dashboard home page: current week at a glance with swap mode, logistics, contributions
+- [x] MyTasks component showing household's pending contributions
+- [x] Week detail page (`/week/[weekId]`): full view with all contributions, nutrition breakdown
+- [x] PortionDisplay and HeadcountDisplay components
+- [x] WeekNutritionChart (Recharts bar chart) on week detail
 
-### Step 2: Headcount & portioning
+### Step 2: Schedule calendar (COMPLETE)
 
-- [ ] Derive headcount from household membership
-- [ ] Support additional non-account members per household (e.g., kids)
-- [ ] Show total headcount on week view so households know how many servings to prepare
+- [x] Month grid calendar with swap-day chips and contribution progress
+- [x] Month navigation (prev/next)
+- [x] Swap day chips showing day-of-week and contribution count
 
-### Step 3: Admin swap configuration UX
+### Step 3: Recipe submissions (COMPLETE)
 
-- [ ] Admin can configure swap mode and swap days for upcoming weeks
-- [ ] Admin can set default swap day logistics
-- [ ] Auto-generate upcoming weeks with default swap configuration
+- [x] Member recipe submission flow (`/recipes/new`)
+- [x] Recipe status enum: pending / approved / rejected (migration 0006)
+- [x] My Recipes page (`/recipes/mine`) showing user's submitted recipes
+- [x] Admin review queue (`/admin/recipe-review`) with approve/reject actions
+- [x] Recipe status badge component
+- [x] `recipe_reviewed` notification type for submission feedback
 
-### Step 4: Notification improvements
+### Step 4: Admin swap configuration (COMPLETE)
 
-- [ ] Contribution reminder before swap day
+- [x] Admin can configure swap mode and generate upcoming weeks
+- [x] Auto-generate upcoming weeks with default swap day configuration
+- [x] Admin UI to set/edit default swap day logistics (location, time)
+- [x] Replaced by auto-schedule in Phase 3.5
+
+### Step 5: Headcount & portioning (PARTIAL)
+
+- [x] Derive headcount from user table membership
+- [x] Headcount adjusts for week opt-outs
+- [x] Show headcount and portion calculation on week view
+- [ ] Support additional non-account members per household (e.g., kids) — requires schema change (`extra_members` on households)
+- [ ] Filter headcount to only include users with a household (currently counts all users including admin-only accounts)
+
+### Step 6: Notification improvements
+
+- [ ] Wire up `notifyContributionReminder` — currently defined but never triggered (needs cron job or admin action)
 - [ ] Alert when all households have posted contributions for a swap day
 - [ ] Notification preferences per user
+- [ ] Clean up stale notification types from old rotation model (`cooking_reminder`, `meal_plan_posted`, `opt_out_reset` are defined in enum but never sent)
 
-### Step 5: PWA support
+### Step 7: PWA support
 
 - [ ] Service worker + web app manifest
 - [ ] Installable on mobile devices
 - [ ] Offline-capable for viewing cached data
+
+---
+
+## Phase 3.5 — Auto-Schedule with Recipe Rotation (COMPLETE)
+
+> Replaced manual week generation and contribution posting with automatic scheduling and recipe rotation.
+
+- [x] New `swap_settings` table (singleton) — start date, swap mode, recipe order, household order, defaults
+- [x] New `recipe_id` column on `swap_days` — assigned from recipe rotation
+- [x] Migration 0007 — swap_settings table and swap_days.recipe_id
+- [x] Auto-populate engine: `ensureWeeksExist()` creates weeks through end of next month on page load
+- [x] Recipe rotation: deterministic cycling through admin-configured recipe order
+- [x] Household auto-assignment: contributions auto-created for every household on every swap day
+- [x] Admin settings UI: global config, recipe rotation order, household display order
+- [x] Recalculate future weeks when recipe order changes
+- [x] Enhanced calendar: swap-day cells show recipe name + household names
+- [x] Removed manual contribution posting (ContributionForm, GenerateWeeksButton deleted)
+- [x] Dashboard shows assigned recipes instead of "post dish" prompts
+- [x] Week detail shows assigned recipe per swap day, edit page is admin logistics only
+- [x] PRD updated with auto-assignment model
 
 ---
 
@@ -140,6 +185,14 @@ Full conventions documented in `docs/system/conventions.md`.
 - [x] Phase 0 — Project Bootstrap
 - [x] Phase 1 — MVP Features (UI, households, recipes, dietary, notifications)
 - [x] Phase 2 — Swap Model Restructure (single/dual swap, contributions, swap day logistics)
+- [x] Phase 3, Step 1 — Dashboard with MyTasks, PortionDisplay, WeekNutritionChart
+- [x] Phase 3, Step 2 — Month grid schedule calendar with swap-day chips
+- [x] Phase 3, Step 3 — Member recipe submissions with admin review queue
+- [x] Phase 3, Step 4 — Admin swap configuration (complete)
+- [x] Phase 3, Step 5 (partial) — Basic headcount from user table with opt-out adjustment
+- [x] Migration 0006 — recipe_status enum and status column on recipes
+- [x] Phase 3.5 — Auto-schedule with recipe rotation (swap_settings, auto-populate, recipe rotation, removed manual contributions)
+- [x] Migration 0007 — swap_settings table and swap_days.recipe_id column
 
 ---
 
@@ -147,4 +200,11 @@ Full conventions documented in `docs/system/conventions.md`.
 
 - The PRD has been updated to reflect the swap model — see `docs/system/context/PRD.md`
 - Old rotation-based tables and enums have been dropped via migrations 0002 and 0005
-- Next step: Phase 3 — polish, headcount, admin UX, and PWA
+- Recharts added as a dependency in Phase 3 for the week nutrition chart
+- 3 stale notification enum values (`cooking_reminder`, `meal_plan_posted`, `opt_out_reset`) are leftovers from the rotation model — should be cleaned up in a future migration
+- `notifyContributionReminder` function exists in `src/lib/notifications.ts` but is dead code — no trigger calls it
+- `getHeadcount` in queries counts all users, not just those in a household — needs filtering
+- `setContribution`, `removeContribution` removed from contributions actions — contributions are now auto-generated
+- `GenerateWeeksButton` and `ContributionForm` components deleted
+- `SwapDayChip` replaced by `SwapDayDetail` showing recipe + households
+- Next steps: finish headcount (non-account members), wire up notification triggers, then PWA

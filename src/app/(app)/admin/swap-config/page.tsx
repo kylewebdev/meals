@@ -60,7 +60,8 @@ export default async function AdminSwapConfigPage() {
         <CardHeader>
           <h3 className="font-semibold">Recipe Rotation Order</h3>
           <p className="text-sm text-zinc-500">
-            Recipes cycle through this order across swap days. Each swap day gets the next recipe.
+            Each household gets a different recipe per swap day (Latin-square rotation).
+            Recipes cycle through this order across households and days.
           </p>
         </CardHeader>
         <CardContent>
@@ -72,7 +73,7 @@ export default async function AdminSwapConfigPage() {
         <CardHeader>
           <h3 className="font-semibold">Household Display Order</h3>
           <p className="text-sm text-zinc-500">
-            All households cook every swap day. This controls the display order.
+            All households cook every swap day. Order determines recipe assignment offset.
           </p>
         </CardHeader>
         <CardContent>

@@ -23,11 +23,24 @@ A web app that helps an extended family coordinate a weekly meal-swap co-op. Eve
   - **Dual swap:** Two swap days. Saturday swap covers Mon–Tue; Wednesday swap covers Wed–Fri. Each household makes 2 dishes total (one per swap day).
 - At the swap, households exchange portions so everyone goes home with a variety of meals for the covered days.
 
-### Contributions
+### Recipe Rotation
 
-- A **contribution** is what a household brings to a specific swap day — one dish per household per swap day.
-- A contribution can reference a recipe from the catalog or just be a free-text dish name.
-- Contributions include optional notes and serving count.
+- The admin configures a **recipe rotation order** — an ordered list of approved recipes.
+- Recipes cycle deterministically through this order across swap days: each new swap day gets the next recipe in the sequence.
+- When the rotation completes, it wraps around to the beginning.
+
+### Household Order
+
+- The admin configures a **household display order** — all households cook every swap day.
+- The order can be **fixed** (manually arranged) or **random** (shuffled by admin).
+- This controls the display order on schedule and week views.
+
+### Contributions (Auto-Assigned)
+
+- A **contribution** represents a household's assignment for a specific swap day — auto-generated, not manually posted.
+- Contributions are created automatically when weeks are populated, with the recipe from the rotation assigned to each.
+- All households get the same assigned recipe per swap day.
+- Contributions include optional admin-editable notes and serving count.
 
 ### Swap Days
 
@@ -87,15 +100,13 @@ A web app that helps an extended family coordinate a weekly meal-swap co-op. Eve
 - Only admins can add, edit, or remove recipes from the catalog.
 - All members can browse the catalog at any time.
 
-### 4.3 Weekly Contributions
+### 4.3 Weekly Contributions (Auto-Assigned)
 
-- Every household posts what they're bringing to each swap day.
-- A contribution includes:
-  - **Dish** — selected from the recipe catalog OR entered as a free-text dish name
-  - **Notes** — any additional info (e.g., "extra spicy batch", "nut-free version")
-  - **Servings** — how many servings they're making
+- Contributions are **auto-generated** when weeks are created — every household gets a contribution for every swap day.
+- The assigned **recipe** comes from the admin-configured recipe rotation order.
+- All households cook the same recipe for a given swap day.
 - One contribution per household per swap day (enforced by unique constraint).
-- Households can update their contribution until the swap day passes.
+- Admins can override a contribution's recipe or details if needed.
 - Past weeks' contributions remain visible as history/reference.
 
 ### 4.4 Swap Day Logistics
@@ -148,25 +159,26 @@ A web app that helps an extended family coordinate a weekly meal-swap co-op. Eve
 
 | Timeframe              | Action                                                                                     |
 | ---------------------- | ------------------------------------------------------------------------------------------ |
-| **Before swap day**    | All households decide what they'll cook, browse recipe catalog, check dietary summary       |
-| **Before swap day**    | Each household posts their contribution (dish, notes, servings)                             |
+| **Before swap day**    | Households check their assigned recipe on the dashboard or schedule                         |
+| **Before swap day**    | Households prepare the assigned recipe (portions for all participating families)             |
 | **Swap day**           | Households meet at the designated location/time and exchange dishes                         |
 | **After swap**         | Families enjoy a variety of meals for the covered days                                      |
 
 _(In dual-swap weeks, this cycle happens twice: once for the Saturday swap and once for the Wednesday swap.)_
 
-### 5.3 Posting a Contribution
+### 5.3 Viewing Assigned Recipe
 
-1. Household member navigates to the current week view.
-2. For each swap day, selects a recipe from the catalog or enters a dish name.
-3. Adds optional notes and serving count.
-4. Saves the contribution — other members can see it on the week view.
+1. Household member navigates to the dashboard or current week view.
+2. Sees their assigned recipe for each upcoming swap day.
+3. Clicks through to the recipe detail for full instructions and nutrition info.
 
-### 5.4 Admin Configuring a Week
+### 5.4 Admin Configuring the Schedule
 
 1. Admin navigates to the swap config page.
-2. Sets the swap mode for the week (single or dual).
-3. Configures swap day logistics (location, time, notes) for each swap day.
+2. Sets the start date, swap mode (single/dual), and default logistics (location, time).
+3. Configures the recipe rotation order — an ordered list of approved recipes.
+4. Configures the household display order (fixed or random).
+5. Weeks auto-populate through end of next month on page load.
 
 ---
 
@@ -197,16 +209,20 @@ _(In dual-swap weeks, this cycle happens twice: once for the Saturday swap and o
 
 - `id`, `start_date`, `status` (upcoming/active/complete), `swap_mode` (single/dual)
 
+### Swap Settings (singleton)
+
+- `id`, `start_date`, `swap_mode`, `recipe_order[]`, `household_order[]`, `household_order_mode`
+- `default_location`, `default_time`
+
 ### Swap Day
 
 - `id`, `week_id`, `day_of_week`, `label`, `covers_from`, `covers_to`
-- `location`, `time`, `notes`
+- `recipe_id` (assigned from rotation), `location`, `time`, `notes`
 
 ### Contribution
 
 - `id`, `week_id`, `household_id`, `swap_day_id`
-- `recipe_id` (optional), `dish_name` (optional — used when not linking a catalog recipe)
-- `notes`, `servings`
+- `recipe_id` (auto-assigned from swap day), `dish_name`, `notes`, `servings`
 
 ### Week Opt-Out
 

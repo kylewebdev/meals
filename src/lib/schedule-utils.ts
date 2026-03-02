@@ -79,3 +79,59 @@ export function getPortionCount(headcount: number, coversFrom: number, coversTo:
   const days = coversTo - coversFrom + 1;
   return headcount * days;
 }
+
+/**
+ * Returns the last day of the month after the given date's month.
+ */
+export function getEndOfNextMonth(from: Date = new Date()): Date {
+  const year = from.getFullYear();
+  const month = from.getMonth();
+  // month + 2 = next month + 1, day 0 = last day of previous month
+  return new Date(year, month + 2, 0);
+}
+
+/**
+ * Returns all Mondays between `from` and `through` (inclusive).
+ */
+export function getMondaysInRange(from: Date, through: Date): Date[] {
+  const mondays: Date[] = [];
+  const current = new Date(from);
+  current.setHours(0, 0, 0, 0);
+
+  // Advance to next Monday if `from` isn't one
+  const day = current.getDay();
+  if (day !== 1) {
+    const diff = day === 0 ? 1 : 8 - day;
+    current.setDate(current.getDate() + diff);
+  }
+
+  while (current <= through) {
+    mondays.push(new Date(current));
+    current.setDate(current.getDate() + 7);
+  }
+
+  return mondays;
+}
+
+/**
+ * Deterministic per-household recipe index (Latin-square rotation).
+ * Each household gets a different recipe on the same swap day.
+ * Household 0 gets recipe G%R, household 1 gets (G+1)%R, etc.
+ * Returns -1 if recipeCount is 0.
+ */
+export function computeHouseholdRecipeIndex(
+  startDate: Date,
+  weekStartDate: Date,
+  swapDaysPerWeek: number,
+  swapDayIndex: number,
+  householdIndex: number,
+  recipeCount: number,
+): number {
+  if (recipeCount === 0) return -1;
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const weeksBetween = Math.round(
+    (weekStartDate.getTime() - startDate.getTime()) / msPerWeek,
+  );
+  const globalIndex = weeksBetween * swapDaysPerWeek + swapDayIndex;
+  return (((globalIndex + householdIndex) % recipeCount) + recipeCount) % recipeCount;
+}

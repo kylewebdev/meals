@@ -17,6 +17,7 @@ export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
 export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
 export const recipeStatusEnum = pgEnum('recipe_status', ['pending', 'approved', 'rejected']);
+export const householdOrderModeEnum = pgEnum('household_order_mode', ['fixed', 'random']);
 
 // ─── Auth tables (Better Auth managed) ──────────────────────────
 
@@ -265,6 +266,21 @@ export const invites = pgTable('invites', {
   expiresAt: timestamp('expires_at').notNull(),
   usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const swapSettings = pgTable('swap_settings', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  startDate: timestamp('start_date', { mode: 'date' }).notNull(),
+  swapMode: swapModeEnum('swap_mode').notNull().default('single'),
+  recipeOrder: text('recipe_order').array().notNull().default(sql`'{}'::text[]`),
+  householdOrder: text('household_order').array().notNull().default(sql`'{}'::text[]`),
+  householdOrderMode: householdOrderModeEnum('household_order_mode').notNull().default('fixed'),
+  defaultLocation: text('default_location'),
+  defaultTime: text('default_time'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 export const weekOptOuts = pgTable(

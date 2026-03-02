@@ -29,7 +29,6 @@ export default async function WeekDetailPage({
   if (!week) notFound();
 
   const isAdmin = session.user.role === 'admin';
-  const hasHousehold = !!session.user.householdId;
   const totalContributions = week.swapDays.reduce(
     (sum, sd) => sum + sd.contributions.length,
     0,
@@ -50,12 +49,12 @@ export default async function WeekDetailPage({
       <div className="flex flex-wrap gap-4">
         <HeadcountDisplay count={headcount} />
         <div className="rounded-lg bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
-          <span className="text-sm text-zinc-500">Contributions: </span>
+          <span className="text-sm text-zinc-500">Households cooking: </span>
           <span className="font-semibold">{totalContributions}</span>
         </div>
-        {(hasHousehold || isAdmin) && (
+        {isAdmin && (
           <Link href={`/week/${weekId}/edit`}>
-            <Button variant="secondary">Post Contribution</Button>
+            <Button variant="secondary">Edit Logistics</Button>
           </Link>
         )}
       </div>

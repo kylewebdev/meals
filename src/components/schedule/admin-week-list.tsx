@@ -10,7 +10,12 @@ interface SwapDayInfo {
   id: string;
   label: string;
   dayOfWeek: number;
-  recipe: { id: string; name: string } | null;
+  contributions: {
+    id: string;
+    householdId: string;
+    household: { id: string; name: string };
+    recipe: { id: string; name: string } | null;
+  }[];
 }
 
 interface AdminWeekItem {
@@ -72,15 +77,21 @@ export function AdminWeekList({ weeks }: AdminWeekListProps) {
             {week.swapDays.length > 0 && (
               <div className="flex flex-wrap gap-2 pl-1">
                 {week.swapDays.map((sd) => (
-                  <span
+                  <div
                     key={sd.id}
-                    className="inline-flex items-center gap-1 rounded bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800"
+                    className="inline-flex flex-col gap-0.5 rounded bg-zinc-100 px-2 py-1 text-xs dark:bg-zinc-800"
                   >
-                    <span className="font-medium">{sd.label.replace(' Swap', '')}:</span>
-                    <span className="text-zinc-600 dark:text-zinc-400">
-                      {sd.recipe?.name ?? 'No recipe'}
-                    </span>
-                  </span>
+                    <span className="font-medium">{sd.label.replace(' Swap', '')}</span>
+                    {sd.contributions.length > 0 ? (
+                      sd.contributions.map((c) => (
+                        <span key={c.id} className="text-zinc-600 dark:text-zinc-400">
+                          {c.household.name}: {c.recipe?.name ?? 'TBD'}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-zinc-400">No assignments</span>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
