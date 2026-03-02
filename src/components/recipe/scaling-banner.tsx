@@ -51,7 +51,12 @@ export function ScalingBanner({
             return (
               <tr key={hp.householdId} className="border-b border-blue-100 last:border-0 dark:border-blue-900">
                 <td className="py-1 pr-4 font-medium">{hp.householdName}</td>
-                <td className="py-1 pr-4 text-right">{hp.memberCount}</td>
+                <td className="py-1 pr-4 text-right">
+                  {hp.memberCount}
+                  {hp.extraPortions > 0 && (
+                    <span className="text-blue-500 dark:text-blue-400"> (+{hp.extraPortions})</span>
+                  )}
+                </td>
                 <td className="py-1 pr-4 text-right">{hp.portions}</td>
                 <td className="py-1 text-right">{perPerson}</td>
               </tr>

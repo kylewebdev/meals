@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { contributions, swapDays, user, weekOptOuts, weeks } from '@/lib/db/schema';
-import { and, eq, count, isNull, inArray, gte } from 'drizzle-orm';
+import { contributions, households, swapDays, user, weekOptOuts, weeks } from '@/lib/db/schema';
+import { and, eq, count, isNull, inArray, gte, sum, sql } from 'drizzle-orm';
 import { computeNutrition } from './recipes';
 
 export interface ContributionItem {
@@ -227,12 +227,16 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
 
 export async function getHeadcount(weekId?: string): Promise<number> {
   if (!weekId) {
-    const [result] = await db.select({ count: count() }).from(user);
-    return result?.count ?? 0;
+    const [[userResult], [hhResult]] = await Promise.all([
+      db.select({ total: sum(user.portionsPerMeal) }).from(user),
+      db.select({ total: sum(households.extraPortions) }).from(households),
+    ]);
+    return (Number(userResult?.total) || 0) + (Number(hhResult?.total) || 0);
   }
 
-  const [result] = await db
-    .select({ count: count() })
+  // Users not opted out of this week
+  const [userResult] = await db
+    .select({ total: sum(user.portionsPerMeal) })
     .from(user)
     .leftJoin(
       weekOptOuts,
@@ -240,5 +244,17 @@ export async function getHeadcount(weekId?: string): Promise<number> {
     )
     .where(isNull(weekOptOuts.id));
 
-  return result?.count ?? 0;
+  // Extra portions from households that have at least one non-opted-out member
+  const [hhResult] = await db
+    .select({ total: sum(households.extraPortions) })
+    .from(households)
+    .where(
+      sql`exists (
+        select 1 from "user" u
+        left join "week_opt_outs" woo on woo."user_id" = u."id" and woo."week_id" = ${weekId}
+        where u."household_id" = ${households.id} and woo."id" is null
+      )`,
+    );
+
+  return (Number(userResult?.total) || 0) + (Number(hhResult?.total) || 0);
 }

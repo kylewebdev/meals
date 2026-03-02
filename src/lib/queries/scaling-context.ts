@@ -1,8 +1,17 @@
 import { db } from '@/lib/db';
-import { contributions, swapDays, weeks } from '@/lib/db/schema';
+import { contributions, households, user, weekOptOuts } from '@/lib/db/schema';
 import { getPortionCount } from '@/lib/schedule-utils';
 import { getHeadcount } from './contributions';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq, isNull, isNotNull, sum } from 'drizzle-orm';
+
+export interface HouseholdPortion {
+  householdId: string;
+  householdName: string;
+  memberCount: number;
+  portions: number;
+  /** Extra portions beyond 1-per-member (from user portionsPerMeal > 1 + household extraPortions) */
+  extraPortions: number;
+}
 
 export interface ScalingContext {
   portionCount: number;
@@ -10,6 +19,43 @@ export interface ScalingContext {
   swapDayLabel: string;
   weekStartDate: Date;
   weekId: string;
+  householdPortions: HouseholdPortion[];
+}
+
+async function getHouseholdPortions(
+  weekId: string,
+  coversFrom: number,
+  coversTo: number,
+): Promise<HouseholdPortion[]> {
+  const rows = await db
+    .select({
+      householdId: households.id,
+      householdName: households.name,
+      extraPortions: households.extraPortions,
+      memberCount: count(user.id),
+      portionCount: sum(user.portionsPerMeal),
+    })
+    .from(user)
+    .innerJoin(households, eq(user.householdId, households.id))
+    .leftJoin(
+      weekOptOuts,
+      and(eq(weekOptOuts.userId, user.id), eq(weekOptOuts.weekId, weekId)),
+    )
+    .where(and(isNull(weekOptOuts.id), isNotNull(user.householdId)))
+    .groupBy(households.id, households.name, households.extraPortions)
+    .orderBy(households.name);
+
+  return rows.map((r) => {
+    const portionSum = Number(r.portionCount) || 0;
+    const extra = (portionSum - r.memberCount) + r.extraPortions;
+    return {
+      householdId: r.householdId,
+      householdName: r.householdName,
+      memberCount: r.memberCount,
+      portions: getPortionCount(portionSum + r.extraPortions, coversFrom, coversTo),
+      extraPortions: extra,
+    };
+  });
 }
 
 export async function getScalingContext(
@@ -37,7 +83,15 @@ export async function getScalingContext(
 
   if (!contribution) return null;
 
-  const headcount = await getHeadcount(weekId);
+  const [headcount, householdPortions] = await Promise.all([
+    getHeadcount(weekId),
+    getHouseholdPortions(
+      weekId,
+      contribution.swapDay.coversFrom,
+      contribution.swapDay.coversTo,
+    ),
+  ]);
+
   const portionCount = getPortionCount(
     headcount,
     contribution.swapDay.coversFrom,
@@ -50,5 +104,6 @@ export async function getScalingContext(
     swapDayLabel: contribution.swapDay.label,
     weekStartDate: contribution.week.startDate,
     weekId,
+    householdPortions,
   };
 }

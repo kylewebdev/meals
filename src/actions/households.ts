@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { households, user } from '@/lib/db/schema';
-import { requireAdmin, requireSession } from '@/lib/auth-utils';
+import { requireAdmin, requireHouseholdHead, requireSession } from '@/lib/auth-utils';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -105,6 +105,7 @@ export interface HouseholdDetail {
   id: string;
   name: string;
   headId: string | null;
+  extraPortions: number;
   head: { id: string; name: string; email: string } | null;
   members: { id: string; name: string; email: string; role: string }[];
   invites: { id: string; email: string; role: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[];
@@ -121,4 +122,22 @@ export async function getHousehold(id: string): Promise<HouseholdDetail | undefi
       },
     },
   }) as unknown as Promise<HouseholdDetail | undefined>;
+}
+
+export async function updateExtraPortions(householdId: string, extraPortions: number) {
+  const auth = await requireHouseholdHead(householdId);
+  if (!auth.success) return auth;
+
+  if (!Number.isInteger(extraPortions) || extraPortions < 0 || extraPortions > 10) {
+    return { success: false as const, error: 'Extra portions must be between 0 and 10' };
+  }
+
+  await db
+    .update(households)
+    .set({ extraPortions, updatedAt: new Date() })
+    .where(eq(households.id, householdId));
+
+  revalidatePath('/household');
+  revalidatePath('/schedule');
+  return { success: true as const, data: null };
 }

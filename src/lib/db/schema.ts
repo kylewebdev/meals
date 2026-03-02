@@ -30,9 +30,7 @@ export const user = pgTable('user', {
   image: text('image'),
   householdId: text('household_id').references(() => households.id),
   role: userRoleEnum('role').notNull().default('member'),
-  allergies: text('allergies').array(),
-  dietaryPreferences: text('dietary_preferences').array(),
-  dietaryNotes: text('dietary_notes'),
+  portionsPerMeal: integer('portions_per_meal').notNull().default(1),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -97,6 +95,7 @@ export const households = pgTable('households', {
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 255 }).notNull(),
   headId: text('head_id'), // FK to user.id — circular ref handled via relations
+  extraPortions: integer('extra_portions').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
