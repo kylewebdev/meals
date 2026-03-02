@@ -12,6 +12,7 @@ interface ContributionCardProps {
   proteinG: number | null;
   carbsG: number | null;
   fatG: number | null;
+  weekId?: string;
 }
 
 export function ContributionCard({
@@ -25,6 +26,7 @@ export function ContributionCard({
   proteinG,
   carbsG,
   fatG,
+  weekId,
 }: ContributionCardProps) {
   const displayName = dishName || recipeName || 'Untitled dish';
 
@@ -36,7 +38,7 @@ export function ContributionCard({
           <p className="text-sm">
             {recipeId ? (
               <Link
-                href={`/recipes/${recipeId}`}
+                href={`/recipes/${recipeId}${weekId ? `?weekId=${weekId}` : ''}`}
                 className="text-blue-600 hover:underline dark:text-blue-400"
               >
                 {displayName}

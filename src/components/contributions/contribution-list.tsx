@@ -19,9 +19,10 @@ interface Contribution {
 
 interface ContributionListProps {
   contributions: Contribution[];
+  weekId?: string;
 }
 
-export function ContributionList({ contributions }: ContributionListProps) {
+export function ContributionList({ contributions, weekId }: ContributionListProps) {
   if (contributions.length === 0) {
     return (
       <p className="text-sm text-zinc-500">No contributions yet.</p>
@@ -43,6 +44,7 @@ export function ContributionList({ contributions }: ContributionListProps) {
           proteinG={c.recipe?.proteinG ?? null}
           carbsG={c.recipe?.carbsG ?? null}
           fatG={c.recipe?.fatG ?? null}
+          weekId={weekId}
         />
       ))}
     </div>

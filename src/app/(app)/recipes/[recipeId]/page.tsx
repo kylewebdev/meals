@@ -1,9 +1,11 @@
 import { getSession } from '@/lib/auth-utils';
 import { getRecipe } from '@/lib/queries/recipes';
+import { getScalingContext } from '@/lib/queries/scaling-context';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
 import { NutritionSummary } from '@/components/recipe/nutrition-summary';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { ReviewActions } from '@/components/recipe/review-actions';
+import { ScalingBanner } from '@/components/recipe/scaling-banner';
 import { TagList } from '@/components/recipe/tag-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -13,13 +15,16 @@ import { DeleteRecipeButton } from './delete-button';
 
 export default async function RecipeDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ recipeId: string }>;
+  searchParams: Promise<{ weekId?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect('/login');
 
   const { recipeId } = await params;
+  const { weekId } = await searchParams;
   const recipe = await getRecipe(recipeId);
   if (!recipe) notFound();
 
@@ -29,6 +34,17 @@ export default async function RecipeDetailPage({
   // Non-admin, non-creator can't see unapproved recipes
   if (recipe.status !== 'approved' && !isAdmin && !isCreator) {
     notFound();
+  }
+
+  // Compute scaling context when viewing from a week
+  let scaleFactor: number | undefined;
+  let scalingCtx: Awaited<ReturnType<typeof getScalingContext>> = null;
+
+  if (weekId && recipe.servings) {
+    scalingCtx = await getScalingContext(weekId, recipeId);
+    if (scalingCtx) {
+      scaleFactor = scalingCtx.portionCount / recipe.servings;
+    }
   }
 
   const canEdit = isAdmin || (isCreator && recipe.status !== 'approved');
@@ -88,6 +104,17 @@ export default async function RecipeDetailPage({
         fatG={recipe.fatG}
       />
 
+      {scalingCtx && scaleFactor && recipe.servings && (
+        <ScalingBanner
+          portionCount={scalingCtx.portionCount}
+          recipeServings={recipe.servings}
+          scaleFactor={scaleFactor}
+          swapDayLabel={scalingCtx.swapDayLabel}
+          weekStartDate={scalingCtx.weekStartDate}
+          weekId={scalingCtx.weekId}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <h3 className="font-semibold">Ingredients</h3>
@@ -100,6 +127,7 @@ export default async function RecipeDetailPage({
               ingredients={recipe.ingredients}
               recipeId={recipeId}
               editable={canEdit}
+              scaleFactor={scaleFactor}
             />
           )}
           {canEdit && recipe.ingredients.length === 0 && (

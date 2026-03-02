@@ -83,6 +83,7 @@ export default async function WeekDetailPage({
               time={sd.time}
               notes={sd.notes}
               contributions={sd.contributions}
+              weekId={weekId}
             />
           </div>
         ))

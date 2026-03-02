@@ -1,6 +1,7 @@
 'use client';
 
 import { addIngredient, removeIngredient, updateIngredient } from '@/actions/recipes';
+import { scaleQuantity } from '@/lib/quantity-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
@@ -21,9 +22,15 @@ interface IngredientTableProps {
   ingredients: Ingredient[];
   recipeId: string;
   editable: boolean;
+  scaleFactor?: number;
 }
 
-export function IngredientTable({ ingredients, recipeId, editable }: IngredientTableProps) {
+export function IngredientTable({
+  ingredients,
+  recipeId,
+  editable,
+  scaleFactor,
+}: IngredientTableProps) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newQuantity, setNewQuantity] = useState('');
@@ -88,7 +95,21 @@ export function IngredientTable({ ingredients, recipeId, editable }: IngredientT
           {ingredients.map((ing) => (
             <tr key={ing.id}>
               <td className="py-2">{ing.name}</td>
-              <td className="py-2 text-zinc-500">{ing.quantity ?? '—'}</td>
+              <td className="py-2 text-zinc-500">
+                {ing.quantity
+                  ? scaleFactor
+                    ? <>
+                        <span className="text-zinc-800 dark:text-zinc-200">
+                          {scaleQuantity(ing.quantity, scaleFactor)}
+                        </span>
+                        {' '}
+                        <span className="text-zinc-400 dark:text-zinc-600">
+                          ({ing.quantity})
+                        </span>
+                      </>
+                    : ing.quantity
+                  : '—'}
+              </td>
               <td className="py-2 text-zinc-500">{ing.unit ?? '—'}</td>
               <td className="py-2 text-zinc-500">{ing.calories ?? '—'}</td>
               <td className="py-2 text-zinc-500">{ing.proteinG != null ? `${ing.proteinG}g` : '—'}</td>

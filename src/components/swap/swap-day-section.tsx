@@ -28,6 +28,7 @@ interface SwapDaySectionProps {
   time: string | null;
   notes: string | null;
   contributions: Contribution[];
+  weekId?: string;
 }
 
 export function SwapDaySection({
@@ -39,6 +40,7 @@ export function SwapDaySection({
   time,
   notes,
   contributions,
+  weekId,
 }: SwapDaySectionProps) {
   return (
     <Card>
@@ -55,7 +57,7 @@ export function SwapDaySection({
           time={time}
           notes={notes}
         />
-        <ContributionList contributions={contributions} />
+        <ContributionList contributions={contributions} weekId={weekId} />
       </CardContent>
     </Card>
   );
