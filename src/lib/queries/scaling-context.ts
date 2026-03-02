@@ -14,6 +14,7 @@ export interface HouseholdPortion {
 }
 
 export interface ScalingContext {
+  contributionId: string;
   portionCount: number;
   headcount: number;
   swapDayLabel: string;
@@ -72,6 +73,7 @@ export async function getScalingContext(
       },
     },
   }) as unknown as {
+    id: string;
     swapDay: { label: string; coversFrom: number; coversTo: number };
     week: { startDate: Date };
   } | undefined;
@@ -93,6 +95,7 @@ export async function getScalingContext(
   );
 
   return {
+    contributionId: contribution.id,
     portionCount,
     headcount,
     swapDayLabel: contribution.swapDay.label,

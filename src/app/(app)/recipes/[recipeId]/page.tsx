@@ -1,7 +1,10 @@
 import { getSession } from '@/lib/auth-utils';
 import { getRecipe } from '@/lib/queries/recipes';
+import { getGroceryList } from '@/lib/queries/grocery';
 import { getRecipeRatings } from '@/lib/queries/ratings';
 import { getScalingContext } from '@/lib/queries/scaling-context';
+import { GroceryListTab } from '@/components/grocery/grocery-list-tab';
+import { IngredientGroceryTabs } from '@/components/grocery/ingredient-grocery-tabs';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
 import { NutritionChart } from '@/components/recipe/nutrition-chart';
 import { RatingList } from '@/components/recipe/rating-list';
@@ -49,6 +52,11 @@ export default async function RecipeDetailPage({
       scaleFactor = scalingCtx.portionCount / recipe.servings;
     }
   }
+
+  // Fetch grocery list when viewing from a week with a linked recipe
+  const groceryList = scalingCtx
+    ? await getGroceryList(scalingCtx.contributionId)
+    : null;
 
   const canEdit = isAdmin || (isCreator && recipe.status !== 'approved');
   const canDelete = isAdmin || (isCreator && recipe.status !== 'approved');
@@ -133,24 +141,48 @@ export default async function RecipeDetailPage({
       )}
 
       <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Ingredients</h3>
-        </CardHeader>
-        <CardContent>
-          {recipe.ingredients.length === 0 ? (
-            <p className="text-sm text-zinc-500">No ingredients listed.</p>
-          ) : (
-            <IngredientTable
-              ingredients={recipe.ingredients}
-              recipeId={recipeId}
-              editable={canEdit}
-              scaleFactor={scaleFactor}
+        {groceryList ? (
+          <CardContent className="pt-4">
+            <IngredientGroceryTabs
+              ingredientsContent={
+                recipe.ingredients.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No ingredients listed.</p>
+                ) : (
+                  <IngredientTable
+                    ingredients={recipe.ingredients}
+                    recipeId={recipeId}
+                    editable={canEdit}
+                    scaleFactor={scaleFactor}
+                  />
+                )
+              }
+              groceryContent={
+                <GroceryListTab listId={groceryList.id} items={groceryList.items} />
+              }
             />
-          )}
-          {canEdit && recipe.ingredients.length === 0 && (
-            <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
-          )}
-        </CardContent>
+          </CardContent>
+        ) : (
+          <>
+            <CardHeader>
+              <h3 className="font-semibold">Ingredients</h3>
+            </CardHeader>
+            <CardContent>
+              {recipe.ingredients.length === 0 ? (
+                <p className="text-sm text-zinc-500">No ingredients listed.</p>
+              ) : (
+                <IngredientTable
+                  ingredients={recipe.ingredients}
+                  recipeId={recipeId}
+                  editable={canEdit}
+                  scaleFactor={scaleFactor}
+                />
+              )}
+              {canEdit && recipe.ingredients.length === 0 && (
+                <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
+              )}
+            </CardContent>
+          </>
+        )}
       </Card>
 
       {recipe.instructions && (

@@ -306,6 +306,39 @@ export const swapSettings = pgTable('swap_settings', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const groceryLists = pgTable(
+  'grocery_lists',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    contributionId: text('contribution_id')
+      .notNull()
+      .references(() => contributions.id, { onDelete: 'cascade' })
+      .unique(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [index('grocery_lists_contribution_id_idx').on(table.contributionId)],
+);
+
+export const groceryItems = pgTable(
+  'grocery_items',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    listId: text('list_id')
+      .notNull()
+      .references(() => groceryLists.id, { onDelete: 'cascade' }),
+    ingredientName: varchar('ingredient_name', { length: 255 }).notNull(),
+    quantity: varchar('quantity', { length: 50 }),
+    unit: varchar('unit', { length: 50 }),
+    checked: boolean('checked').notNull().default(false),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (table) => [index('grocery_items_list_id_idx').on(table.listId)],
+);
+
 // ─── Relations ──────────────────────────────────────────────────
 
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -351,6 +384,7 @@ export const contributionRelations = relations(contributions, ({ one }) => ({
   }),
   swapDay: one(swapDays, { fields: [contributions.swapDayId], references: [swapDays.id] }),
   recipe: one(recipes, { fields: [contributions.recipeId], references: [recipes.id] }),
+  groceryList: one(groceryLists, { fields: [contributions.id], references: [groceryLists.contributionId] }),
 }));
 
 export const recipeRelations = relations(recipes, ({ one, many }) => ({
@@ -377,5 +411,17 @@ export const notificationRelations = relations(notifications, ({ one }) => ({
 export const inviteRelations = relations(invites, ({ one }) => ({
   household: one(households, { fields: [invites.householdId], references: [households.id] }),
   inviter: one(user, { fields: [invites.invitedBy], references: [user.id] }),
+}));
+
+export const groceryListRelations = relations(groceryLists, ({ one, many }) => ({
+  contribution: one(contributions, {
+    fields: [groceryLists.contributionId],
+    references: [contributions.id],
+  }),
+  items: many(groceryItems),
+}));
+
+export const groceryItemRelations = relations(groceryItems, ({ one }) => ({
+  list: one(groceryLists, { fields: [groceryItems.listId], references: [groceryLists.id] }),
 }));
 
