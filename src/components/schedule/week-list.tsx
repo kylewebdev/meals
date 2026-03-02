@@ -1,5 +1,6 @@
+import { Fragment } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { formatWeekRange, getDayName } from '@/lib/schedule-utils';
+import { formatWeekRange, getShortDayName } from '@/lib/schedule-utils';
 import { cn } from '@/lib/utils';
 import type { ScheduleWeekWithContributions } from '@/lib/queries/schedule';
 import Link from 'next/link';
@@ -40,13 +41,11 @@ export function WeekList({ weeks, currentWeekId }: WeekListProps) {
                 : 'border-zinc-200 dark:border-zinc-800',
             )}
           >
-            {/* Header row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="font-medium">{formatWeekRange(week.startDate)}</span>
-                <span className="text-sm text-zinc-500">{week.swapMode} swap</span>
-              </div>
-              <div className="flex items-center gap-2">
+            {/* Header */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="font-medium">{formatWeekRange(week.startDate)}</span>
+              <span className="text-sm text-zinc-500">{week.swapMode} swap</span>
+              <div className="flex items-center gap-2 ml-auto">
                 {isCurrent && <Badge variant="success">Current</Badge>}
                 <Badge variant={statusVariant[week.status] ?? 'outline'}>{week.status}</Badge>
               </div>
@@ -54,16 +53,16 @@ export function WeekList({ weeks, currentWeekId }: WeekListProps) {
 
             {/* Meal list per swap day */}
             {week.swapDays.length > 0 && (
-              <div className="mt-2 space-y-1.5">
+              <div className="mt-3 space-y-3">
                 {week.swapDays.map((sd) => {
                   const coversDays = [];
                   for (let d = sd.coversFrom; d <= sd.coversTo; d++) {
-                    coversDays.push(getDayName(d));
+                    coversDays.push(getShortDayName(d));
                   }
 
                   return (
-                    <div key={sd.id} className="flex flex-col gap-0.5 text-sm">
-                      <div className="flex items-center gap-2">
+                    <div key={sd.id} className="text-sm">
+                      <div className="flex items-baseline gap-2">
                         <span className="font-medium text-zinc-600 dark:text-zinc-400">
                           {sd.label}
                         </span>
@@ -72,18 +71,18 @@ export function WeekList({ weeks, currentWeekId }: WeekListProps) {
                         </span>
                       </div>
                       {sd.contributions.length > 0 ? (
-                        <ul className="ml-4 space-y-0.5">
+                        <div className="mt-1 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-sm">
                           {sd.contributions.map((c) => (
-                            <li key={c.id} className="flex items-center gap-2 text-sm">
-                              <span className="text-zinc-500">{c.household.name}:</span>
+                            <Fragment key={c.id}>
+                              <span className="text-zinc-500 text-right">{c.household.name}:</span>
                               <span className="text-zinc-800 dark:text-zinc-200">
                                 {c.recipe?.name ?? 'TBD'}
                               </span>
-                            </li>
+                            </Fragment>
                           ))}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="ml-4 text-xs text-zinc-400">No contributions yet</p>
+                        <p className="mt-1 text-xs text-zinc-400">No contributions yet</p>
                       )}
                     </div>
                   );

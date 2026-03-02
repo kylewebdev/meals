@@ -25,9 +25,14 @@ export function getSwapDayDefaults(mode: 'single' | 'dual'): SwapDayDefault[] {
 }
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const SHORT_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function getDayName(dayOfWeek: number): string {
   return DAY_NAMES[dayOfWeek] ?? `Day ${dayOfWeek}`;
+}
+
+export function getShortDayName(dayOfWeek: number): string {
+  return SHORT_DAY_NAMES[dayOfWeek] ?? `Day ${dayOfWeek}`;
 }
 
 export function formatWeekRange(startDate: Date): string {
