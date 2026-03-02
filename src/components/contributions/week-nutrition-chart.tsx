@@ -66,7 +66,7 @@ export function WeekNutritionChart({ swapDays }: WeekNutritionChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ left: 0, right: 16 }}>
             <XAxis type="number" hide />
-            <YAxis type="category" dataKey="name" width={56} tick={{ fontSize: 12 }} />
+            <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} tickMargin={8} />
             <Tooltip
               formatter={(value, name, props) => {
                 const unit = (props.payload as { unit?: string })?.unit ?? '';
