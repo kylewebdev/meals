@@ -5,7 +5,6 @@ import { getScalingContext } from '@/lib/queries/scaling-context';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
 import { NutritionSummary } from '@/components/recipe/nutrition-summary';
 import { RatingList } from '@/components/recipe/rating-list';
-import { RatingSummary } from '@/components/recipe/rating-summary';
 import { RatingWidget } from '@/components/recipe/rating-widget';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { ReviewActions } from '@/components/recipe/review-actions';
@@ -54,6 +53,9 @@ export default async function RecipeDetailPage({
   const canEdit = isAdmin || (isCreator && recipe.status !== 'approved');
   const canDelete = isAdmin || (isCreator && recipe.status !== 'approved');
   const totalTime = (recipe.prepTimeMinutes ?? 0) + (recipe.cookTimeMinutes ?? 0);
+  const hasNutrition = !!(recipe.calories || recipe.proteinG || recipe.carbsG || recipe.fatG);
+  const hasLeftColumn = hasNutrition || !!(scalingCtx && recipe.servings);
+  const showRatings = recipe.status === 'approved';
 
   return (
     <div className="space-y-6">
@@ -101,22 +103,51 @@ export default async function RecipeDetailPage({
 
       <TagList tags={recipe.tags} />
 
-      <NutritionSummary
-        calories={recipe.calories}
-        proteinG={recipe.proteinG}
-        carbsG={recipe.carbsG}
-        fatG={recipe.fatG}
-      />
-
-      {scalingCtx && recipe.servings && (
-        <ScalingBanner
-          portionCount={scalingCtx.portionCount}
-          recipeServings={recipe.servings}
-          swapDayLabel={scalingCtx.swapDayLabel}
-          weekStartDate={scalingCtx.weekStartDate}
-          weekId={scalingCtx.weekId}
-          householdPortions={scalingCtx.householdPortions}
-        />
+      {/* Stats + Ratings side-by-side */}
+      {(hasLeftColumn || showRatings) && (
+        <div
+          className={`grid gap-6${
+            hasLeftColumn && showRatings ? ' md:grid-cols-2' : ''
+          }`}
+        >
+          {hasLeftColumn && (
+            <div className="flex flex-col gap-6">
+              {hasNutrition && (
+                <Card>
+                  <CardHeader>
+                    <h3 className="font-semibold">Nutrition</h3>
+                  </CardHeader>
+                  <CardContent>
+                    <NutritionSummary
+                      calories={recipe.calories}
+                      proteinG={recipe.proteinG}
+                      carbsG={recipe.carbsG}
+                      fatG={recipe.fatG}
+                      className="max-w-none"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+              {scalingCtx && recipe.servings && (
+                <ScalingBanner
+                  portionCount={scalingCtx.portionCount}
+                  recipeServings={recipe.servings}
+                  swapDayLabel={scalingCtx.swapDayLabel}
+                  weekStartDate={scalingCtx.weekStartDate}
+                  weekId={scalingCtx.weekId}
+                  householdPortions={scalingCtx.householdPortions}
+                  className="max-w-none flex-1"
+                />
+              )}
+            </div>
+          )}
+          {showRatings && (
+            <RatingsSection
+              recipeId={recipeId}
+              householdId={session.user.householdId}
+            />
+          )}
+        </div>
       )}
 
       <Card>
@@ -151,13 +182,6 @@ export default async function RecipeDetailPage({
         </Card>
       )}
 
-      {recipe.status === 'approved' && (
-        <RatingsSection
-          recipeId={recipeId}
-          householdId={session.user.householdId}
-        />
-      )}
-
       <p className="text-xs text-zinc-400">
         Added by {recipe.creator.name}
       </p>
@@ -176,41 +200,95 @@ async function RatingsSection({
   const myRating = householdId
     ? ratings.find((r) => r.householdId === householdId)
     : undefined;
+  const { love, fine, dislike, total } = aggregate;
+  const hasBothSections = !!householdId && ratings.length > 0;
 
   return (
     <Card>
       <CardHeader>
-        <h3 className="font-semibold">
-          Ratings
-          {aggregate.total > 0 && (
-            <>
-              {' '}
-              <RatingSummary {...aggregate} />
-            </>
+        <div className="flex items-baseline justify-between gap-2">
+          <h3 className="font-semibold">Ratings</h3>
+          {total > 0 && (
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              {total} household{total !== 1 ? 's' : ''} rated
+            </span>
           )}
-        </h3>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {householdId && (
-          <div>
-            <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Your household&apos;s rating
-            </p>
-            <RatingWidget
-              recipeId={recipeId}
-              currentRating={myRating?.rating}
-              currentComment={myRating?.comment}
-            />
+      <CardContent className="space-y-6">
+        {total > 0 && (
+          <div className="space-y-2">
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+              {love > 0 && (
+                <div
+                  className="bg-green-500 transition-all"
+                  style={{ width: `${(love / total) * 100}%` }}
+                />
+              )}
+              {fine > 0 && (
+                <div
+                  className="bg-zinc-400 transition-all dark:bg-zinc-500"
+                  style={{ width: `${(fine / total) * 100}%` }}
+                />
+              )}
+              {dislike > 0 && (
+                <div
+                  className="bg-red-500 transition-all"
+                  style={{ width: `${(dislike / total) * 100}%` }}
+                />
+              )}
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {love > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500" />
+                  <span className="text-zinc-600 dark:text-zinc-400">
+                    {love} loved
+                  </span>
+                </span>
+              )}
+              {fine > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+                  <span className="text-zinc-600 dark:text-zinc-400">
+                    {fine} fine
+                  </span>
+                </span>
+              )}
+              {dislike > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
+                  <span className="text-zinc-600 dark:text-zinc-400">
+                    {dislike} disliked
+                  </span>
+                </span>
+              )}
+            </div>
           </div>
         )}
-        {ratings.length > 0 && (
-          <div>
-            <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              All household ratings
-            </p>
-            <RatingList ratings={ratings} />
-          </div>
-        )}
+
+        <div className={hasBothSections ? 'grid gap-6 md:grid-cols-2' : ''}>
+          {householdId && (
+            <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-900">
+              <h4 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Your household&apos;s rating
+              </h4>
+              <RatingWidget
+                recipeId={recipeId}
+                currentRating={myRating?.rating}
+                currentComment={myRating?.comment}
+              />
+            </div>
+          )}
+          {ratings.length > 0 && (
+            <div>
+              <h4 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                All household ratings
+              </h4>
+              <RatingList ratings={ratings} />
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

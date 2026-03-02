@@ -45,7 +45,27 @@ export function RecipeCard({
             {calories && <span>{calories} cal</span>}
           </div>
           {ratingAggregate && ratingAggregate.total > 0 && (
-            <div className="mt-2">
+            <div className="mt-2 space-y-1.5">
+              <div className="flex h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                {ratingAggregate.love > 0 && (
+                  <div
+                    className="bg-green-500"
+                    style={{ width: `${(ratingAggregate.love / ratingAggregate.total) * 100}%` }}
+                  />
+                )}
+                {ratingAggregate.fine > 0 && (
+                  <div
+                    className="bg-zinc-400 dark:bg-zinc-500"
+                    style={{ width: `${(ratingAggregate.fine / ratingAggregate.total) * 100}%` }}
+                  />
+                )}
+                {ratingAggregate.dislike > 0 && (
+                  <div
+                    className="bg-red-500"
+                    style={{ width: `${(ratingAggregate.dislike / ratingAggregate.total) * 100}%` }}
+                  />
+                )}
+              </div>
               <RatingSummary {...ratingAggregate} compact />
             </div>
           )}

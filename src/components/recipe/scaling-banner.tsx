@@ -1,5 +1,6 @@
 import { formatWeekRange } from '@/lib/schedule-utils';
 import type { HouseholdPortion } from '@/lib/queries/scaling-context';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 interface ScalingBannerProps {
@@ -9,6 +10,7 @@ interface ScalingBannerProps {
   weekStartDate: Date;
   weekId: string;
   householdPortions: HouseholdPortion[];
+  className?: string;
 }
 
 export function ScalingBanner({
@@ -18,9 +20,13 @@ export function ScalingBanner({
   weekStartDate,
   weekId,
   householdPortions,
+  className,
 }: ScalingBannerProps) {
   return (
-    <div className="max-w-2xl rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950">
+    <div className={cn(
+      'max-w-2xl rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950',
+      className,
+    )}>
       <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
         Scaled for <strong>{portionCount} portions</strong>{' '}
         <span className="text-blue-600 dark:text-blue-400">

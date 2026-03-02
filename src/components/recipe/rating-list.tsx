@@ -5,10 +5,16 @@ interface RatingListProps {
   ratings: HouseholdRating[];
 }
 
-const ratingStyles: Record<string, string> = {
-  love: 'text-green-600',
-  fine: 'text-zinc-500',
-  dislike: 'text-red-500',
+const ratingTextStyles: Record<string, string> = {
+  love: 'text-green-600 dark:text-green-500',
+  fine: 'text-zinc-500 dark:text-zinc-400',
+  dislike: 'text-red-600 dark:text-red-500',
+};
+
+const ratingDotStyles: Record<string, string> = {
+  love: 'bg-green-500',
+  fine: 'bg-zinc-400 dark:bg-zinc-500',
+  dislike: 'bg-red-500',
 };
 
 const ratingLabels: Record<string, string> = {
@@ -23,19 +29,28 @@ export function RatingList({ ratings }: RatingListProps) {
   }
 
   return (
-    <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+    <ul className="space-y-3">
       {ratings.map((r) => (
-        <li key={r.id} className="py-3 first:pt-0 last:pb-0">
-          <p className="text-sm">
-            <span className="font-medium">{r.householdName}</span>
-            <span className="mx-1.5 text-zinc-300 dark:text-zinc-600">·</span>
-            <span className={cn('font-medium', ratingStyles[r.rating])}>
-              {ratingLabels[r.rating]}
-            </span>
-          </p>
-          {r.comment && (
-            <p className="mt-0.5 text-sm text-zinc-500">{r.comment}</p>
-          )}
+        <li key={r.id} className="flex items-start gap-2.5">
+          <span
+            className={cn(
+              'mt-1.5 inline-block h-2.5 w-2.5 shrink-0 rounded-full',
+              ratingDotStyles[r.rating],
+            )}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                {r.householdName}
+              </span>
+              <span className={cn('shrink-0 text-xs font-medium', ratingTextStyles[r.rating])}>
+                {ratingLabels[r.rating]}
+              </span>
+            </div>
+            {r.comment && (
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{r.comment}</p>
+            )}
+          </div>
         </li>
       ))}
     </ul>
