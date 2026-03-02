@@ -1,77 +1,102 @@
-'use client';
-
-import { deleteWeek } from '@/actions/schedule';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { formatWeekRange } from '@/lib/schedule-utils';
-import { useState } from 'react';
-
-interface WeekItem {
-  id: string;
-  startDate: Date;
-  status: string;
-  swapMode: string;
-  _count: { contributions: number };
-}
+import { formatWeekRange, getDayName } from '@/lib/schedule-utils';
+import { cn } from '@/lib/utils';
+import type { ScheduleWeekWithContributions } from '@/lib/queries/schedule';
+import Link from 'next/link';
 
 interface WeekListProps {
-  weeks: WeekItem[];
+  weeks: ScheduleWeekWithContributions[];
+  currentWeekId: string | null;
 }
 
-const STATUS_VARIANT: Record<string, 'default' | 'success' | 'outline'> = {
+const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'outline'> = {
   upcoming: 'outline',
-  active: 'default',
-  complete: 'success',
+  active: 'success',
+  complete: 'default',
 };
 
-export function WeekList({ weeks }: WeekListProps) {
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [error, setError] = useState('');
-
-  const handleDelete = async (weekId: string) => {
-    setDeleting(weekId);
-    setError('');
-    const res = await deleteWeek(weekId);
-    if (!res.success) setError(res.error);
-    setDeleting(null);
-  };
+export function WeekList({ weeks, currentWeekId }: WeekListProps) {
+  if (weeks.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-zinc-500">
+        No weeks scheduled for this month.
+      </p>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-        {weeks.map((week) => {
-          const hasContributions = week._count.contributions > 0;
-          return (
-            <div key={week.id} className="flex items-center justify-between py-3">
+    <div className="space-y-3">
+      {weeks.map((week) => {
+        const isCurrent = week.id === currentWeekId;
+
+        return (
+          <Link
+            key={week.id}
+            href={`/week/${week.id}`}
+            className={cn(
+              'block rounded-lg border px-4 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900',
+              isCurrent
+                ? 'border-zinc-900 dark:border-zinc-100'
+                : 'border-zinc-200 dark:border-zinc-800',
+            )}
+          >
+            {/* Header row */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div>
-                  <span className="font-medium">
-                    {formatWeekRange(new Date(week.startDate))}
-                  </span>
-                  <span className="ml-2 text-sm text-zinc-500">{week.swapMode} swap</span>
-                </div>
-                <Badge variant={STATUS_VARIANT[week.status] ?? 'outline'}>
-                  {week.status}
-                </Badge>
-                {hasContributions && (
-                  <Badge variant="outline">
-                    {week._count.contributions} contribution{week._count.contributions !== 1 ? 's' : ''}
-                  </Badge>
-                )}
+                <span className="font-medium">{formatWeekRange(week.startDate)}</span>
+                <span className="text-sm text-zinc-500">{week.swapMode} swap</span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                loading={deleting === week.id}
-                onClick={() => handleDelete(week.id)}
-              >
-                Delete
-              </Button>
+              <div className="flex items-center gap-2">
+                {isCurrent && <Badge variant="success">Current</Badge>}
+                <Badge variant={statusVariant[week.status] ?? 'outline'}>{week.status}</Badge>
+              </div>
             </div>
-          );
-        })}
-      </div>
+
+            {/* Meal list per swap day */}
+            {week.swapDays.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {week.swapDays.map((sd) => {
+                  const coversDays = [];
+                  for (let d = sd.coversFrom; d <= sd.coversTo; d++) {
+                    coversDays.push(getDayName(d));
+                  }
+
+                  return (
+                    <div key={sd.id} className="flex flex-col gap-0.5 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-zinc-600 dark:text-zinc-400">
+                          {sd.label}
+                        </span>
+                        <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                          covers {coversDays.join(', ')}
+                        </span>
+                      </div>
+                      {sd.contributions.length > 0 ? (
+                        <ul className="ml-4 space-y-0.5">
+                          {sd.contributions.map((c) => (
+                            <li key={c.id} className="flex items-center gap-2 text-sm">
+                              <span className="text-zinc-500">{c.household.name}:</span>
+                              <span className="text-zinc-800 dark:text-zinc-200">
+                                {c.recipe?.name ?? 'TBD'}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="ml-4 text-xs text-zinc-400">No contributions yet</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {week.swapDays.length === 0 && (
+              <p className="mt-1.5 text-xs text-zinc-400">No swap days configured</p>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }

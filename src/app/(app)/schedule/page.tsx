@@ -1,12 +1,9 @@
 import { getSession } from '@/lib/auth-utils';
-import { db } from '@/lib/db';
-import { households } from '@/lib/db/schema';
-import { getSchedule, getScheduleWithContributions, getCurrentWeek } from '@/lib/queries/schedule';
-import { MonthGrid } from '@/components/schedule/month-grid';
+import { getScheduleWithContributions, getCurrentWeek } from '@/lib/queries/schedule';
+import { ensureWeeksExist } from '@/actions/schedule';
 import { MonthNavigation } from '@/components/schedule/month-navigation';
-import { ScheduleCalendar } from '@/components/schedule/schedule-calendar';
+import { WeekList } from '@/components/schedule/week-list';
 import { Button } from '@/components/ui/button';
-import { count } from 'drizzle-orm';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -18,6 +15,9 @@ export default async function SchedulePage({
   const session = await getSession();
   if (!session) redirect('/login');
 
+  // Auto-populate weeks through end of next month
+  await ensureWeeksExist();
+
   const isAdmin = session.user.role === 'admin';
   const { month: monthParam, year: yearParam } = await searchParams;
 
@@ -25,17 +25,27 @@ export default async function SchedulePage({
   const year = yearParam ? parseInt(yearParam) : now.getFullYear();
   const month = monthParam ? parseInt(monthParam) - 1 : now.getMonth();
 
-  // Date range for the visible calendar grid (padded)
-  const gridStart = new Date(year, month, -6); // extra padding for adjacent month days
-  const gridEnd = new Date(year, month + 1, 7);
+  // Date range: all Mondays that fall within this month
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-  const [weeksList, weeksWithContributions, currentWeek, [{ count: householdCount }]] =
-    await Promise.all([
-      getSchedule(),
-      getScheduleWithContributions(gridStart, gridEnd),
-      getCurrentWeek(),
-      db.select({ count: count() }).from(households),
-    ]);
+  // Extend range slightly so we catch weeks that start before the month
+  // but whose days spill into it, and weeks starting at end of month
+  const queryStart = new Date(monthStart);
+  queryStart.setDate(queryStart.getDate() - 6);
+
+  const [weeksWithContributions, currentWeek] = await Promise.all([
+    getScheduleWithContributions(queryStart, monthEnd),
+    getCurrentWeek(),
+  ]);
+
+  // Filter to weeks that overlap with the selected month
+  const filteredWeeks = weeksWithContributions.filter((w) => {
+    const start = new Date(w.startDate);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    return start <= monthEnd && end >= monthStart;
+  });
 
   return (
     <div className="space-y-6">
@@ -50,21 +60,7 @@ export default async function SchedulePage({
 
       <MonthNavigation year={year} month={month} />
 
-      <MonthGrid
-        year={year}
-        month={month}
-        weeks={weeksWithContributions}
-        householdCount={householdCount}
-      />
-
-      <details className="group">
-        <summary className="cursor-pointer text-sm font-medium text-zinc-500 hover:text-zinc-700">
-          Week list view
-        </summary>
-        <div className="mt-3">
-          <ScheduleCalendar weeks={weeksList} currentWeekId={currentWeek?.id ?? null} />
-        </div>
-      </details>
+      <WeekList weeks={filteredWeeks} currentWeekId={currentWeek?.id ?? null} />
     </div>
   );
 }
