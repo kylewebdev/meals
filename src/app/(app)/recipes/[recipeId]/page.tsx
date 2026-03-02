@@ -54,7 +54,6 @@ export default async function RecipeDetailPage({
   const canDelete = isAdmin || (isCreator && recipe.status !== 'approved');
   const totalTime = (recipe.prepTimeMinutes ?? 0) + (recipe.cookTimeMinutes ?? 0);
   const hasNutrition = !!(recipe.calories || recipe.proteinG || recipe.carbsG || recipe.fatG);
-  const hasLeftColumn = hasNutrition || !!(scalingCtx && recipe.servings);
   const showRatings = recipe.status === 'approved';
 
   return (
@@ -104,51 +103,33 @@ export default async function RecipeDetailPage({
 
       <TagList tags={recipe.tags} />
 
-      {/* Stats + Ratings side-by-side */}
-      {(hasLeftColumn || showRatings) && (
-        <div
-          className={`grid gap-6${
-            hasLeftColumn && showRatings ? ' md:grid-cols-2' : ''
-          }`}
-        >
-          {hasLeftColumn && (
-            <div className="flex flex-col gap-6">
-              {hasNutrition && (
-                <Card>
-                  <CardHeader>
-                    <h3 className="font-semibold">Nutrition</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <NutritionSummary
-                      calories={recipe.calories}
-                      proteinG={recipe.proteinG}
-                      carbsG={recipe.carbsG}
-                      fatG={recipe.fatG}
-                      className="max-w-none"
-                    />
-                  </CardContent>
-                </Card>
-              )}
-              {scalingCtx && recipe.servings && (
-                <ScalingBanner
-                  portionCount={scalingCtx.portionCount}
-                  recipeServings={recipe.servings}
-                  swapDayLabel={scalingCtx.swapDayLabel}
-                  weekStartDate={scalingCtx.weekStartDate}
-                  weekId={scalingCtx.weekId}
-                  householdPortions={scalingCtx.householdPortions}
-                  className="max-w-none flex-1"
-                />
-              )}
-            </div>
-          )}
-          {showRatings && (
-            <RatingsSection
-              recipeId={recipeId}
-              householdId={session.user.householdId}
+      {hasNutrition && (
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold">Nutrition</h3>
+          </CardHeader>
+          <CardContent>
+            <NutritionSummary
+              calories={recipe.calories}
+              proteinG={recipe.proteinG}
+              carbsG={recipe.carbsG}
+              fatG={recipe.fatG}
+              className="max-w-none"
             />
-          )}
-        </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {scalingCtx && recipe.servings && (
+        <ScalingBanner
+          portionCount={scalingCtx.portionCount}
+          recipeServings={recipe.servings}
+          swapDayLabel={scalingCtx.swapDayLabel}
+          weekStartDate={scalingCtx.weekStartDate}
+          weekId={scalingCtx.weekId}
+          householdPortions={scalingCtx.householdPortions}
+          className="max-w-none"
+        />
       )}
 
       <Card>
@@ -181,6 +162,13 @@ export default async function RecipeDetailPage({
             <div className="whitespace-pre-wrap text-sm">{recipe.instructions}</div>
           </CardContent>
         </Card>
+      )}
+
+      {showRatings && (
+        <RatingsSection
+          recipeId={recipeId}
+          householdId={session.user.householdId}
+        />
       )}
 
       <p className="text-xs text-zinc-400">
