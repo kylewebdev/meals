@@ -3,7 +3,6 @@ import { getWeekWithContributions, getHeadcount } from '@/lib/queries/contributi
 import { WeekNutritionSummary } from '@/components/contributions/week-nutrition-summary';
 import { WeekNutritionChart } from '@/components/contributions/week-nutrition-chart';
 import { PortionDisplay } from '@/components/contributions/portion-display';
-import { HeadcountDisplay } from '@/components/contributions/headcount-display';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,25 +39,18 @@ export default async function WeekDetailPage({
         <Link href="/schedule" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Schedule
         </Link>
-        <div className="mt-1 flex items-center gap-3">
-          <h2 className="text-2xl font-bold">{formatWeekRange(week.startDate)}</h2>
+        <h2 className="mt-1 text-2xl font-bold">{formatWeekRange(week.startDate)}</h2>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
           <Badge>{week.status}</Badge>
           <Badge variant="outline">{week.swapMode} swap</Badge>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <HeadcountDisplay count={headcount} />
-        <div className="rounded-lg bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
-          <span className="text-sm text-zinc-500">Households cooking: </span>
-          <span className="font-semibold">{totalContributions}</span>
-        </div>
-        {isAdmin && (
-          <Link href={`/week/${weekId}/edit`}>
-            <Button variant="secondary">Edit Logistics</Button>
-          </Link>
-        )}
-      </div>
+      {isAdmin && (
+        <Link href={`/week/${weekId}/edit`}>
+          <Button variant="secondary">Edit Logistics</Button>
+        </Link>
+      )}
 
       {week.swapDays.length === 0 ? (
         <EmptyState
