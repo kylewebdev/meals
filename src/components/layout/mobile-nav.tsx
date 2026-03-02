@@ -3,11 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from './nav-link';
 
-interface MobileNavProps {
-  isAdmin: boolean;
-}
-
-export function MobileNav({ isAdmin }: MobileNavProps) {
+export function MobileNav() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -47,8 +43,6 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
             <NavLink href="/schedule">Schedule</NavLink>
             <NavLink href="/recipes">Recipes</NavLink>
             <NavLink href="/household">Household</NavLink>
-            <NavLink href="/profile">Profile</NavLink>
-            {isAdmin && <NavLink href="/admin">Admin</NavLink>}
           </nav>
         </div>
       )}

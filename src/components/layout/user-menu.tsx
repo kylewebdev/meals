@@ -1,14 +1,16 @@
 'use client';
 
 import { signOut } from '@/lib/auth-client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 
 interface UserMenuProps {
   userName: string;
+  isAdmin: boolean;
 }
 
-export function UserMenu({ userName }: UserMenuProps) {
+export function UserMenu({ userName, isAdmin }: UserMenuProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -49,6 +51,23 @@ export function UserMenu({ userName }: UserMenuProps) {
       </button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-1 min-w-[160px] rounded-md border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            Profile
+          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Admin
+            </Link>
+          )}
+          <div className="my-1 border-t border-zinc-200 dark:border-zinc-700" />
           <button
             onClick={handleSignOut}
             className="flex w-full items-center px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"

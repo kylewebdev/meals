@@ -19,20 +19,18 @@ export function AppShell({ children, userName, userRole, notificationSlot, optOu
       <header className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2 md:gap-6">
-            <MobileNav isAdmin={isAdmin} />
+            <MobileNav />
             <span className="text-lg font-semibold">Meals</span>
             <nav className="hidden items-center gap-1 md:flex">
               <NavLink href="/dashboard">Dashboard</NavLink>
               <NavLink href="/schedule">Schedule</NavLink>
               <NavLink href="/recipes">Recipes</NavLink>
               <NavLink href="/household">Household</NavLink>
-              <NavLink href="/profile">Profile</NavLink>
-              {isAdmin && <NavLink href="/admin">Admin</NavLink>}
             </nav>
           </div>
           <div className="flex items-center gap-4">
             {notificationSlot}
-            <UserMenu userName={userName} />
+            <UserMenu userName={userName} isAdmin={isAdmin} />
           </div>
         </div>
       </header>
