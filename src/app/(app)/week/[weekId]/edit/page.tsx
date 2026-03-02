@@ -26,12 +26,11 @@ export default async function EditWeekPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div>
         <Link href={`/week/${weekId}`} className="text-sm text-zinc-500 hover:text-zinc-700">
-          {formatWeekRange(week.startDate)}
+          &larr; {formatWeekRange(week.startDate)}
         </Link>
-        <span className="text-zinc-300">/</span>
-        <h2 className="text-2xl font-bold">Edit Logistics</h2>
+        <h2 className="mt-1 text-2xl font-bold">Edit Logistics</h2>
       </div>
 
       <Card>

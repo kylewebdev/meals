@@ -36,14 +36,15 @@ export default async function WeekDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div>
         <Link href="/schedule" className="text-sm text-zinc-500 hover:text-zinc-700">
-          Schedule
+          &larr; Schedule
         </Link>
-        <span className="text-zinc-300">/</span>
-        <h2 className="text-2xl font-bold">{formatWeekRange(week.startDate)}</h2>
-        <Badge>{week.status}</Badge>
-        <Badge variant="outline">{week.swapMode} swap</Badge>
+        <div className="mt-1 flex items-center gap-3">
+          <h2 className="text-2xl font-bold">{formatWeekRange(week.startDate)}</h2>
+          <Badge>{week.status}</Badge>
+          <Badge variant="outline">{week.swapMode} swap</Badge>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-4">

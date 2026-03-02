@@ -13,12 +13,11 @@ export default async function RecipeRatingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div>
         <Link href="/admin" className="text-sm text-zinc-500 hover:text-zinc-700">
-          Admin
+          &larr; Admin
         </Link>
-        <span className="text-zinc-300">/</span>
-        <h2 className="text-2xl font-bold">Recipe Ratings</h2>
+        <h2 className="mt-1 text-2xl font-bold">Recipe Ratings</h2>
       </div>
 
       {summaries.length === 0 ? (

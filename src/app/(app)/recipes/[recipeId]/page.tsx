@@ -59,13 +59,14 @@ export default async function RecipeDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div>
         <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
-          Recipes
+          &larr; Recipes
         </Link>
-        <span className="text-zinc-300">/</span>
-        <h2 className="text-2xl font-bold">{recipe.name}</h2>
-        {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
+        <div className="mt-1 flex items-center gap-3">
+          <h2 className="text-2xl font-bold">{recipe.name}</h2>
+          {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
+        </div>
       </div>
 
       {(canEdit || canDelete) && (

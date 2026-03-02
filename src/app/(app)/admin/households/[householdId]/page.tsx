@@ -33,12 +33,11 @@ export default async function AdminHouseholdDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div>
         <Link href="/admin/households" className="text-sm text-zinc-500 hover:text-zinc-700">
-          Households
+          &larr; Households
         </Link>
-        <span className="text-zinc-300">/</span>
-        <h2 className="text-2xl font-bold">{household.name}</h2>
+        <h2 className="mt-1 text-2xl font-bold">{household.name}</h2>
       </div>
 
       <Card>
