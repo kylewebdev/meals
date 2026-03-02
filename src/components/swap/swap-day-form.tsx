@@ -1,22 +1,23 @@
 'use client';
 
-import { updatePickupInfo } from '@/actions/pickup';
+import { updateSwapDayInfo } from '@/actions/swap-days';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/input';
 import { useState } from 'react';
 
-interface PickupFormProps {
-  weekId: string;
+interface SwapDayFormProps {
+  swapDayId: string;
+  label: string;
   location: string | null;
-  times: string | null;
+  time: string | null;
   notes: string | null;
 }
 
-export function PickupForm({ weekId, location, times, notes }: PickupFormProps) {
+export function SwapDayForm({ swapDayId, label, location, time, notes }: SwapDayFormProps) {
   const [loc, setLoc] = useState(location ?? '');
-  const [tm, setTm] = useState(times ?? '');
+  const [tm, setTm] = useState(time ?? '');
   const [nt, setNt] = useState(notes ?? '');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -24,9 +25,9 @@ export function PickupForm({ weekId, location, times, notes }: PickupFormProps) 
   const handleSave = async () => {
     setLoading(true);
     setSaved(false);
-    await updatePickupInfo(weekId, {
+    await updateSwapDayInfo(swapDayId, {
       location: loc || undefined,
-      times: tm || undefined,
+      time: tm || undefined,
       notes: nt || undefined,
     });
     setLoading(false);
@@ -34,36 +35,37 @@ export function PickupForm({ weekId, location, times, notes }: PickupFormProps) 
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <h4 className="text-sm font-semibold">{label} — Logistics</h4>
       <div>
-        <Label htmlFor="pickup-location">Pickup location</Label>
+        <Label htmlFor={`loc-${swapDayId}`}>Location</Label>
         <Input
-          id="pickup-location"
+          id={`loc-${swapDayId}`}
           value={loc}
           onChange={(e) => { setLoc(e.target.value); setSaved(false); }}
-          placeholder="e.g., 123 Main St, front porch"
+          placeholder="e.g., Community center parking lot"
         />
       </div>
       <div>
-        <Label htmlFor="pickup-times">Pickup times</Label>
+        <Label htmlFor={`time-${swapDayId}`}>Time</Label>
         <Input
-          id="pickup-times"
+          id={`time-${swapDayId}`}
           value={tm}
           onChange={(e) => { setTm(e.target.value); setSaved(false); }}
-          placeholder="e.g., 5:00 PM – 7:00 PM"
+          placeholder="e.g., 5:00 PM"
         />
       </div>
       <div>
-        <Label htmlFor="pickup-notes">Notes</Label>
+        <Label htmlFor={`notes-${swapDayId}`}>Notes</Label>
         <Textarea
-          id="pickup-notes"
+          id={`notes-${swapDayId}`}
           value={nt}
           onChange={(e) => { setNt(e.target.value); setSaved(false); }}
-          placeholder="Any additional instructions"
+          placeholder="Additional logistics"
         />
       </div>
       <div className="flex items-center gap-3">
-        <Button onClick={handleSave} loading={loading}>Save Pickup Info</Button>
+        <Button onClick={handleSave} loading={loading}>Save</Button>
         {saved && <span className="text-sm text-green-600">Saved!</span>}
       </div>
     </div>

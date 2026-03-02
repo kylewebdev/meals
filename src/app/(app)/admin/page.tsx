@@ -38,14 +38,14 @@ export default async function AdminPage() {
           </Card>
         </Link>
 
-        <Link href="/admin/rotation">
+        <Link href="/admin/swap-config">
           <Card className="transition-shadow hover:shadow-md">
             <CardHeader>
-              <h3 className="font-semibold">Rotation & Schedule</h3>
+              <h3 className="font-semibold">Swap Settings</h3>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-zinc-500">
-                Set the cooking rotation order and generate weekly schedule.
+                Configure swap mode, generate weekly schedule, and manage swap logistics.
               </p>
             </CardContent>
           </Card>

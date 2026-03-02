@@ -10,8 +10,8 @@ interface WeekItem {
   id: string;
   startDate: Date;
   status: string;
-  household: { id: string; name: string };
-  _count: { mealPlanEntries: number };
+  swapMode: string;
+  _count: { contributions: number };
 }
 
 interface WeekListProps {
@@ -41,7 +41,7 @@ export function WeekList({ weeks }: WeekListProps) {
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
         {weeks.map((week) => {
-          const hasMeals = week._count.mealPlanEntries > 0;
+          const hasContributions = week._count.contributions > 0;
           return (
             <div key={week.id} className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
@@ -49,14 +49,14 @@ export function WeekList({ weeks }: WeekListProps) {
                   <span className="font-medium">
                     {formatWeekRange(new Date(week.startDate))}
                   </span>
-                  <span className="ml-2 text-sm text-zinc-500">{week.household.name}</span>
+                  <span className="ml-2 text-sm text-zinc-500">{week.swapMode} swap</span>
                 </div>
                 <Badge variant={STATUS_VARIANT[week.status] ?? 'outline'}>
                   {week.status}
                 </Badge>
-                {hasMeals && (
+                {hasContributions && (
                   <Badge variant="outline">
-                    {week._count.mealPlanEntries} meal{week._count.mealPlanEntries !== 1 ? 's' : ''}
+                    {week._count.contributions} contribution{week._count.contributions !== 1 ? 's' : ''}
                   </Badge>
                 )}
               </div>

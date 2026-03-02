@@ -1,66 +1,43 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { households, weeks } from '@/lib/db/schema';
+import { contributions, swapDays, weeks } from '@/lib/db/schema';
 import { requireAdmin } from '@/lib/auth-utils';
-import { assignHouseholdsToWeeks, getNextMonday } from '@/lib/schedule-utils';
+import { getNextMonday, getSwapDayDefaults } from '@/lib/schedule-utils';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-
-export async function updateRotationOrder(orderedHouseholdIds: string[]) {
-  const auth = await requireAdmin();
-  if (!auth.success) return auth;
-
-  for (let i = 0; i < orderedHouseholdIds.length; i++) {
-    await db
-      .update(households)
-      .set({ rotationPosition: i, updatedAt: new Date() })
-      .where(eq(households.id, orderedHouseholdIds[i]));
-  }
-
-  revalidatePath('/schedule');
-  revalidatePath('/admin/rotation');
-  return { success: true as const, data: null };
-}
 
 export async function deleteWeek(weekId: string) {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
-  // Check for meal plan entries
-  const { mealPlanEntries } = await import('@/lib/db/schema');
-  const entries = await db
-    .select({ id: mealPlanEntries.id })
-    .from(mealPlanEntries)
-    .where(eq(mealPlanEntries.weekId, weekId))
+  // Check for contributions
+  const existing = await db
+    .select({ id: contributions.id })
+    .from(contributions)
+    .where(eq(contributions.weekId, weekId))
     .limit(1);
 
-  if (entries.length > 0) {
-    return { success: false as const, error: 'Cannot delete a week that has meal plan entries. Remove them first.' };
+  if (existing.length > 0) {
+    return {
+      success: false as const,
+      error: 'Cannot delete a week that has contributions. Remove them first.',
+    };
   }
 
   await db.delete(weeks).where(eq(weeks.id, weekId));
 
   revalidatePath('/schedule');
-  revalidatePath('/admin/rotation');
+  revalidatePath('/admin/swap-config');
   return { success: true as const, data: null };
 }
 
-export async function generateWeeks(count: number) {
+export async function generateWeeks(count: number, swapMode: 'single' | 'dual' = 'single') {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
   if (count < 1 || count > 52) {
     return { success: false as const, error: 'Count must be between 1 and 52' };
-  }
-
-  const allHouseholds = await db
-    .select({ id: households.id, rotationPosition: households.rotationPosition })
-    .from(households)
-    .orderBy(households.rotationPosition);
-
-  if (allHouseholds.length === 0) {
-    return { success: false as const, error: 'No households exist' };
   }
 
   // Find the latest week to start after it, or use next Monday
@@ -77,15 +54,74 @@ export async function generateWeeks(count: number) {
     startDate = getNextMonday();
   }
 
-  const assignments = assignHouseholdsToWeeks(allHouseholds, startDate, count);
+  const defaults = getSwapDayDefaults(swapMode);
 
-  for (const assignment of assignments) {
-    await db.insert(weeks).values({
-      startDate: assignment.startDate,
-      householdId: assignment.householdId,
+  for (let i = 0; i < count; i++) {
+    const weekStart = new Date(startDate);
+    weekStart.setDate(weekStart.getDate() + i * 7);
+
+    const weekResult = await db
+      .insert(weeks)
+      .values({ startDate: weekStart, swapMode })
+      .returning() as (typeof weeks.$inferSelect)[];
+    const week = weekResult[0];
+
+    for (const def of defaults) {
+      await db.insert(swapDays).values({
+        weekId: week.id,
+        dayOfWeek: def.dayOfWeek,
+        label: def.label,
+        coversFrom: def.coversFrom,
+        coversTo: def.coversTo,
+      });
+    }
+  }
+
+  revalidatePath('/schedule');
+  revalidatePath('/admin/swap-config');
+  return { success: true as const, data: { generated: count } };
+}
+
+export async function updateWeekSwapMode(weekId: string, swapMode: 'single' | 'dual') {
+  const auth = await requireAdmin();
+  if (!auth.success) return auth;
+
+  // Check for existing contributions
+  const existing = await db
+    .select({ id: contributions.id })
+    .from(contributions)
+    .where(eq(contributions.weekId, weekId))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return {
+      success: false as const,
+      error: 'Cannot change swap mode for a week with existing contributions.',
+    };
+  }
+
+  // Update the week's swap mode
+  await db
+    .update(weeks)
+    .set({ swapMode, updatedAt: new Date() })
+    .where(eq(weeks.id, weekId));
+
+  // Delete old swap days and create new ones
+  await db.delete(swapDays).where(eq(swapDays.weekId, weekId));
+
+  const defaults = getSwapDayDefaults(swapMode);
+  for (const def of defaults) {
+    await db.insert(swapDays).values({
+      weekId,
+      dayOfWeek: def.dayOfWeek,
+      label: def.label,
+      coversFrom: def.coversFrom,
+      coversTo: def.coversTo,
     });
   }
 
   revalidatePath('/schedule');
-  return { success: true as const, data: { generated: count } };
+  revalidatePath('/admin/swap-config');
+  revalidatePath(`/week/${weekId}`);
+  return { success: true as const, data: null };
 }

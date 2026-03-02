@@ -17,8 +17,8 @@ export default async function SchedulePage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Schedule</h2>
         {isAdmin && (
-          <Link href="/admin/rotation">
-            <Button variant="secondary">Manage Rotation</Button>
+          <Link href="/admin/swap-config">
+            <Button variant="secondary">Swap Settings</Button>
           </Link>
         )}
       </div>

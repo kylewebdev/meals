@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { households, user, weeks } from '@/lib/db/schema';
+import { households, user } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { headers } from 'next/headers';
 
@@ -59,23 +59,15 @@ export async function requireHouseholdHead(
   return result;
 }
 
-export async function isCookingHousehold(
-  weekId: string,
+export async function isHouseholdMember(
+  householdId: string,
   userId: string,
 ): Promise<boolean> {
-  const [week] = await db
-    .select({ householdId: weeks.householdId })
-    .from(weeks)
-    .where(eq(weeks.id, weekId))
-    .limit(1);
-
-  if (!week) return false;
-
   const [member] = await db
     .select({ id: user.id })
     .from(user)
     .where(
-      and(eq(user.id, userId), eq(user.householdId, week.householdId)),
+      and(eq(user.id, userId), eq(user.householdId, householdId)),
     )
     .limit(1);
 

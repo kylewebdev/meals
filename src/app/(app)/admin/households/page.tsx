@@ -32,7 +32,6 @@ export default async function AdminHouseholdsPage() {
               id={h.id}
               name={h.name}
               memberCount={h.members.length}
-              rotationPosition={h.rotationPosition}
             />
           ))}
         </div>

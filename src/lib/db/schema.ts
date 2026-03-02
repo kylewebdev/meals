@@ -15,7 +15,7 @@ import {
 
 export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
-export const mealTypeEnum = pgEnum('meal_type', ['lunch', 'dinner']);
+export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
 
 // ─── Auth tables (Better Auth managed) ──────────────────────────
 
@@ -94,33 +94,23 @@ export const households = pgTable('households', {
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 255 }).notNull(),
   headId: text('head_id'), // FK to user.id — circular ref handled via relations
-  rotationPosition: integer('rotation_position').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const weeks = pgTable(
-  'weeks',
-  {
-    id: text('id')
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    startDate: timestamp('start_date', { mode: 'date' }).notNull(),
-    householdId: text('household_id')
-      .notNull()
-      .references(() => households.id),
-    status: weekStatusEnum('status').notNull().default('upcoming'),
-    pickupLocation: text('pickup_location'),
-    pickupTimes: text('pickup_times'),
-    pickupNotes: text('pickup_notes'),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  },
-  (table) => [index('weeks_household_id_idx').on(table.householdId)],
-);
+export const weeks = pgTable('weeks', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  startDate: timestamp('start_date', { mode: 'date' }).notNull(),
+  status: weekStatusEnum('status').notNull().default('upcoming'),
+  swapMode: swapModeEnum('swap_mode').notNull().default('single'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
 
-export const mealPlanEntries = pgTable(
-  'meal_plan_entries',
+export const swapDays = pgTable(
+  'swap_days',
   {
     id: text('id')
       .primaryKey()
@@ -129,18 +119,52 @@ export const mealPlanEntries = pgTable(
       .notNull()
       .references(() => weeks.id, { onDelete: 'cascade' }),
     dayOfWeek: integer('day_of_week').notNull(),
-    mealType: mealTypeEnum('meal_type').notNull(),
-    name: varchar('name', { length: 255 }),
-    description: text('description'),
-    recipeId: text('recipe_id').references(() => recipes.id),
-    isModified: boolean('is_modified').notNull().default(false),
-    modificationNotes: text('modification_notes'),
-    modifiedCalories: integer('modified_calories'),
-    modifiedProteinG: integer('modified_protein_g'),
-    modifiedCarbsG: integer('modified_carbs_g'),
-    modifiedFatG: integer('modified_fat_g'),
+    label: varchar('label', { length: 50 }).notNull(),
+    coversFrom: integer('covers_from').notNull(),
+    coversTo: integer('covers_to').notNull(),
+    location: text('location'),
+    time: text('time'),
+    notes: text('notes'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (table) => [index('meal_plan_entries_week_id_idx').on(table.weekId)],
+  (table) => [
+    unique('swap_days_week_day_uniq').on(table.weekId, table.dayOfWeek),
+    index('swap_days_week_id_idx').on(table.weekId),
+  ],
+);
+
+export const contributions = pgTable(
+  'contributions',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    weekId: text('week_id')
+      .notNull()
+      .references(() => weeks.id, { onDelete: 'cascade' }),
+    householdId: text('household_id')
+      .notNull()
+      .references(() => households.id),
+    swapDayId: text('swap_day_id')
+      .notNull()
+      .references(() => swapDays.id, { onDelete: 'cascade' }),
+    recipeId: text('recipe_id').references(() => recipes.id),
+    dishName: varchar('dish_name', { length: 255 }),
+    notes: text('notes'),
+    servings: integer('servings'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    unique('contributions_week_household_swap_uniq').on(
+      table.weekId,
+      table.householdId,
+      table.swapDayId,
+    ),
+    index('contributions_week_id_idx').on(table.weekId),
+    index('contributions_household_id_idx').on(table.householdId),
+  ],
 );
 
 export const recipes = pgTable(
@@ -195,6 +219,8 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'meal_plan_posted',
   'new_recipe',
   'opt_out_reset',
+  'contribution_reminder',
+  'contribution_posted',
 ]);
 
 export const notifications = pgTable(
@@ -278,25 +304,35 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const householdRelations = relations(households, ({ one, many }) => ({
   head: one(user, { fields: [households.headId], references: [user.id] }),
   members: many(user),
-  weeks: many(weeks),
+  contributions: many(contributions),
   invites: many(invites),
 }));
 
-export const weekRelations = relations(weeks, ({ one, many }) => ({
-  household: one(households, { fields: [weeks.householdId], references: [households.id] }),
-  mealPlanEntries: many(mealPlanEntries),
+export const weekRelations = relations(weeks, ({ many }) => ({
+  swapDays: many(swapDays),
+  contributions: many(contributions),
   optOuts: many(weekOptOuts),
 }));
 
-export const mealPlanEntryRelations = relations(mealPlanEntries, ({ one }) => ({
-  week: one(weeks, { fields: [mealPlanEntries.weekId], references: [weeks.id] }),
-  recipe: one(recipes, { fields: [mealPlanEntries.recipeId], references: [recipes.id] }),
+export const swapDayRelations = relations(swapDays, ({ one, many }) => ({
+  week: one(weeks, { fields: [swapDays.weekId], references: [weeks.id] }),
+  contributions: many(contributions),
+}));
+
+export const contributionRelations = relations(contributions, ({ one }) => ({
+  week: one(weeks, { fields: [contributions.weekId], references: [weeks.id] }),
+  household: one(households, {
+    fields: [contributions.householdId],
+    references: [households.id],
+  }),
+  swapDay: one(swapDays, { fields: [contributions.swapDayId], references: [swapDays.id] }),
+  recipe: one(recipes, { fields: [contributions.recipeId], references: [recipes.id] }),
 }));
 
 export const recipeRelations = relations(recipes, ({ one, many }) => ({
   creator: one(user, { fields: [recipes.createdBy], references: [user.id] }),
   ingredients: many(recipeIngredients),
-  mealPlanEntries: many(mealPlanEntries),
+  contributions: many(contributions),
 }));
 
 export const recipeIngredientRelations = relations(recipeIngredients, ({ one }) => ({

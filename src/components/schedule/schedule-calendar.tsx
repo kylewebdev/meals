@@ -5,7 +5,7 @@ interface Week {
   id: string;
   startDate: Date;
   status: string;
-  household: { id: string; name: string };
+  swapMode: string;
 }
 
 interface ScheduleCalendarProps {
@@ -18,7 +18,7 @@ export function ScheduleCalendar({ weeks, currentWeekId }: ScheduleCalendarProps
     return (
       <EmptyState
         title="No weeks scheduled"
-        description="An admin can generate weeks from the rotation settings."
+        description="An admin can generate weeks from the swap settings."
       />
     );
   }
@@ -30,7 +30,7 @@ export function ScheduleCalendar({ weeks, currentWeekId }: ScheduleCalendarProps
           key={week.id}
           id={week.id}
           startDate={week.startDate}
-          householdName={week.household.name}
+          swapMode={week.swapMode}
           status={week.status}
           isCurrent={week.id === currentWeekId}
         />

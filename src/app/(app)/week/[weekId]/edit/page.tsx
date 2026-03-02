@@ -1,8 +1,8 @@
-import { getSession, isCookingHousehold } from '@/lib/auth-utils';
-import { getWeekWithPlan } from '@/lib/queries/meal-plans';
+import { getSession } from '@/lib/auth-utils';
+import { getWeekWithContributions, getHouseholdContribution } from '@/lib/queries/contributions';
 import { getRecipes } from '@/lib/queries/recipes';
-import { RecipePicker } from '@/components/meal-plan/recipe-picker';
-import { PickupForm } from '@/components/pickup/pickup-form';
+import { ContributionForm } from '@/components/contributions/contribution-form';
+import { SwapDayForm } from '@/components/swap/swap-day-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatWeekRange } from '@/lib/schedule-utils';
 import Link from 'next/link';
@@ -17,17 +17,25 @@ export default async function EditWeekPage({
   if (!session) redirect('/login');
 
   const { weekId } = await params;
-  const [week, recipesList] = await Promise.all([
-    getWeekWithPlan(weekId),
+  const householdId = session.user.householdId;
+  const isAdmin = session.user.role === 'admin';
+
+  if (!householdId && !isAdmin) {
+    redirect(`/week/${weekId}`);
+  }
+
+  const [week, recipesList, existingContributions] = await Promise.all([
+    getWeekWithContributions(weekId),
     getRecipes(),
+    householdId ? getHouseholdContribution(weekId, householdId) : Promise.resolve([]),
   ]);
 
   if (!week) notFound();
 
-  const isCooking = await isCookingHousehold(weekId, session.user.id);
-  if (!isCooking && session.user.role !== 'admin') {
-    redirect(`/week/${weekId}`);
-  }
+  // Build a map of swapDayId → existing contribution for this household
+  const contributionBySwapDay = new Map(
+    existingContributions.map((c) => [c.swapDayId, c]),
+  );
 
   return (
     <div className="space-y-6">
@@ -36,35 +44,57 @@ export default async function EditWeekPage({
           {formatWeekRange(week.startDate)}
         </Link>
         <span className="text-zinc-300">/</span>
-        <h2 className="text-2xl font-bold">Edit Meal Plan</h2>
+        <h2 className="text-2xl font-bold">Post Contribution</h2>
       </div>
 
-      <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Assign Recipes</h3>
-        </CardHeader>
-        <CardContent>
-          <RecipePicker
-            weekId={weekId}
-            recipes={recipesList.map((r) => ({ id: r.id, name: r.name }))}
-            existingEntries={week.mealPlanEntries}
-          />
-        </CardContent>
-      </Card>
+      {householdId && (
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold">Your Contributions</h3>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {week.swapDays.map((sd) => {
+              const existing = contributionBySwapDay.get(sd.id);
+              return (
+                <ContributionForm
+                  key={sd.id}
+                  weekId={weekId}
+                  swapDayId={sd.id}
+                  swapDayLabel={sd.label}
+                  recipes={recipesList.map((r) => ({ id: r.id, name: r.name }))}
+                  existing={existing ? {
+                    id: existing.id,
+                    recipeId: existing.recipeId,
+                    dishName: existing.dishName,
+                    notes: existing.notes,
+                    servings: existing.servings,
+                  } : undefined}
+                />
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Pickup Information</h3>
-        </CardHeader>
-        <CardContent>
-          <PickupForm
-            weekId={weekId}
-            location={week.pickupLocation}
-            times={week.pickupTimes}
-            notes={week.pickupNotes}
-          />
-        </CardContent>
-      </Card>
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold">Swap Day Logistics</h3>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {week.swapDays.map((sd) => (
+              <SwapDayForm
+                key={sd.id}
+                swapDayId={sd.id}
+                label={sd.label}
+                location={sd.location}
+                time={sd.time}
+                notes={sd.notes}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

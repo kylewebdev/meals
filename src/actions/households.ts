@@ -91,14 +91,13 @@ export async function renameHousehold(householdId: string, name: string) {
 export interface HouseholdListItem {
   id: string;
   name: string;
-  rotationPosition: number;
   members: { id: string; name: string }[];
 }
 
 export async function getHouseholds(): Promise<HouseholdListItem[]> {
   return db.query.households.findMany({
     with: { members: { columns: { id: true, name: true } } },
-    orderBy: (h, { asc }) => [asc(h.rotationPosition)],
+    orderBy: (h, { asc }) => [asc(h.name)],
   }) as unknown as Promise<HouseholdListItem[]>;
 }
 
@@ -106,7 +105,6 @@ export interface HouseholdDetail {
   id: string;
   name: string;
   headId: string | null;
-  rotationPosition: number;
   head: { id: string; name: string; email: string } | null;
   members: { id: string; name: string; email: string; role: string }[];
   invites: { id: string; email: string; role: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[];

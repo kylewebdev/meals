@@ -4,10 +4,12 @@ import { generateWeeks } from '@/actions/schedule';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { useState } from 'react';
 
 export function GenerateWeeksButton() {
   const [count, setCount] = useState('4');
+  const [swapMode, setSwapMode] = useState<'single' | 'dual'>('single');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ message?: string; error?: string } | null>(null);
 
@@ -15,10 +17,10 @@ export function GenerateWeeksButton() {
     setLoading(true);
     setResult(null);
 
-    const res = await generateWeeks(parseInt(count) || 4);
+    const res = await generateWeeks(parseInt(count) || 4, swapMode);
 
     if (res.success) {
-      setResult({ message: `Generated ${res.data.generated} weeks` });
+      setResult({ message: `Generated ${res.data.generated} weeks (${swapMode} swap)` });
     } else {
       setResult({ error: res.error });
     }
@@ -27,9 +29,9 @@ export function GenerateWeeksButton() {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-3">
         <div>
-          <Label htmlFor="week-count">Weeks to generate</Label>
+          <Label htmlFor="week-count">Weeks</Label>
           <Input
             id="week-count"
             type="number"
@@ -39,6 +41,18 @@ export function GenerateWeeksButton() {
             onChange={(e) => setCount(e.target.value)}
             className="w-24"
           />
+        </div>
+        <div>
+          <Label htmlFor="swap-mode">Swap mode</Label>
+          <Select
+            id="swap-mode"
+            value={swapMode}
+            onChange={(e) => setSwapMode(e.target.value as 'single' | 'dual')}
+            className="w-32"
+          >
+            <option value="single">Single</option>
+            <option value="dual">Dual</option>
+          </Select>
         </div>
         <Button onClick={handleGenerate} loading={loading}>Generate</Button>
       </div>

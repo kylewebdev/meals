@@ -1,44 +1,37 @@
 import { db } from '@/lib/db';
-import { notifications, user, weeks } from '@/lib/db/schema';
-import { eq, ne } from 'drizzle-orm';
+import { notifications, user } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
-export async function notifyCookingReminder(weekId: string) {
-  const [week] = await db.query.weeks.findMany({
-    where: eq(weeks.id, weekId),
-    with: { household: { columns: { id: true, name: true } } },
-    limit: 1,
-  });
-  if (!week) return;
-
+export async function notifyContributionReminder(weekId: string, householdId: string) {
   const members = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.householdId, week.household.id));
+    .where(eq(user.householdId, householdId));
 
   for (const member of members) {
     await db.insert(notifications).values({
       userId: member.id,
-      type: 'cooking_reminder',
-      title: 'Your household is cooking this week!',
-      body: `${week.household.name} is assigned to cook. Time to plan your meals.`,
+      type: 'contribution_reminder',
+      title: 'Time to post your contribution!',
+      body: 'Your household hasn\'t posted a dish for this week\'s swap yet.',
       linkUrl: `/week/${weekId}`,
     });
   }
 }
 
-export async function notifyMealPlanPosted(weekId: string, cookingHouseholdId: string) {
+export async function notifyContributionPosted(weekId: string, contributorHouseholdId: string) {
   const members = await db
     .select({ id: user.id, householdId: user.householdId })
     .from(user);
 
-  const otherMembers = members.filter((m) => m.householdId !== cookingHouseholdId);
+  const otherMembers = members.filter((m) => m.householdId !== contributorHouseholdId);
 
   for (const member of otherMembers) {
     await db.insert(notifications).values({
       userId: member.id,
-      type: 'meal_plan_posted',
-      title: 'Meal plan posted!',
-      body: 'The meal plan for this week has been updated. Check it out!',
+      type: 'contribution_posted',
+      title: 'New contribution posted!',
+      body: 'A household has posted their dish for this week\'s swap.',
       linkUrl: `/week/${weekId}`,
     });
   }

@@ -7,40 +7,24 @@ export function getNextMonday(fromDate: Date = new Date()): Date {
   return date;
 }
 
-interface HouseholdForSchedule {
-  id: string;
-  rotationPosition: number;
+interface SwapDayDefault {
+  dayOfWeek: number;
+  label: string;
+  coversFrom: number;
+  coversTo: number;
 }
 
-interface WeekAssignment {
-  startDate: Date;
-  householdId: string;
-}
-
-export function assignHouseholdsToWeeks(
-  households: HouseholdForSchedule[],
-  startDate: Date,
-  count: number,
-): WeekAssignment[] {
-  if (households.length === 0) return [];
-
-  const sorted = [...households].sort((a, b) => a.rotationPosition - b.rotationPosition);
-  const assignments: WeekAssignment[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const weekStart = new Date(startDate);
-    weekStart.setDate(weekStart.getDate() + i * 7);
-
-    assignments.push({
-      startDate: weekStart,
-      householdId: sorted[i % sorted.length].id,
-    });
+export function getSwapDayDefaults(mode: 'single' | 'dual'): SwapDayDefault[] {
+  if (mode === 'dual') {
+    return [
+      { dayOfWeek: 6, label: 'Saturday Swap', coversFrom: 1, coversTo: 2 },
+      { dayOfWeek: 3, label: 'Wednesday Swap', coversFrom: 3, coversTo: 5 },
+    ];
   }
-
-  return assignments;
+  return [{ dayOfWeek: 0, label: 'Sunday Swap', coversFrom: 1, coversTo: 5 }];
 }
 
-const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export function getDayName(dayOfWeek: number): string {
   return DAY_NAMES[dayOfWeek] ?? `Day ${dayOfWeek}`;
