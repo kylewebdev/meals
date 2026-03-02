@@ -1,8 +1,8 @@
 import { getSession } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import { user } from '@/lib/db/schema';
-import { DietaryForm } from '@/components/profile/dietary-form';
 import { OptOutToggle } from '@/components/profile/opt-out-toggle';
+import { PortionsForm } from '@/components/profile/portions-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCurrentWeek } from '@/lib/queries/schedule';
@@ -15,7 +15,7 @@ export default async function ProfilePage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  // Get full user data with dietary fields + current week opt-out status
+  // Get full user data + current week opt-out status
   const [userData, currentWeek] = await Promise.all([
     db
       .select()
@@ -53,6 +53,8 @@ export default async function ProfilePage() {
             <span className="text-sm text-zinc-500">Role</span>
             <Badge>{userData.role}</Badge>
           </div>
+          <hr className="border-zinc-200 dark:border-zinc-700" />
+          <PortionsForm currentPortions={userData.portionsPerMeal} />
         </CardContent>
       </Card>
 
@@ -69,18 +71,6 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Dietary Information</h3>
-        </CardHeader>
-        <CardContent>
-          <DietaryForm
-            allergies={userData.allergies ?? []}
-            preferences={userData.dietaryPreferences ?? []}
-            notes={userData.dietaryNotes ?? ''}
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 }
