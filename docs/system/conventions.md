@@ -2,11 +2,13 @@
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router) with TypeScript
-- **Database:** Postgres (hosted via Neon or Supabase Postgres)
+- **Framework:** Next.js 16 (App Router) with TypeScript
+- **Database:** Postgres (hosted via Neon, serverless driver)
 - **ORM:** Drizzle ORM
-- **Auth:** Better Auth or Auth.js — magic link + email/password, invite-only signup
+- **Auth:** Better Auth v1.5 — email/password, invite-only signup
 - **Styling:** Tailwind CSS v4
+- **Validation:** Zod v4
+- **Charts:** Recharts
 - **Hosting:** Vercel
 - **Package manager:** pnpm
 
@@ -27,34 +29,57 @@
 ```
 src/
   app/                    # Next.js App Router pages and layouts
-    (auth)/               # Auth route group (login, register, etc.)
+    (auth)/               # Auth route group (login, register)
     (app)/                # Authenticated app route group
+      admin/              #   swap-config, recipe-review, users, households
       dashboard/
-      schedule/
-      week/[weekId]/
-      suggestions/
       household/
-      admin/
-    api/                  # API routes (if needed beyond server actions)
-    layout.tsx
-    page.tsx
+      profile/
+      recipes/            #   catalog, [recipeId], [recipeId]/edit, mine, new
+      schedule/
+      week/[weekId]/      #   detail + edit
+    api/                  # API routes (auth catch-all, invite accept)
   components/
     ui/                   # Generic reusable UI primitives (Button, Card, Input, etc.)
-    [feature]/            # Feature-specific components (e.g., components/schedule/)
+    admin/                # Admin-specific components (role select, delete/reset user)
+    contributions/        # Contribution cards, lists, headcount, nutrition chart
+    dashboard/            # Dashboard components (my-tasks)
+    household/            # Household CRUD, invites, member list
+    layout/               # App shell, nav, user menu, opt-out banner
+    notifications/        # Bell, item, list
+    profile/              # Dietary form, opt-out toggle
+    recipe/               # Recipe form, card, grid, search, ingredients, review
+    schedule/             # Week list, month nav, settings form, recipe/household order
+    swap/                 # Swap day form, info, section
   lib/
     db/
-      schema.ts           # Drizzle schema definitions
-      index.ts            # Drizzle client/connection
-      migrations/         # Drizzle migration files
-    auth.ts               # Auth configuration
-    utils.ts              # Shared utility functions
+      schema.ts           # Drizzle schema (15 tables, single source of truth)
+      index.ts            # Neon serverless client
+      migrations/         # Drizzle migration files (0000–0009)
+    queries/              # Read-only query functions, grouped by domain
+      contributions.ts
+      recipes.ts
+      schedule.ts
+      swap-settings.ts
+    auth.ts               # Better Auth server config
+    auth-client.ts        # Better Auth client
+    auth-utils.ts         # Session helpers (requireSession, requireAdmin, etc.)
+    dietary-options.ts    # Allergy and dietary preference option lists
+    notifications.ts      # Notification creation helpers
+    schedule-utils.ts     # Week/calendar/rotation utilities
+    utils.ts              # cn() utility (clsx + tailwind-merge)
+    validators.ts         # Zod validation schemas
   actions/                # Server actions, organized by domain
+    contributions.ts
     households.ts
-    meals.ts
-    rsvp.ts
-    suggestions.ts
-    weeks.ts
-  types/                  # Shared TypeScript types (beyond what Drizzle infers)
+    invites.ts
+    members.ts
+    notifications.ts
+    profile.ts
+    recipes.ts
+    schedule.ts
+    swap-days.ts
+    swap-settings.ts
 ```
 
 - **Pages/layouts** go in `src/app/` following Next.js App Router conventions
@@ -66,15 +91,15 @@ src/
 
 ## Naming
 
-- **Files/folders:** kebab-case (`meal-plan-card.tsx`, `use-headcount.ts`)
-- **React components:** PascalCase (`MealPlanCard`, `RSVPForm`)
-- **Variables/functions:** camelCase (`getMealPlan`, `headCount`)
+- **Files/folders:** kebab-case (`recipe-card.tsx`, `swap-settings.ts`)
+- **React components:** PascalCase (`RecipeCard`, `WeekList`)
+- **Variables/functions:** camelCase (`getRecipes`, `headCount`)
 - **Types/interfaces:** PascalCase, no `I` prefix (`Household`, not `IHousehold`)
-- **Database tables:** snake_case plural (`households`, `meal_plan_entries`)
+- **Database tables:** snake_case plural (`households`, `swap_days`)
 - **Database columns:** snake_case (`start_date`, `household_id`)
-- **Drizzle schema objects:** camelCase matching the table (`households`, `mealPlanEntries`)
-- **Server actions:** verb-first camelCase (`createHousehold`, `updateRsvp`, `deleteWeek`)
-- **Environment variables:** UPPER_SNAKE_CASE (`DATABASE_URL`, `NEXTAUTH_SECRET`)
+- **Drizzle schema objects:** camelCase matching the table (`households`, `swapDays`)
+- **Server actions:** verb-first camelCase (`createHousehold`, `updateContribution`, `deleteWeek`)
+- **Environment variables:** UPPER_SNAKE_CASE (`DATABASE_URL`, `BETTER_AUTH_SECRET`)
 - **Route groups:** parenthesized lowercase (`(auth)`, `(app)`)
 
 ## Patterns

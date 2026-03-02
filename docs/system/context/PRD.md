@@ -23,23 +23,24 @@ A web app that helps an extended family coordinate a weekly meal-swap co-op. Eve
   - **Dual swap:** Two swap days. Saturday swap covers Mon–Tue; Wednesday swap covers Wed–Fri. Each household makes 2 dishes total (one per swap day).
 - At the swap, households exchange portions so everyone goes home with a variety of meals for the covered days.
 
-### Recipe Rotation
+### Recipe Rotation (Latin-Square)
 
 - The admin configures a **recipe rotation order** — an ordered list of approved recipes.
-- Recipes cycle deterministically through this order across swap days: each new swap day gets the next recipe in the sequence.
+- Each household gets a **different recipe** on the same swap day using a Latin-square rotation: `(globalIndex + householdIndex) % recipeCount`.
+- The global index advances by 1 each swap day, so recipes cycle through the full list.
 - When the rotation completes, it wraps around to the beginning.
 
 ### Household Order
 
 - The admin configures a **household display order** — all households cook every swap day.
 - The order can be **fixed** (manually arranged) or **random** (shuffled by admin).
-- This controls the display order on schedule and week views.
+- This controls both the display order and the recipe assignment offset (household index in the Latin-square formula).
 
 ### Contributions (Auto-Assigned)
 
 - A **contribution** represents a household's assignment for a specific swap day — auto-generated, not manually posted.
-- Contributions are created automatically when weeks are populated, with the recipe from the rotation assigned to each.
-- All households get the same assigned recipe per swap day.
+- Contributions are created automatically when weeks are populated, each with a per-household recipe from the Latin-square rotation.
+- Each household gets a different recipe on the same swap day.
 - Contributions include optional admin-editable notes and serving count.
 
 ### Swap Days
@@ -103,8 +104,8 @@ A web app that helps an extended family coordinate a weekly meal-swap co-op. Eve
 ### 4.3 Weekly Contributions (Auto-Assigned)
 
 - Contributions are **auto-generated** when weeks are created — every household gets a contribution for every swap day.
-- The assigned **recipe** comes from the admin-configured recipe rotation order.
-- All households cook the same recipe for a given swap day.
+- The assigned **recipe** comes from the admin-configured recipe rotation order via Latin-square rotation.
+- Each household gets a different recipe on the same swap day — the assignment shifts by household index.
 - One contribution per household per swap day (enforced by unique constraint).
 - Admins can override a contribution's recipe or details if needed.
 - Past weeks' contributions remain visible as history/reference.
@@ -217,12 +218,12 @@ _(In dual-swap weeks, this cycle happens twice: once for the Saturday swap and o
 ### Swap Day
 
 - `id`, `week_id`, `day_of_week`, `label`, `covers_from`, `covers_to`
-- `recipe_id` (assigned from rotation), `location`, `time`, `notes`
+- `location`, `time`, `notes`
 
 ### Contribution
 
 - `id`, `week_id`, `household_id`, `swap_day_id`
-- `recipe_id` (auto-assigned from swap day), `dish_name`, `notes`, `servings`
+- `recipe_id` (auto-assigned per-household via Latin-square rotation), `dish_name`, `notes`, `servings`
 
 ### Week Opt-Out
 
