@@ -16,12 +16,12 @@ src/
       week/[weekId]/      #   detail + edit
     api/                  # Auth catch-all, invite accept
   components/
-    ui/                   # Primitives (Button, Card, Input, Dialog, etc.)
+    ui/                   # Primitives (Button, Card, Input, Dialog, Toast, etc.)
     admin/                # Role select, delete/reset user
     contributions/        # Cards, lists, headcount, nutrition chart
-    dashboard/            # My-tasks
+    dashboard/            # My-tasks, stats row
     household/            # CRUD, invites, members, extra portions
-    layout/               # App shell, nav, user menu, opt-out banner
+    layout/               # App shell, nav, user menu, opt-out banner, providers
     notifications/        # Bell, item, list
     profile/              # Opt-out toggle, portions
     recipe/               # Form, card, grid, search, ingredients, review, ratings, scaling
@@ -31,7 +31,7 @@ src/
     db/
       schema.ts           # 15 tables, single source of truth
       index.ts            # Neon serverless client
-      migrations/         # 0000–0013
+      migrations/         # 0000–0014
     queries/              # Read-only, by domain
     auth.ts               # Better Auth server config
     auth-client.ts        # Better Auth client
@@ -70,3 +70,16 @@ Placement rules:
 - Auth checks in actions, not UI. Use `requireSession`, `requireAdmin`, etc.
 - Drizzle relational API for reads; core API for insert/update/delete
 - Schema changes via Drizzle migrations only
+
+## Layout
+
+- `<main>` has `max-w-5xl mx-auto` — the single global width ceiling
+- No per-page max-width wrappers; pages fill the 5xl container
+- Header is sticky (`sticky top-0 z-40`)
+
+## Toast Feedback
+
+- `ToastProvider` wraps the app in `src/components/layout/providers.tsx`
+- Use `useToast()` hook in client components: `const { toast } = useToast()`
+- Call `toast('message')` on successful mutations; variants: `success` (default), `error`, `info`
+- Auto-dismisses after 3 seconds; renders bottom-right fixed

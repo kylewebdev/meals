@@ -6,6 +6,7 @@ import { requireAdmin, requireHouseholdHead, requireSession } from '@/lib/auth-u
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { hashPassword } from 'better-auth/crypto';
+import { notifyMemberJoined } from '@/lib/notifications';
 
 export async function assignMemberToHousehold(userId: string, householdId: string) {
   const auth = await requireAdmin();
@@ -13,7 +14,7 @@ export async function assignMemberToHousehold(userId: string, householdId: strin
 
   // Verify user exists
   const [target] = await db
-    .select({ id: user.id })
+    .select({ id: user.id, name: user.name })
     .from(user)
     .where(eq(user.id, userId))
     .limit(1);
@@ -26,6 +27,8 @@ export async function assignMemberToHousehold(userId: string, householdId: strin
     .update(user)
     .set({ householdId, updatedAt: new Date() })
     .where(eq(user.id, userId));
+
+  notifyMemberJoined(householdId, target.name, userId).catch(() => {});
 
   revalidatePath('/household');
   revalidatePath(`/admin/households/${householdId}`);

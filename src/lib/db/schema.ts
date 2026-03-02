@@ -247,13 +247,10 @@ export const recipeRatings = pgTable(
 );
 
 export const notificationTypeEnum = pgEnum('notification_type', [
-  'cooking_reminder',
-  'meal_plan_posted',
   'new_recipe',
   'opt_out_reset',
-  'contribution_reminder',
-  'contribution_posted',
   'recipe_reviewed',
+  'member_joined',
 ]);
 
 export const notifications = pgTable(

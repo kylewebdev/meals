@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { invites, user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { notifyMemberJoined } from '@/lib/notifications';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -58,6 +59,8 @@ export async function POST(request: NextRequest) {
 
   // Mark invite as used
   await db.update(invites).set({ usedAt: new Date() }).where(eq(invites.id, invite.id));
+
+  notifyMemberJoined(invite.householdId, name, ctx.user.id).catch(() => {});
 
   return NextResponse.json({ success: true });
 }
