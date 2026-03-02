@@ -23,7 +23,7 @@ export default async function WeekDetailPage({
   const { weekId } = await params;
   const [week, headcount] = await Promise.all([
     getWeekWithPlan(weekId),
-    getHeadcount(),
+    getHeadcount(weekId),
   ]);
 
   if (!week) notFound();

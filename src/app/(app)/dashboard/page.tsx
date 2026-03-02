@@ -15,10 +15,8 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const [currentWeek, headcount] = await Promise.all([
-    getCurrentWeek(),
-    getHeadcount(),
-  ]);
+  const currentWeek = await getCurrentWeek();
+  const headcount = await getHeadcount(currentWeek?.id);
 
   return (
     <div className="space-y-6">

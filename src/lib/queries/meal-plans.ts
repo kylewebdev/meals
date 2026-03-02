@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { mealPlanEntries, user, weeks } from '@/lib/db/schema';
-import { eq, count } from 'drizzle-orm';
+import { mealPlanEntries, user, weekOptOuts, weeks } from '@/lib/db/schema';
+import { and, eq, count, isNull } from 'drizzle-orm';
 
 export interface MealPlanEntry {
   id: string;
@@ -83,9 +83,21 @@ export async function getWeekWithPlan(weekId: string): Promise<WeekWithPlan | un
   }) as unknown as Promise<WeekWithPlan | undefined>;
 }
 
-export async function getHeadcount(): Promise<number> {
+export async function getHeadcount(weekId?: string): Promise<number> {
+  if (!weekId) {
+    const [result] = await db.select({ count: count() }).from(user);
+    return result?.count ?? 0;
+  }
+
+  // Count users who have NOT opted out of this week
   const [result] = await db
     .select({ count: count() })
-    .from(user);
+    .from(user)
+    .leftJoin(
+      weekOptOuts,
+      and(eq(weekOptOuts.userId, user.id), eq(weekOptOuts.weekId, weekId)),
+    )
+    .where(isNull(weekOptOuts.id));
+
   return result?.count ?? 0;
 }

@@ -194,6 +194,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'cooking_reminder',
   'meal_plan_posted',
   'new_recipe',
+  'opt_out_reset',
 ]);
 
 export const notifications = pgTable(
@@ -234,6 +235,27 @@ export const invites = pgTable('invites', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+export const weekOptOuts = pgTable(
+  'week_opt_outs',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    weekId: text('week_id')
+      .notNull()
+      .references(() => weeks.id, { onDelete: 'cascade' }),
+    resetNotified: boolean('reset_notified').notNull().default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    unique('week_opt_outs_user_week_uniq').on(table.userId, table.weekId),
+    index('week_opt_outs_user_id_idx').on(table.userId),
+  ],
+);
+
 // ─── Relations ──────────────────────────────────────────────────
 
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -242,6 +264,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   accounts: many(account),
   recipes: many(recipes),
   notifications: many(notifications),
+  weekOptOuts: many(weekOptOuts),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -262,6 +285,7 @@ export const householdRelations = relations(households, ({ one, many }) => ({
 export const weekRelations = relations(weeks, ({ one, many }) => ({
   household: one(households, { fields: [weeks.householdId], references: [households.id] }),
   mealPlanEntries: many(mealPlanEntries),
+  optOuts: many(weekOptOuts),
 }));
 
 export const mealPlanEntryRelations = relations(mealPlanEntries, ({ one }) => ({
@@ -286,4 +310,9 @@ export const notificationRelations = relations(notifications, ({ one }) => ({
 export const inviteRelations = relations(invites, ({ one }) => ({
   household: one(households, { fields: [invites.householdId], references: [households.id] }),
   inviter: one(user, { fields: [invites.invitedBy], references: [user.id] }),
+}));
+
+export const weekOptOutRelations = relations(weekOptOuts, ({ one }) => ({
+  user: one(user, { fields: [weekOptOuts.userId], references: [user.id] }),
+  week: one(weeks, { fields: [weekOptOuts.weekId], references: [weeks.id] }),
 }));
