@@ -50,6 +50,19 @@ export default async function AdminPage() {
             </CardContent>
           </Card>
         </Link>
+
+        <Link href="/admin/recipe-ratings">
+          <Card className="transition-shadow hover:shadow-md">
+            <CardHeader>
+              <h3 className="font-semibold">Recipe Ratings</h3>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-zinc-500">
+                View aggregate recipe ratings to identify favorites and removal candidates.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );

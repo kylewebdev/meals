@@ -2,7 +2,7 @@
 
 ## Status
 
-**Project state: Phases 0–3.5 complete. Remaining: headcount polish, notification triggers, PWA.**
+**Project state: Phases 0–3.5 complete. Remaining: headcount polish, notification triggers, PWA, recipe ratings.**
 Last updated: 2026-03-01
 
 ---
@@ -138,10 +138,51 @@ Last updated: 2026-03-01
 
 ---
 
-## Phase 4 — Enhancements (Post-MVP)
+## Phase 4 — Recipe Ratings
+
+Per-household recipe ratings to curate the rotation. Each household rates a recipe once (upsertable). 3-tier scale: love / fine / dislike. Admin reviews aggregate data to decide which recipes to keep or drop — no auto-exclusion.
+
+### Step 1: Schema & migration (COMPLETE)
+
+- [x] Add `recipe_rating_value` enum (`love`, `fine`, `dislike`)
+- [x] Add `recipe_ratings` table: `id`, `recipe_id` (FK → recipes), `household_id` (FK → households), `rating` (enum), `comment` (text, optional), `rated_by` (FK → user), `created_at`, `updated_at`
+- [x] Unique constraint on `(recipe_id, household_id)` — one rating per household per recipe
+- [x] Indexes on `recipe_id` and `household_id`
+- [x] Add Drizzle relations: recipe → ratings, household → ratings, user → ratings (as rater)
+- [x] Run migration (0010)
+
+### Step 2: Server actions & queries (COMPLETE)
+
+- [x] `rateRecipe(recipeId, rating, comment?)` server action — upsert rating for the current user's household
+- [x] `getRecipeRatings(recipeId)` query — aggregate counts (loves/fines/dislikes) + per-household breakdown with household name and comment
+- [x] `getRecipeRatingSummaries()` query — all rated recipes with aggregate scores, for catalog cards and admin report
+- [x] Zod validation for rating input
+
+### Step 3: Recipe detail page — rating widget (COMPLETE)
+
+- [x] Rating widget component: 3 buttons (love / fine / dislike) showing current household selection
+- [x] Optional comment field (short text input, shown on expand)
+- [x] Aggregate display: "X loved · Y fine · Z disliked" breakdown
+- [x] Per-household ratings list (who rated what, with comments)
+- [x] Wire into existing recipe detail page (`/recipes/[recipeId]`)
+
+### Step 4: Recipe catalog — rating indicators (COMPLETE)
+
+- [x] Show aggregate rating indicator on recipe cards (e.g., "4/5 loved" or a small bar/icon)
+- [ ] Optional: sort/filter recipes by rating in the catalog view
+
+### Step 5: Admin ratings report (COMPLETE)
+
+- [x] New admin page or section: `/admin/recipe-ratings`
+- [x] Table of all recipes with aggregate rating breakdown (loves / fines / dislikes)
+- [x] Sortable by worst-rated to surface removal candidates
+- [x] Link to recipe detail for full per-household breakdown
+
+---
+
+## Phase 5 — Other Enhancements (Post-MVP)
 
 - [ ] **Grocery list generation** — auto-generate shopping list from recipe, scaled to headcount
-- [ ] **Ratings / feedback** — thumbs-up ratings on contributions
 - [ ] **Photo sharing** — households post photos of their dishes
 - [ ] **Recipe import** — import recipes from external sources (URLs, structured data)
 - [ ] **Push notifications** — via PWA or native wrapper
@@ -150,15 +191,15 @@ Last updated: 2026-03-01
 
 ---
 
-## Database Schema Summary (15 Tables)
+## Database Schema Summary (16 Tables)
 
 **Auth (Better Auth managed):** `user`, `session`, `account`, `verification`
 
-**Application:** `households`, `weeks` (unique start_date), `swap_days`, `contributions`, `recipes`, `recipe_ingredients`, `notifications`, `invites`, `week_opt_outs`, `swap_settings`
+**Application:** `households`, `weeks` (unique start_date), `swap_days`, `contributions`, `recipes`, `recipe_ingredients`, `recipe_ratings`, `notifications`, `invites`, `week_opt_outs`, `swap_settings`
 
-**Enums:** `user_role`, `week_status`, `swap_mode`, `recipe_status`, `household_order_mode`, `notification_type`
+**Enums:** `user_role`, `week_status`, `swap_mode`, `recipe_status`, `household_order_mode`, `notification_type`, `recipe_rating_value`
 
-**Migrations:** 0000–0009 (10 total)
+**Migrations:** 0000–0010 (11 total)
 
 ---
 
@@ -170,4 +211,4 @@ Last updated: 2026-03-01
 - `notifyContributionReminder` exists in `src/lib/notifications.ts` but has no trigger
 - `notifyContributionPosted` is obsolete — contributions are auto-generated now
 - `getHeadcount` counts all users, not just those with a household — needs filtering
-- Next steps: finish headcount (non-account members), wire up notification triggers, then PWA
+- Next steps: finish headcount (non-account members), wire up notification triggers, then recipe ratings

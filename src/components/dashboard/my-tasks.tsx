@@ -19,8 +19,13 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <h3 className="font-semibold">Your Assigned Recipes</h3>
+        <PortionDisplay
+          headcount={headcount}
+          coversFrom={swapDays[0].coversFrom}
+          coversTo={swapDays[0].coversTo}
+        />
       </CardHeader>
       <CardContent className="space-y-3">
         {swapDays.map((sd) => (
@@ -55,11 +60,6 @@ export function MyTasks({ swapDays, headcount }: MyTasksProps) {
               ) : (
                 <p className="text-sm text-zinc-400">No recipe assigned</p>
               )}
-              <PortionDisplay
-                headcount={headcount}
-                coversFrom={sd.coversFrom}
-                coversTo={sd.coversTo}
-              />
             </div>
           </div>
         ))}

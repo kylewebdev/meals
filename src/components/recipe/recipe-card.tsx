@@ -1,3 +1,5 @@
+import type { RecipeRatingSummary } from '@/lib/queries/ratings';
+import { RatingSummary } from '@/components/recipe/rating-summary';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
@@ -11,6 +13,7 @@ interface RecipeCardProps {
   cookTimeMinutes: number | null;
   calories: number | null;
   tags: string[] | null;
+  ratingAggregate?: RecipeRatingSummary;
 }
 
 export function RecipeCard({
@@ -22,6 +25,7 @@ export function RecipeCard({
   cookTimeMinutes,
   calories,
   tags,
+  ratingAggregate,
 }: RecipeCardProps) {
   const totalTime = (prepTimeMinutes ?? 0) + (cookTimeMinutes ?? 0);
 
@@ -40,6 +44,11 @@ export function RecipeCard({
             {totalTime > 0 && <span>{totalTime} min</span>}
             {calories && <span>{calories} cal</span>}
           </div>
+          {ratingAggregate && ratingAggregate.total > 0 && (
+            <div className="mt-2">
+              <RatingSummary {...ratingAggregate} compact />
+            </div>
+          )}
           {tags && tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1">
               {tags.map((tag) => (

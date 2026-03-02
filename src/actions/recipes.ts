@@ -1,11 +1,12 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { recipes, recipeIngredients } from '@/lib/db/schema';
+import { recipes, recipeIngredients, contributions, swapSettings } from '@/lib/db/schema';
 import { requireAdmin, requireSession } from '@/lib/auth-utils';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { notifyNewRecipe, notifyRecipeReviewed } from '@/lib/notifications';
+import { recalculateWeekAssignments } from '@/actions/schedule';
 
 interface RecipeInput {
   name: string;
@@ -140,9 +141,38 @@ export async function deleteRecipe(recipeId: string) {
     }
   }
 
+  // Clear recipe from any contributions to avoid FK violation
+  await db
+    .update(contributions)
+    .set({ recipeId: null, updatedAt: new Date() })
+    .where(eq(contributions.recipeId, recipeId));
+
+  // Remove from swap settings recipe order if present
+  let wasInRotation = false;
+  const settings = await db.query.swapSettings.findFirst();
+  if (settings) {
+    const s = settings as unknown as { id: string; recipeOrder: string[] };
+    const filtered = s.recipeOrder.filter((id) => id !== recipeId);
+    if (filtered.length !== s.recipeOrder.length) {
+      wasInRotation = true;
+      await db
+        .update(swapSettings)
+        .set({ recipeOrder: filtered })
+        .where(eq(swapSettings.id, s.id));
+    }
+  }
+
+  // Delete the recipe (ingredients cascade)
   await db.delete(recipes).where(eq(recipes.id, recipeId));
 
+  // Recalculate future week assignments if recipe was in the rotation
+  if (wasInRotation) {
+    await recalculateWeekAssignments();
+  }
+
   revalidatePath('/recipes');
+  revalidatePath('/schedule');
+  revalidatePath('/admin/swap-config');
   return { success: true as const, data: null };
 }
 

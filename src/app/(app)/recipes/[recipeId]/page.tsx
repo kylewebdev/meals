@@ -1,8 +1,12 @@
 import { getSession } from '@/lib/auth-utils';
 import { getRecipe } from '@/lib/queries/recipes';
+import { getRecipeRatings } from '@/lib/queries/ratings';
 import { getScalingContext } from '@/lib/queries/scaling-context';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
 import { NutritionSummary } from '@/components/recipe/nutrition-summary';
+import { RatingList } from '@/components/recipe/rating-list';
+import { RatingSummary } from '@/components/recipe/rating-summary';
+import { RatingWidget } from '@/components/recipe/rating-widget';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { ReviewActions } from '@/components/recipe/review-actions';
 import { ScalingBanner } from '@/components/recipe/scaling-banner';
@@ -102,6 +106,7 @@ export default async function RecipeDetailPage({
         proteinG={recipe.proteinG}
         carbsG={recipe.carbsG}
         fatG={recipe.fatG}
+        scaleFactor={scaleFactor}
       />
 
       {scalingCtx && scaleFactor && recipe.servings && (
@@ -147,9 +152,62 @@ export default async function RecipeDetailPage({
         </Card>
       )}
 
+      {recipe.status === 'approved' && (
+        <RatingsSection
+          recipeId={recipeId}
+          householdId={session.user.householdId}
+        />
+      )}
+
       <p className="text-xs text-zinc-400">
         Added by {recipe.creator.name}
       </p>
     </div>
+  );
+}
+
+async function RatingsSection({
+  recipeId,
+  householdId,
+}: {
+  recipeId: string;
+  householdId?: string | null;
+}) {
+  const { aggregate, ratings } = await getRecipeRatings(recipeId);
+  const myRating = householdId
+    ? ratings.find((r) => r.householdId === householdId)
+    : undefined;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold">Ratings</h3>
+          <RatingSummary {...aggregate} />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {householdId && (
+          <div>
+            <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Your household&apos;s rating
+            </p>
+            <RatingWidget
+              recipeId={recipeId}
+              currentRating={myRating?.rating}
+              currentComment={myRating?.comment}
+            />
+          </div>
+        )}
+        {ratings.length > 0 && (
+          <div>
+            <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              All household ratings
+            </p>
+            <RatingList ratings={ratings} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

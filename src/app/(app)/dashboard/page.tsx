@@ -53,7 +53,9 @@ export default async function DashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h3 className="font-semibold">This Week</h3>
+                  <h3 className="font-semibold">
+                    {currentWeek.isCurrent ? 'This Week' : 'Next Week'}
+                  </h3>
                   <span className="text-sm text-zinc-500">
                     {formatWeekRange(currentWeek.startDate)}
                   </span>

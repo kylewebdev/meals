@@ -74,6 +74,7 @@ export interface CurrentWeek {
   startDate: Date;
   status: string;
   swapMode: string;
+  isCurrent: boolean;
   swapDays: {
     id: string;
     dayOfWeek: number;
@@ -175,10 +176,55 @@ export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
     },
   }) as unknown as RawCurrentWeek | undefined;
 
-  if (!row) return undefined;
+  if (!row) {
+    // Fall back to the next upcoming week
+    const nextRow = await db.query.weeks.findFirst({
+      where: gte(weeks.startDate, monday),
+      with: {
+        swapDays: {
+          with: {
+            contributions: {
+              with: {
+                household: { columns: { id: true, name: true } },
+                recipe: {
+                  columns: { id: true, name: true },
+                  with: {
+                    ingredients: {
+                      columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
+        },
+      },
+      orderBy: (w, { asc }) => [asc(w.startDate)],
+    }) as unknown as RawCurrentWeek | undefined;
+
+    if (!nextRow) return undefined;
+
+    return {
+      ...nextRow,
+      isCurrent: false,
+      swapDays: nextRow.swapDays.map((sd) => ({
+        ...sd,
+        contributions: sd.contributions.map((c) => ({
+          ...c,
+          recipe: c.recipe ? {
+            id: c.recipe.id,
+            name: c.recipe.name,
+            ...computeNutrition(c.recipe.ingredients),
+          } : null,
+        })),
+      })),
+    };
+  }
 
   return {
     ...row,
+    isCurrent: true,
     swapDays: row.swapDays.map((sd) => ({
       ...sd,
       contributions: sd.contributions.map((c) => ({

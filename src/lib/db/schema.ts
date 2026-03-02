@@ -18,6 +18,7 @@ export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'comp
 export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
 export const recipeStatusEnum = pgEnum('recipe_status', ['pending', 'approved', 'rejected']);
 export const householdOrderModeEnum = pgEnum('household_order_mode', ['fixed', 'random']);
+export const recipeRatingValueEnum = pgEnum('recipe_rating_value', ['love', 'fine', 'dislike']);
 
 // ─── Auth tables (Better Auth managed) ──────────────────────────
 
@@ -219,6 +220,33 @@ export const recipeIngredients = pgTable(
   (table) => [index('recipe_ingredients_recipe_id_idx').on(table.recipeId)],
 );
 
+export const recipeRatings = pgTable(
+  'recipe_ratings',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    recipeId: text('recipe_id')
+      .notNull()
+      .references(() => recipes.id, { onDelete: 'cascade' }),
+    householdId: text('household_id')
+      .notNull()
+      .references(() => households.id, { onDelete: 'cascade' }),
+    rating: recipeRatingValueEnum('rating').notNull(),
+    comment: text('comment'),
+    ratedBy: text('rated_by')
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    unique('recipe_ratings_recipe_household_uniq').on(table.recipeId, table.householdId),
+    index('recipe_ratings_recipe_id_idx').on(table.recipeId),
+    index('recipe_ratings_household_id_idx').on(table.householdId),
+  ],
+);
+
 export const notificationTypeEnum = pgEnum('notification_type', [
   'cooking_reminder',
   'meal_plan_posted',
@@ -310,6 +338,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
   recipes: many(recipes),
+  ratings: many(recipeRatings),
   notifications: many(notifications),
   weekOptOuts: many(weekOptOuts),
 }));
@@ -326,6 +355,7 @@ export const householdRelations = relations(households, ({ one, many }) => ({
   head: one(user, { fields: [households.headId], references: [user.id] }),
   members: many(user),
   contributions: many(contributions),
+  ratings: many(recipeRatings),
   invites: many(invites),
 }));
 
@@ -354,10 +384,17 @@ export const recipeRelations = relations(recipes, ({ one, many }) => ({
   creator: one(user, { fields: [recipes.createdBy], references: [user.id] }),
   ingredients: many(recipeIngredients),
   contributions: many(contributions),
+  ratings: many(recipeRatings),
 }));
 
 export const recipeIngredientRelations = relations(recipeIngredients, ({ one }) => ({
   recipe: one(recipes, { fields: [recipeIngredients.recipeId], references: [recipes.id] }),
+}));
+
+export const recipeRatingRelations = relations(recipeRatings, ({ one }) => ({
+  recipe: one(recipes, { fields: [recipeRatings.recipeId], references: [recipes.id] }),
+  household: one(households, { fields: [recipeRatings.householdId], references: [households.id] }),
+  rater: one(user, { fields: [recipeRatings.ratedBy], references: [user.id] }),
 }));
 
 export const notificationRelations = relations(notifications, ({ one }) => ({

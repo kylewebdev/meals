@@ -1,5 +1,6 @@
 import { getSession } from '@/lib/auth-utils';
 import { getRecipes } from '@/lib/queries/recipes';
+import { getRecipeRatingSummaries } from '@/lib/queries/ratings';
 import { RecipeGrid } from '@/components/recipe/recipe-grid';
 import { RecipeSearch } from '@/components/recipe/recipe-search';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,8 @@ export default async function RecipesPage({
 
   const { q } = await searchParams;
   let allRecipes = await getRecipes();
+  const summaries = await getRecipeRatingSummaries();
+  const ratingsMap = new Map(summaries.map((s) => [s.recipeId, s]));
 
   if (q) {
     const query = q.toLowerCase();
@@ -50,7 +53,7 @@ export default async function RecipesPage({
           description={q ? 'Try a different search term.' : 'Submit your first recipe to get started.'}
         />
       ) : (
-        <RecipeGrid recipes={allRecipes} />
+        <RecipeGrid recipes={allRecipes} ratingsMap={ratingsMap} />
       )}
     </div>
   );
