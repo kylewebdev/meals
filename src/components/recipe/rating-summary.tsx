@@ -37,8 +37,8 @@ export function RatingSummary({ love, fine, dislike, total, compact }: RatingSum
   if (dislike > 0) parts.push(`${dislike} disliked`);
 
   return (
-    <span className="text-sm text-zinc-600 dark:text-zinc-400">
-      {parts.join(' · ')}
+    <span className="text-sm font-normal text-zinc-500">
+      — {parts.join(' · ')}
     </span>
   );
 }

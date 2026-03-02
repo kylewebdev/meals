@@ -180,10 +180,15 @@ async function RatingsSection({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Ratings</h3>
-          <RatingSummary {...aggregate} />
-        </div>
+        <h3 className="font-semibold">
+          Ratings
+          {aggregate.total > 0 && (
+            <>
+              {' '}
+              <RatingSummary {...aggregate} />
+            </>
+          )}
+        </h3>
       </CardHeader>
       <CardContent className="space-y-4">
         {householdId && (
