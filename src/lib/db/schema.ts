@@ -100,16 +100,19 @@ export const households = pgTable('households', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const weeks = pgTable('weeks', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  startDate: timestamp('start_date', { mode: 'date' }).notNull(),
-  status: weekStatusEnum('status').notNull().default('upcoming'),
-  swapMode: swapModeEnum('swap_mode').notNull().default('single'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+export const weeks = pgTable(
+  'weeks',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    startDate: timestamp('start_date', { mode: 'date' }).notNull().unique(),
+    status: weekStatusEnum('status').notNull().default('upcoming'),
+    swapMode: swapModeEnum('swap_mode').notNull().default('single'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+);
 
 export const swapDays = pgTable(
   'swap_days',

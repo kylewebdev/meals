@@ -9,7 +9,7 @@ import {
   getMondaysInRange,
   getSwapDayDefaults,
 } from '@/lib/schedule-utils';
-import { eq, gte } from 'drizzle-orm';
+import { eq, gte, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 export async function deleteWeek(weekId: string) {
@@ -76,6 +76,13 @@ export async function ensureWeeksExist() {
   let didCreate = false;
 
   for (const monday of mondays) {
+    // Skip if a week already exists for this Monday (prevents duplicates on concurrent calls)
+    const existing = await db.query.weeks.findFirst({
+      where: and(eq(weeks.startDate, monday)),
+      columns: { id: true },
+    });
+    if (existing) continue;
+
     const weekResult = await db
       .insert(weeks)
       .values({ startDate: monday, swapMode: s.swapMode })
