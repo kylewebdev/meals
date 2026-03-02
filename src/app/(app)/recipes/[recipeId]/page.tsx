@@ -106,7 +106,6 @@ export default async function RecipeDetailPage({
         proteinG={recipe.proteinG}
         carbsG={recipe.carbsG}
         fatG={recipe.fatG}
-        scaleFactor={scaleFactor}
       />
 
       {scalingCtx && scaleFactor && recipe.servings && (
