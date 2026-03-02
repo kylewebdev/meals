@@ -37,7 +37,7 @@ export default async function AdminUsersPage() {
                 <thead>
                   <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Name</th>
-                    <th className="pb-2 pr-4 font-medium text-zinc-500">Email</th>
+                    <th className="hidden pb-2 pr-4 font-medium text-zinc-500 md:table-cell">Email</th>
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Household</th>
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Role</th>
                     <th className="pb-2 font-medium text-zinc-500">Actions</th>
@@ -54,7 +54,7 @@ export default async function AdminUsersPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 pr-4 text-zinc-500">{u.email}</td>
+                      <td className="hidden py-3 pr-4 text-zinc-500 md:table-cell">{u.email}</td>
                       <td className="py-3 pr-4">
                         {u.householdName ? (
                           <Link

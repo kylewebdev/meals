@@ -42,7 +42,8 @@ export function ScalingBanner({
           {formatWeekRange(weekStartDate)}
         </Link>
       </p>
-      <table className="mt-2 w-full text-xs text-blue-900 dark:text-blue-100">
+      <div className="mt-2 overflow-x-auto">
+      <table className="w-full text-xs text-blue-900 dark:text-blue-100">
         <thead>
           <tr className="border-b border-blue-200 dark:border-blue-800">
             <th className="py-1 pr-4 text-left font-medium">Household</th>
@@ -70,6 +71,7 @@ export function ScalingBanner({
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

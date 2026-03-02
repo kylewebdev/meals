@@ -78,59 +78,61 @@ export function IngredientTable({
 
   return (
     <div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left text-zinc-500">
-            <th className="pb-2 font-medium">Ingredient</th>
-            <th className="pb-2 font-medium">Qty</th>
-            <th className="pb-2 font-medium">Unit</th>
-            <th className="pb-2 font-medium">Cal</th>
-            <th className="pb-2 font-medium">Protein</th>
-            <th className="pb-2 font-medium">Carbs</th>
-            <th className="pb-2 font-medium">Fat</th>
-            {editable && <th className="pb-2" />}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {ingredients.map((ing) => (
-            <tr key={ing.id}>
-              <td className="py-2">{ing.name}</td>
-              <td className="py-2 text-zinc-500">
-                {ing.quantity
-                  ? scaleFactor
-                    ? <>
-                        <span className="text-zinc-800 dark:text-zinc-200">
-                          {scaleQuantity(ing.quantity, scaleFactor)}
-                        </span>
-                        {' '}
-                        <span className="text-zinc-400 dark:text-zinc-600">
-                          ({ing.quantity})
-                        </span>
-                      </>
-                    : ing.quantity
-                  : '—'}
-              </td>
-              <td className="py-2 text-zinc-500">{ing.unit ?? '—'}</td>
-              <td className="py-2 text-zinc-500">{ing.calories ?? '—'}</td>
-              <td className="py-2 text-zinc-500">{ing.proteinG != null ? `${ing.proteinG}g` : '—'}</td>
-              <td className="py-2 text-zinc-500">{ing.carbsG != null ? `${ing.carbsG}g` : '—'}</td>
-              <td className="py-2 text-zinc-500">{ing.fatG != null ? `${ing.fatG}g` : '—'}</td>
-              {editable && (
-                <td className="py-2 text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    loading={removingId === ing.id}
-                    onClick={() => handleRemove(ing.id)}
-                  >
-                    Remove
-                  </Button>
-                </td>
-              )}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-zinc-500">
+              <th className="pb-2 font-medium">Ingredient</th>
+              <th className="pb-2 font-medium">Qty</th>
+              <th className="pb-2 font-medium">Unit</th>
+              <th className="hidden pb-2 font-medium md:table-cell">Cal</th>
+              <th className="hidden pb-2 font-medium md:table-cell">Protein</th>
+              <th className="hidden pb-2 font-medium md:table-cell">Carbs</th>
+              <th className="hidden pb-2 font-medium md:table-cell">Fat</th>
+              {editable && <th className="pb-2" />}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            {ingredients.map((ing) => (
+              <tr key={ing.id}>
+                <td className="py-2">{ing.name}</td>
+                <td className="py-2 text-zinc-500">
+                  {ing.quantity
+                    ? scaleFactor
+                      ? <>
+                          <span className="text-zinc-800 dark:text-zinc-200">
+                            {scaleQuantity(ing.quantity, scaleFactor)}
+                          </span>
+                          {' '}
+                          <span className="text-zinc-400 dark:text-zinc-600">
+                            ({ing.quantity})
+                          </span>
+                        </>
+                      : ing.quantity
+                    : '—'}
+                </td>
+                <td className="py-2 text-zinc-500">{ing.unit ?? '—'}</td>
+                <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.calories ?? '—'}</td>
+                <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.proteinG != null ? `${ing.proteinG}g` : '—'}</td>
+                <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.carbsG != null ? `${ing.carbsG}g` : '—'}</td>
+                <td className="hidden py-2 text-zinc-500 md:table-cell">{ing.fatG != null ? `${ing.fatG}g` : '—'}</td>
+                {editable && (
+                  <td className="py-2 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      loading={removingId === ing.id}
+                      onClick={() => handleRemove(ing.id)}
+                    >
+                      Remove
+                    </Button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {editable && !adding && (
         <Button variant="secondary" size="sm" className="mt-3" onClick={() => setAdding(true)}>
@@ -140,13 +142,13 @@ export function IngredientTable({
 
       {editable && adding && (
         <form onSubmit={handleAdd} className="mt-3 space-y-2">
-          <div className="flex items-end gap-2">
+          <div className="flex flex-wrap items-end gap-2">
             <Input
               placeholder="Name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               required
-              className="flex-1"
+              className="min-w-0 flex-1 basis-32"
             />
             <Input
               placeholder="Qty"
@@ -161,7 +163,7 @@ export function IngredientTable({
               className="w-20"
             />
           </div>
-          <div className="flex items-end gap-2">
+          <div className="flex flex-wrap items-end gap-2">
             <Input
               placeholder="Cal"
               type="number"
