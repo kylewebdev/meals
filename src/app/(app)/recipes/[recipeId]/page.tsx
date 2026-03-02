@@ -108,14 +108,14 @@ export default async function RecipeDetailPage({
         fatG={recipe.fatG}
       />
 
-      {scalingCtx && scaleFactor && recipe.servings && (
+      {scalingCtx && recipe.servings && (
         <ScalingBanner
           portionCount={scalingCtx.portionCount}
           recipeServings={recipe.servings}
-          scaleFactor={scaleFactor}
           swapDayLabel={scalingCtx.swapDayLabel}
           weekStartDate={scalingCtx.weekStartDate}
           weekId={scalingCtx.weekId}
+          householdPortions={scalingCtx.householdPortions}
         />
       )}
 

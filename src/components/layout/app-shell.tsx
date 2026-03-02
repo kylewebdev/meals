@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { UserMenu } from './user-menu';
 
@@ -17,9 +18,10 @@ export function AppShell({ children, userName, userRole, notificationSlot, optOu
     <div className="min-h-screen">
       <header className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6">
+            <MobileNav isAdmin={isAdmin} />
             <span className="text-lg font-semibold">Meals</span>
-            <nav className="flex items-center gap-1">
+            <nav className="hidden items-center gap-1 md:flex">
               <NavLink href="/dashboard">Dashboard</NavLink>
               <NavLink href="/schedule">Schedule</NavLink>
               <NavLink href="/recipes">Recipes</NavLink>
