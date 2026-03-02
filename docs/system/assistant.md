@@ -1,23 +1,19 @@
-# AI Assistant Instructions — meals
+# Assistant Instructions
 
-## Getting Started
+## Stack
+Next.js 16 (App Router), TypeScript, Tailwind v4, Drizzle ORM, Neon Postgres, Better Auth v1.5, Zod v4, Recharts, pnpm, Vercel
 
-- Read this file before starting any task.
-- Check `docs/system/buildplan.md` for the current implementation plan.
-- Check `docs/system/conventions.md` for project conventions and patterns.
-- Drop relevant context files in `docs/system/context/` for reference.
+## Reference Docs
+- `docs/system/conventions.md` — file tree, naming, code patterns
+- `docs/system/buildplan.md` — implementation status and remaining TODOs
+- `docs/system/context/PRD.md` — product requirements (read on demand)
 
-## Workflow
-
-1. **Read** the relevant plan section or issue before writing code.
-2. **Implement** in small, focused commits.
-3. **Test** your changes before marking work as done.
-4. **Update** the buildplan when completing a step.
-
-## Conventions Reference
-
-See `docs/system/conventions.md` for:
-
-- Code style and formatting rules
-- Naming conventions
-- File organization patterns
+## Key Rules
+- Single quotes, trailing commas, semicolons, 100 char soft limit
+- Named exports (except page/layout defaults)
+- kebab-case files, PascalCase components, camelCase vars, snake_case DB
+- Server components for reads, server actions for mutations
+- Actions return `{ success: true, data }` or `{ success: false, error }`
+- Validate inputs with Zod at the action boundary
+- Schema changes via Drizzle migrations only
+- Update buildplan.md when completing a step
