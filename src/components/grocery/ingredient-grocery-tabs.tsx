@@ -21,7 +21,7 @@ export function IngredientGroceryTabs({
           type="button"
           onClick={() => setTab('ingredients')}
           className={cn(
-            'px-4 py-2.5 text-sm font-medium transition-colors',
+            'px-4 py-2.5 text-lg font-semibold transition-colors',
             tab === 'ingredients'
               ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
               : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
@@ -33,7 +33,7 @@ export function IngredientGroceryTabs({
           type="button"
           onClick={() => setTab('grocery')}
           className={cn(
-            'px-4 py-2.5 text-sm font-medium transition-colors',
+            'px-4 py-2.5 text-lg font-semibold transition-colors',
             tab === 'grocery'
               ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
               : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
