@@ -268,6 +268,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'opt_out_reset',
   'recipe_reviewed',
   'member_joined',
+  'swap_reminder',
 ]);
 
 export const notifications = pgTable(
