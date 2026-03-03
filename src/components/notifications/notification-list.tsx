@@ -1,6 +1,12 @@
 'use client';
 
-import { markAsRead, markAllAsRead } from '@/actions/notifications';
+import {
+  markAsRead,
+  markAllAsRead,
+  archiveNotification,
+  archiveAllRead,
+  unarchiveNotification,
+} from '@/actions/notifications';
 import { Button } from '@/components/ui/button';
 import { NotificationItem } from './notification-item';
 import { useRouter } from 'next/navigation';
@@ -11,16 +17,19 @@ interface Notification {
   body: string | null;
   linkUrl: string | null;
   readAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date;
 }
 
 interface NotificationListProps {
   notifications: Notification[];
+  mode: 'inbox' | 'archive';
 }
 
-export function NotificationList({ notifications }: NotificationListProps) {
+export function NotificationList({ notifications, mode }: NotificationListProps) {
   const router = useRouter();
   const hasUnread = notifications.some((n) => !n.readAt);
+  const hasRead = notifications.some((n) => n.readAt);
 
   const handleMarkRead = async (id: string) => {
     await markAsRead(id);
@@ -32,22 +41,54 @@ export function NotificationList({ notifications }: NotificationListProps) {
     router.refresh();
   };
 
+  const handleArchive = async (id: string) => {
+    await archiveNotification(id);
+    router.refresh();
+  };
+
+  const handleArchiveAllRead = async () => {
+    await archiveAllRead();
+    router.refresh();
+  };
+
+  const handleUnarchive = async (id: string) => {
+    await unarchiveNotification(id);
+    router.refresh();
+  };
+
   if (notifications.length === 0) {
-    return <p className="px-4 py-6 text-center text-sm text-zinc-500">No notifications</p>;
+    return (
+      <p className="px-4 py-6 text-center text-sm text-zinc-500">
+        {mode === 'inbox' ? 'No notifications' : 'No archived notifications'}
+      </p>
+    );
   }
 
   return (
     <div>
-      {hasUnread && (
-        <div className="border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-          <Button variant="ghost" size="sm" onClick={handleMarkAll}>
-            Mark all as read
-          </Button>
+      {mode === 'inbox' && (hasUnread || hasRead) && (
+        <div className="flex gap-1 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
+          {hasUnread && (
+            <Button variant="ghost" size="sm" onClick={handleMarkAll}>
+              Mark all read
+            </Button>
+          )}
+          {hasRead && (
+            <Button variant="ghost" size="sm" onClick={handleArchiveAllRead}>
+              Archive read
+            </Button>
+          )}
         </div>
       )}
       <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {notifications.map((n) => (
-          <NotificationItem key={n.id} {...n} onMarkRead={handleMarkRead} />
+          <NotificationItem
+            key={n.id}
+            {...n}
+            onMarkRead={handleMarkRead}
+            onArchive={mode === 'inbox' ? handleArchive : undefined}
+            onUnarchive={mode === 'archive' ? handleUnarchive : undefined}
+          />
         ))}
       </div>
     </div>

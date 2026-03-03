@@ -285,6 +285,7 @@ export const notifications = pgTable(
     body: text('body'),
     linkUrl: text('link_url'),
     readAt: timestamp('read_at'),
+    archivedAt: timestamp('archived_at'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [

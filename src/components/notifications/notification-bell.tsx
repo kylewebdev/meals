@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { NotificationList } from './notification-list';
+import { cn } from '@/lib/utils';
 
 interface Notification {
   id: string;
@@ -9,16 +10,25 @@ interface Notification {
   body: string | null;
   linkUrl: string | null;
   readAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date;
 }
 
 interface NotificationBellProps {
   unreadCount: number;
-  notifications: Notification[];
+  inboxNotifications: Notification[];
+  archivedNotifications: Notification[];
 }
 
-export function NotificationBell({ unreadCount, notifications }: NotificationBellProps) {
+type Tab = 'inbox' | 'archive';
+
+export function NotificationBell({
+  unreadCount,
+  inboxNotifications,
+  archivedNotifications,
+}: NotificationBellProps) {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>('inbox');
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,11 +61,40 @@ export function NotificationBell({ unreadCount, notifications }: NotificationBel
 
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-            <h3 className="text-sm font-semibold">Notifications</h3>
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+            <button
+              onClick={() => setTab('inbox')}
+              className={cn(
+                'flex-1 px-4 py-2.5 text-sm font-medium transition-colors',
+                tab === 'inbox'
+                  ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300',
+              )}
+            >
+              Inbox
+              {unreadCount > 0 && (
+                <span className="ml-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setTab('archive')}
+              className={cn(
+                'flex-1 px-4 py-2.5 text-sm font-medium transition-colors',
+                tab === 'archive'
+                  ? 'border-b-2 border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300',
+              )}
+            >
+              Archive
+            </button>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            <NotificationList notifications={notifications} />
+            <NotificationList
+              notifications={tab === 'inbox' ? inboxNotifications : archivedNotifications}
+              mode={tab}
+            />
           </div>
         </div>
       )}
