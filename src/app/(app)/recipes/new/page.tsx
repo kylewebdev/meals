@@ -11,8 +11,9 @@ export default async function NewRecipePage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
-        &larr; Recipes
+      <Link href="/recipes" className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
+        <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
+        Recipes
       </Link>
       <h2 className="text-2xl font-semibold tracking-tight">
         {isAdmin ? 'New Recipe' : 'Submit Recipe'}

@@ -68,8 +68,9 @@ export default async function RecipeDetailPage({
     <div className="mx-auto max-w-5xl">
       {/* Header: breadcrumb, title, action buttons */}
       <div>
-        <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="text-sm text-zinc-500 hover:text-zinc-700">
-          &larr; {weekId ? 'Back to Week' : 'Recipes'}
+        <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
+          <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
+          {weekId ? 'Back to Week' : 'Recipes'}
         </Link>
         <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="flex items-center gap-3">
