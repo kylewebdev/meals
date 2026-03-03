@@ -329,45 +329,6 @@ export async function reviewRecipe(
   return { success: true as const, data: null };
 }
 
-export async function resetAllRecipes() {
-  const auth = await requireAdmin();
-  if (!auth.success) return auth;
-
-  const now = new Date();
-
-  // Fetch image URLs for R2 cleanup
-  const allRecipes = await db
-    .select({ imageUrl: recipes.imageUrl })
-    .from(recipes);
-
-  // Nullify contribution recipe refs + clear rotation order in parallel
-  await Promise.all([
-    db.update(contributions)
-      .set({ recipeId: null, updatedAt: now })
-      .where(isNotNull(contributions.recipeId)),
-    db.update(swapSettings)
-      .set({ recipeOrder: [], updatedAt: now }),
-  ]);
-
-  // Fire-and-forget R2 image cleanup (all concurrently)
-  const imageUrls = allRecipes
-    .map((r) => r.imageUrl)
-    .filter((url): url is string => !!url);
-  if (imageUrls.length > 0) {
-    Promise.allSettled(imageUrls.map((url) => deleteR2Object(url)));
-  }
-
-  // Delete all recipes (ingredients, ratings, comments cascade)
-  await db.delete(recipes);
-
-  revalidatePath('/recipes');
-  revalidatePath('/up-next');
-  revalidatePath('/admin/rotation');
-  revalidatePath('/admin/recipe-ratings');
-
-  return { success: true as const, data: { deleted: allRecipes.length } };
-}
-
 export async function flagForReview(recipeId: string) {
   const auth = await requireSession();
   if (!auth.success) return auth;
