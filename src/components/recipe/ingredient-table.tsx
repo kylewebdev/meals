@@ -1,6 +1,6 @@
 'use client';
 
-import { addIngredient, removeIngredient, updateIngredient } from '@/actions/recipes';
+import { addIngredient, removeIngredient } from '@/actions/recipes';
 import { scaleQuantity } from '@/lib/quantity-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

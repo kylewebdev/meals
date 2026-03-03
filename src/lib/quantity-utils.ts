@@ -27,7 +27,7 @@ const DISPLAY_FRACTIONS: [number, string][] = [
  * Handles integers, decimals, fractions ("1/2"), and mixed numbers ("1 1/2").
  * Returns null if unparseable.
  */
-export function parseQuantity(raw: string): number | null {
+function parseQuantity(raw: string): number | null {
   const s = raw.trim();
   if (!s) return null;
 
@@ -59,7 +59,7 @@ export function parseQuantity(raw: string): number | null {
  * Format a number as a clean quantity string.
  * Prefers common fractions (1/2, 1/4, etc.) over decimals.
  */
-export function formatQuantity(value: number): string {
+function formatQuantity(value: number): string {
   if (value <= 0) return '0';
 
   const whole = Math.floor(value);

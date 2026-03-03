@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { account, households, invites, user } from '@/lib/db/schema';
-import { requireAdmin, requireHouseholdHead, requireSession } from '@/lib/auth-utils';
+import { requireAdmin, requireHouseholdHead } from '@/lib/auth-utils';
 import { isValidPortions } from '@/lib/validators';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -35,17 +35,6 @@ export async function assignMemberToHousehold(userId: string, householdId: strin
   revalidatePath(`/admin/households/${householdId}`);
   revalidatePath('/admin/households');
   return { success: true as const, data: null };
-}
-
-export async function getUnassignedUsers() {
-  const auth = await requireAdmin();
-  if (!auth.success) return [];
-
-  const { isNull } = await import('drizzle-orm');
-  return db
-    .select({ id: user.id, name: user.name, email: user.email })
-    .from(user)
-    .where(isNull(user.householdId));
 }
 
 export async function getAllUsers() {
@@ -187,40 +176,6 @@ export async function adminResetPassword(userId: string) {
     .where(and(eq(account.userId, userId), eq(account.providerId, 'credential')));
 
   return { success: true as const, data: { tempPassword } };
-}
-
-export async function changeOwnPassword(currentPassword: string, newPassword: string) {
-  const auth = await requireSession();
-  if (!auth.success) return auth;
-
-  if (newPassword.length < 8) {
-    return { success: false as const, error: 'Password must be at least 8 characters' };
-  }
-
-  const { verifyPassword } = await import('better-auth/crypto');
-
-  const [acct] = await db
-    .select({ id: account.id, password: account.password })
-    .from(account)
-    .where(and(eq(account.userId, auth.data.user.id), eq(account.providerId, 'credential')))
-    .limit(1);
-
-  if (!acct?.password) {
-    return { success: false as const, error: 'No password account found' };
-  }
-
-  const valid = await verifyPassword({ hash: acct.password, password: currentPassword });
-  if (!valid) {
-    return { success: false as const, error: 'Current password is incorrect' };
-  }
-
-  const hashed = await hashPassword(newPassword);
-  await db
-    .update(account)
-    .set({ password: hashed, updatedAt: new Date() })
-    .where(eq(account.id, acct.id));
-
-  return { success: true as const, data: null };
 }
 
 export async function deleteUser(userId: string) {

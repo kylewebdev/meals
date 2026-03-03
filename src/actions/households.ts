@@ -20,27 +20,6 @@ export async function createHousehold(data: { name: string }) {
   return { success: true as const, data: household };
 }
 
-export async function deleteHousehold(householdId: string) {
-  const auth = await requireAdmin();
-  if (!auth.success) return auth;
-
-  // Check for members still assigned
-  const members = await db
-    .select({ id: user.id })
-    .from(user)
-    .where(eq(user.householdId, householdId))
-    .limit(1);
-
-  if (members.length > 0) {
-    return { success: false as const, error: 'Cannot delete household with members' };
-  }
-
-  await db.delete(households).where(eq(households.id, householdId));
-
-  revalidatePath('/admin/households');
-  return { success: true as const, data: null };
-}
-
 export async function setHouseholdHead(householdId: string, userId: string | null) {
   const auth = await requireAdmin();
   if (!auth.success) return auth;

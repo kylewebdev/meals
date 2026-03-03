@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { contributions, extraPeople, swapDays, user, weeks } from '@/lib/db/schema';
-import { and, eq, count, inArray, gte, sum, isNotNull } from 'drizzle-orm';
+import { eq, inArray, sum, isNotNull } from 'drizzle-orm';
 import { computeNutrition } from './recipes';
 
 export interface ContributionItem {
@@ -82,28 +82,6 @@ const recipeWithIngredients = {
   },
 };
 
-export async function getWeekContributions(weekId: string): Promise<SwapDayWithContributions[]> {
-  const days = await db.query.swapDays.findMany({
-    where: eq(swapDays.weekId, weekId),
-    with: {
-      contributions: {
-        with: {
-          household: { columns: { id: true, name: true } },
-          recipe: recipeWithIngredients,
-        },
-      },
-    },
-    orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
-  }) as unknown as (Omit<SwapDayWithContributions, 'contributions'> & {
-    contributions: RawContribution[];
-  })[];
-
-  return days.map((d) => ({
-    ...d,
-    contributions: d.contributions.map(mapContribution),
-  }));
-}
-
 export async function getWeekWithContributions(
   weekId: string,
 ): Promise<WeekWithContributions | undefined> {
@@ -137,24 +115,6 @@ export async function getWeekWithContributions(
       contributions: d.contributions.map(mapContribution),
     })),
   };
-}
-
-export async function getHouseholdContribution(
-  weekId: string,
-  householdId: string,
-): Promise<ContributionItem[]> {
-  const rows = await db.query.contributions.findMany({
-    where: and(
-      eq(contributions.weekId, weekId),
-      eq(contributions.householdId, householdId),
-    ),
-    with: {
-      household: { columns: { id: true, name: true } },
-      recipe: recipeWithIngredients,
-    },
-  }) as unknown as RawContribution[];
-
-  return rows.map(mapContribution);
 }
 
 export interface UpcomingSwapDay {

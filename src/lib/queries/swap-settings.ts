@@ -15,11 +15,6 @@ export interface SwapSettingsRow {
   updatedAt: Date;
 }
 
-export async function getSwapSettings(): Promise<SwapSettingsRow | null> {
-  const row = await db.query.swapSettings.findFirst();
-  return (row as unknown as SwapSettingsRow) ?? null;
-}
-
 export async function getOrCreateSwapSettings(): Promise<SwapSettingsRow> {
   const existing = await db.query.swapSettings.findFirst();
   if (existing) return existing as unknown as SwapSettingsRow;
