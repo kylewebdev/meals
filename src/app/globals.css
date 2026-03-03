@@ -3,6 +3,7 @@
 html {
   /* Fluid base: 16px → 1.5rem (24px) */
   font-size: clamp(16px, 0.75rem + 0.75vw, 1.5rem);
+  scrollbar-gutter: stable;
 }
 
 :root {

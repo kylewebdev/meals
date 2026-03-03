@@ -4,6 +4,7 @@ import { getRecipeRatingSummaries } from '@/lib/queries/ratings';
 import { RecipeGrid } from '@/components/recipe/recipe-grid';
 import { RecipeSearch } from '@/components/recipe/recipe-search';
 import { RecipeFilters } from '@/components/recipe/recipe-filters';
+import { RecipeNav } from '@/components/recipe/recipe-nav';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
@@ -48,17 +49,14 @@ export default async function RecipesPage({
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">Recipes</h2>
-        <div className="flex gap-2">
-          <Link href="/recipes/mine">
-            <Button variant="secondary">My Submissions</Button>
-          </Link>
-          <Link href="/recipes/new">
-            <Button>Submit Recipe</Button>
-          </Link>
-        </div>
+        <Link href="/recipes/new">
+          <Button>Submit Recipe</Button>
+        </Link>
       </div>
+
+      <RecipeNav />
 
       <div className="flex flex-wrap items-center gap-3">
         <RecipeSearch />
@@ -77,6 +75,7 @@ export default async function RecipesPage({
       ) : (
         <RecipeGrid recipes={allRecipes} ratingsMap={ratingsMap} />
       )}
+
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { getSession } from '@/lib/auth-utils';
 import { getMyRecipes } from '@/lib/queries/recipes';
+import { RecipeNav } from '@/components/recipe/recipe-nav';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -12,22 +13,19 @@ export default async function MyRecipesPage() {
 
   const myRecipes = await getMyRecipes(session.user.id);
 
-  const pending = myRecipes.filter((r) => r.status === 'pending');
+  const submitted = myRecipes.filter((r) => r.status === 'submitted');
+  const pendingReview = myRecipes.filter((r) => r.status === 'pending_review');
   const approved = myRecipes.filter((r) => r.status === 'approved');
-  const rejected = myRecipes.filter((r) => r.status === 'rejected');
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <Link href="/recipes" className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
-        <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
-        Recipes
-      </Link>
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">My Recipes</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Recipes</h2>
         <Link href="/recipes/new">
           <Button>Submit Recipe</Button>
         </Link>
       </div>
+      <RecipeNav />
 
       {myRecipes.length === 0 ? (
         <EmptyState
@@ -41,11 +39,11 @@ export default async function MyRecipesPage() {
         />
       ) : (
         <div className="space-y-8">
-          {pending.length > 0 && (
-            <RecipeStatusSection title="Pending Review" recipes={pending} editable />
+          {submitted.length > 0 && (
+            <RecipeStatusSection title="Workshop" recipes={submitted} editable />
           )}
-          {rejected.length > 0 && (
-            <RecipeStatusSection title="Needs Changes" recipes={rejected} editable />
+          {pendingReview.length > 0 && (
+            <RecipeStatusSection title="Pending Review" recipes={pendingReview} />
           )}
           {approved.length > 0 && (
             <RecipeStatusSection title="Approved" recipes={approved} />
