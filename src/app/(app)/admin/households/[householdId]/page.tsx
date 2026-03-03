@@ -86,7 +86,12 @@ export default async function AdminHouseholdDetailPage({
             <h3 className="text-lg font-semibold pb-3">Invite New Members</h3>
             <InviteForm householdId={householdId} />
             {pendingInvites.length > 0 && (
-              <PendingInviteList invites={pendingInvites} householdId={householdId} />
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-zinc-500 pb-2">
+                  Pending invites ({pendingInvites.length})
+                </h4>
+                <PendingInviteList invites={pendingInvites} householdId={householdId} />
+              </div>
             )}
           </div>
         </div>

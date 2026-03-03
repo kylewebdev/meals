@@ -93,7 +93,7 @@ export interface HouseholdDetail {
   head: { id: string; name: string; email: string } | null;
   members: { id: string; name: string; email: string; role: string; portionsPerMeal: number }[];
   extraPeople: ExtraPersonItem[];
-  invites: { id: string; email: string; role: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[];
+  invites: { id: string; email: string; role: string; token: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[];
 }
 
 export async function getHousehold(id: string): Promise<HouseholdDetail | undefined> {
@@ -104,7 +104,7 @@ export async function getHousehold(id: string): Promise<HouseholdDetail | undefi
       members: { columns: { id: true, name: true, email: true, role: true, portionsPerMeal: true } },
       extraPeople: { columns: { id: true, name: true, portions: true } },
       invites: {
-        columns: { id: true, email: true, role: true, expiresAt: true, usedAt: true, createdAt: true },
+        columns: { id: true, email: true, role: true, token: true, expiresAt: true, usedAt: true, createdAt: true },
       },
     },
   }) as unknown as Promise<HouseholdDetail | undefined>;

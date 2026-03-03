@@ -9,6 +9,7 @@ import { ExtraPeopleForm } from '@/components/household/extra-people-form';
 import { HouseholdReviews } from '@/components/household/household-reviews';
 import { InviteForm } from '@/components/household/invite-form';
 import { MemberList } from '@/components/household/member-list';
+import { PendingInviteList } from '@/components/household/pending-invite-list';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getHouseholdReviews } from '@/lib/queries/ratings';
 import { redirect } from 'next/navigation';
@@ -40,6 +41,9 @@ export default async function HouseholdPage() {
   const isAdmin = session.user.role === 'admin';
   const canManage = isHead || isAdmin;
 
+  const now = new Date();
+  const pendingInvites = household.invites.filter((i) => !i.usedAt && i.expiresAt > now);
+
   return (
     <div className="mx-auto max-w-5xl">
       <h2 className="mb-8 text-2xl font-semibold tracking-tight">{household.name}</h2>
@@ -54,9 +58,19 @@ export default async function HouseholdPage() {
             currentUserId={session.user.id}
           />
           {canManage && (
-            <div className="mt-4">
-              <InviteForm householdId={householdId} />
-            </div>
+            <>
+              {pendingInvites.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-zinc-500 pb-2">
+                    Pending invites ({pendingInvites.length})
+                  </h4>
+                  <PendingInviteList invites={pendingInvites} householdId={householdId} />
+                </div>
+              )}
+              <div className="mt-4">
+                <InviteForm householdId={householdId} />
+              </div>
+            </>
           )}
         </div>
 
