@@ -1,7 +1,8 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { account, households, invites, user } from '@/lib/db/schema';
+import type { UserRole } from '@/lib/db/schema';
+import { account, households, invites, user, userRoleEnum } from '@/lib/db/schema';
 import { requireAdmin, requireHouseholdHead } from '@/lib/auth-utils';
 import { isValidPortions } from '@/lib/validators';
 import { and, eq } from 'drizzle-orm';
@@ -115,7 +116,7 @@ export async function adminUpdatePortions(userId: string, portions: number) {
   return { success: true as const, data: null };
 }
 
-export async function updateUserRole(userId: string, role: 'admin' | 'member' | 'spectator') {
+export async function updateUserRole(userId: string, role: UserRole) {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
@@ -123,7 +124,7 @@ export async function updateUserRole(userId: string, role: 'admin' | 'member' | 
     return { success: false as const, error: 'Cannot change your own role' };
   }
 
-  if (role !== 'admin' && role !== 'member' && role !== 'spectator') {
+  if (!userRoleEnum.enumValues.includes(role)) {
     return { success: false as const, error: 'Invalid role' };
   }
 

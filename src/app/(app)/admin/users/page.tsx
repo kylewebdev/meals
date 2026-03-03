@@ -9,7 +9,7 @@ import { RoleSelect } from '@/components/admin/role-select';
 import { ResetPasswordButton } from '@/components/admin/reset-password-button';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import { PortionsSelect } from '@/components/admin/portions-select';
-import { SpectatorInviteForm } from '@/components/admin/spectator-invite-form';
+import { InviteForm } from '@/components/household/invite-form';
 import { BackLink } from '@/components/ui/back-link';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -102,7 +102,7 @@ export default async function AdminUsersPage() {
 
       <div>
         <h3 className="text-lg font-semibold pb-3">Invite Spectator</h3>
-        <SpectatorInviteForm />
+        <InviteForm role="spectator" />
       </div>
     </div>
   );

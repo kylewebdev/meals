@@ -1,6 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
+import type { UserRole } from '@/lib/db/schema';
 import { invites } from '@/lib/db/schema';
 import { requireAdmin, requireHouseholdHead } from '@/lib/auth-utils';
 import { and, eq, isNull } from 'drizzle-orm';
@@ -9,9 +10,16 @@ import { revalidatePath } from 'next/cache';
 export async function createInvite(data: {
   email: string;
   householdId?: string;
-  role?: 'admin' | 'member' | 'spectator';
+  role?: UserRole;
 }) {
   const isSpectator = data.role === 'spectator';
+
+  // Validate inputs before auth checks
+  const email = data.email.trim().toLowerCase();
+  if (!email) return { success: false as const, error: 'Email is required' };
+  if (!isSpectator && !data.householdId) {
+    return { success: false as const, error: 'Household is required for non-spectator invites' };
+  }
 
   // Spectator invites require admin; household invites require household head
   const auth = isSpectator
@@ -19,17 +27,12 @@ export async function createInvite(data: {
     : await requireHouseholdHead(data.householdId!);
   if (!auth.success) return auth;
 
-  if (!isSpectator && !data.householdId) {
-    return { success: false as const, error: 'Household is required for non-spectator invites' };
-  }
-
-  const email = data.email.trim().toLowerCase();
-  if (!email) return { success: false as const, error: 'Email is required' };
-
-  // Invalidate any existing unused invites for this email (+ household if applicable)
+  // Invalidate existing unused invites for this email, scoped to same context
   const deleteConditions = [eq(invites.email, email), isNull(invites.usedAt)];
   if (data.householdId) {
     deleteConditions.push(eq(invites.householdId, data.householdId));
+  } else {
+    deleteConditions.push(isNull(invites.householdId));
   }
   await db.delete(invites).where(and(...deleteConditions));
 

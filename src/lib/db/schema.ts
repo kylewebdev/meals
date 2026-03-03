@@ -14,6 +14,7 @@ import {
 // ─── Enums ──────────────────────────────────────────────────────
 
 export const userRoleEnum = pgEnum('user_role', ['admin', 'member', 'spectator']);
+export type UserRole = (typeof userRoleEnum.enumValues)[number];
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
 export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
 export const recipeStatusEnum = pgEnum('recipe_status', [

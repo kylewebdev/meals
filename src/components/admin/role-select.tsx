@@ -1,13 +1,14 @@
 'use client';
 
 import { updateUserRole } from '@/actions/members';
+import type { UserRole } from '@/lib/db/schema';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface RoleSelectProps {
   userId: string;
-  currentRole: 'admin' | 'member' | 'spectator';
+  currentRole: UserRole;
   isSelf: boolean;
 }
 
@@ -17,7 +18,7 @@ export function RoleSelect({ userId, currentRole, isSelf }: RoleSelectProps) {
   const [error, setError] = useState('');
 
   async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newRole = e.target.value as 'admin' | 'member' | 'spectator';
+    const newRole = e.target.value as UserRole;
     if (newRole === currentRole) return;
 
     setPending(true);

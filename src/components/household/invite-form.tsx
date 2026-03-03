@@ -1,6 +1,7 @@
 'use client';
 
 import { createInvite } from '@/actions/invites';
+import type { UserRole } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,10 +9,12 @@ import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
 interface InviteFormProps {
-  householdId: string;
+  householdId?: string;
+  role?: UserRole;
 }
 
-export function InviteForm({ householdId }: InviteFormProps) {
+export function InviteForm({ householdId, role }: InviteFormProps) {
+  const isSpectator = role === 'spectator';
   const [email, setEmail] = useState('');
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -22,12 +25,12 @@ export function InviteForm({ householdId }: InviteFormProps) {
     setLoading(true);
     setResult(null);
 
-    const res = await createInvite({ email, householdId });
+    const res = await createInvite({ email, householdId, role });
 
     if (res.success) {
       setResult({ url: res.data.inviteUrl });
       setEmail('');
-      toast('Invite sent');
+      toast(isSpectator ? 'Spectator invite created' : 'Invite sent');
     } else {
       setResult({ error: res.error });
     }
@@ -37,13 +40,15 @@ export function InviteForm({ householdId }: InviteFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <Label htmlFor="invite-email">Invite by email</Label>
+        <Label htmlFor={isSpectator ? 'spectator-email' : 'invite-email'}>
+          {isSpectator ? 'Invite spectator by email' : 'Invite by email'}
+        </Label>
         <div className="flex gap-2">
           <Input
-            id="invite-email"
+            id={isSpectator ? 'spectator-email' : 'invite-email'}
             type="email"
             required
-            placeholder="member@example.com"
+            placeholder={isSpectator ? 'spectator@example.com' : 'member@example.com'}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
