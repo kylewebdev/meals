@@ -132,7 +132,6 @@ export default async function RecipeDetailPage({
         <ScalingBanner
           portionCount={scalingCtx.portionCount}
           totalPortions={scalingCtx.totalPortions}
-          householdCount={scalingCtx.householdCount}
           recipeServings={recipe.servings}
           swapDayLabel={scalingCtx.swapDayLabel}
           weekStartDate={scalingCtx.weekStartDate}

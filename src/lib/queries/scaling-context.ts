@@ -20,7 +20,6 @@ export interface ScalingContext {
   /** Total portions needed across all households */
   totalPortions: number;
   headcount: number;
-  householdCount: number;
   swapDayLabel: string;
   weekStartDate: Date;
   weekId: string;
@@ -106,7 +105,6 @@ export async function getScalingContext(
     portionCount,
     totalPortions,
     headcount,
-    householdCount,
     swapDayLabel: contribution.swapDay.label,
     weekStartDate: contribution.week.startDate,
     weekId,

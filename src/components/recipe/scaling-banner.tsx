@@ -6,7 +6,6 @@ import Link from 'next/link';
 interface ScalingBannerProps {
   portionCount: number;
   totalPortions: number;
-  householdCount: number;
   recipeServings: number;
   swapDayLabel: string;
   weekStartDate: Date;
@@ -18,7 +17,6 @@ interface ScalingBannerProps {
 export function ScalingBanner({
   portionCount,
   totalPortions,
-  householdCount,
   recipeServings,
   swapDayLabel,
   weekStartDate,
@@ -26,6 +24,7 @@ export function ScalingBanner({
   householdPortions,
   className,
 }: ScalingBannerProps) {
+  const householdCount = householdPortions.length || 1;
   return (
     <div className={cn(
       'rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950',

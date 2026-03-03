@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { contributions, groceryItems, groceryLists, recipeIngredients, recipes } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { contributions, groceryItems, groceryLists, recipeIngredients, recipes, households, user } from '@/lib/db/schema';
+import { countDistinct, eq, isNotNull } from 'drizzle-orm';
 import { getHeadcount } from './contributions';
 import { getPortionCount } from '@/lib/schedule-utils';
 import { scaleQuantity } from '@/lib/quantity-utils';
@@ -44,13 +44,20 @@ async function buildScaledItems(contribution: ContributionWithRecipe) {
   let scaleFactor = 1;
 
   if (recipeServings && recipeServings > 0) {
-    const headcount = await getHeadcount();
-    const neededPortions = getPortionCount(
+    const [headcount, householdResult] = await Promise.all([
+      getHeadcount(),
+      db.select({ count: countDistinct(user.householdId) })
+        .from(user)
+        .where(isNotNull(user.householdId)),
+    ]);
+    const totalPortions = getPortionCount(
       headcount,
       contribution.swapDay.coversFrom,
       contribution.swapDay.coversTo,
     );
-    scaleFactor = neededPortions / recipeServings;
+    const householdCount = householdResult[0]?.count || 1;
+    const perHouseholdPortions = Math.ceil(totalPortions / householdCount);
+    scaleFactor = perHouseholdPortions / recipeServings;
   }
 
   return recipe.ingredients
