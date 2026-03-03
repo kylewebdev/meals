@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 interface RoleSelectProps {
   userId: string;
-  currentRole: 'admin' | 'member';
+  currentRole: 'admin' | 'member' | 'spectator';
   isSelf: boolean;
 }
 
@@ -17,7 +17,7 @@ export function RoleSelect({ userId, currentRole, isSelf }: RoleSelectProps) {
   const [error, setError] = useState('');
 
   async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newRole = e.target.value as 'admin' | 'member';
+    const newRole = e.target.value as 'admin' | 'member' | 'spectator';
     if (newRole === currentRole) return;
 
     setPending(true);
@@ -43,6 +43,7 @@ export function RoleSelect({ userId, currentRole, isSelf }: RoleSelectProps) {
       >
         <option value="admin">Admin</option>
         <option value="member">Member</option>
+        <option value="spectator">Spectator</option>
       </Select>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>

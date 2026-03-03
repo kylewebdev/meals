@@ -31,7 +31,7 @@ export async function assignMemberToHousehold(userId: string, householdId: strin
 
   notifyMemberJoined(householdId, target.name, userId).catch(() => {});
 
-  revalidatePath('/household');
+  revalidatePath('/co-op');
   revalidatePath(`/admin/households/${householdId}`);
   revalidatePath('/admin/households');
   return { success: true as const, data: null };
@@ -61,7 +61,7 @@ export async function removeMember(userId: string, householdId: string) {
     .set({ householdId: null, updatedAt: new Date() })
     .where(eq(user.id, userId));
 
-  revalidatePath('/household');
+  revalidatePath('/co-op');
   revalidatePath(`/admin/households/${householdId}`);
   return { success: true as const, data: null };
 }
@@ -115,7 +115,7 @@ export async function adminUpdatePortions(userId: string, portions: number) {
   return { success: true as const, data: null };
 }
 
-export async function updateUserRole(userId: string, role: 'admin' | 'member') {
+export async function updateUserRole(userId: string, role: 'admin' | 'member' | 'spectator') {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
@@ -123,7 +123,7 @@ export async function updateUserRole(userId: string, role: 'admin' | 'member') {
     return { success: false as const, error: 'Cannot change your own role' };
   }
 
-  if (role !== 'admin' && role !== 'member') {
+  if (role !== 'admin' && role !== 'member' && role !== 'spectator') {
     return { success: false as const, error: 'Invalid role' };
   }
 
@@ -137,12 +137,20 @@ export async function updateUserRole(userId: string, role: 'admin' | 'member') {
     return { success: false as const, error: 'User not found' };
   }
 
-  await db
-    .update(user)
-    .set({ role, updatedAt: new Date() })
-    .where(eq(user.id, userId));
+  const updates: { role: typeof role; householdId?: null; updatedAt: Date } = {
+    role,
+    updatedAt: new Date(),
+  };
+
+  // Spectators don't belong to a household
+  if (role === 'spectator') {
+    updates.householdId = null;
+  }
+
+  await db.update(user).set(updates).where(eq(user.id, userId));
 
   revalidatePath('/admin/users');
+  revalidatePath('/co-op');
   return { success: true as const, data: null };
 }
 

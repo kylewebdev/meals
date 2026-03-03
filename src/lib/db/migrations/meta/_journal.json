@@ -127,6 +127,13 @@
       "when": 1772556782540,
       "tag": "0017_talented_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1772791200000,
+      "tag": "0021_spectator_role",
+      "breakpoints": true
     }
   ]
 }

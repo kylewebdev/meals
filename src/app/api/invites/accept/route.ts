@@ -51,16 +51,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create account' }, { status: 500 });
   }
 
-  // Assign household and role from the invite
+  // Assign household (if present) and role from the invite
   await db
     .update(user)
-    .set({ householdId: invite.householdId, role: invite.role })
+    .set({
+      ...(invite.householdId ? { householdId: invite.householdId } : {}),
+      role: invite.role,
+    })
     .where(eq(user.id, ctx.user.id));
 
   // Mark invite as used
   await db.update(invites).set({ usedAt: new Date() }).where(eq(invites.id, invite.id));
 
-  notifyMemberJoined(invite.householdId, name, ctx.user.id).catch(() => {});
+  if (invite.householdId) {
+    notifyMemberJoined(invite.householdId, name, ctx.user.id).catch(() => {});
+  }
 
   return NextResponse.json({ success: true });
 }

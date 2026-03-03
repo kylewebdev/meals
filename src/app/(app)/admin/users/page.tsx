@@ -9,6 +9,7 @@ import { RoleSelect } from '@/components/admin/role-select';
 import { ResetPasswordButton } from '@/components/admin/reset-password-button';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import { PortionsSelect } from '@/components/admin/portions-select';
+import { SpectatorInviteForm } from '@/components/admin/spectator-invite-form';
 import { BackLink } from '@/components/ui/back-link';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -16,7 +17,7 @@ import { redirect } from 'next/navigation';
 
 export default async function AdminUsersPage() {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   const users = await getAllUsersWithDetails();
 
@@ -97,6 +98,11 @@ export default async function AdminUsersPage() {
               </table>
             </div>
         )}
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold pb-3">Invite Spectator</h3>
+        <SpectatorInviteForm />
       </div>
     </div>
   );

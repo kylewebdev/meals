@@ -13,7 +13,7 @@ import {
 
 // ─── Enums ──────────────────────────────────────────────────────
 
-export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'member', 'spectator']);
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
 export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
 export const recipeStatusEnum = pgEnum('recipe_status', [
@@ -327,9 +327,7 @@ export const invites = pgTable('invites', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   email: varchar('email', { length: 255 }).notNull(),
-  householdId: text('household_id')
-    .notNull()
-    .references(() => households.id),
+  householdId: text('household_id').references(() => households.id),
   role: userRoleEnum('role').notNull().default('member'),
   token: text('token').notNull().unique(),
   invitedBy: text('invited_by').references(() => user.id),
