@@ -1,13 +1,15 @@
 'use client';
 
 import { createRecipe, updateRecipe } from '@/actions/recipes';
+import { getUploadUrl, updateRecipeImage, removeRecipeImage } from '@/actions/uploads';
 import { Button } from '@/components/ui/button';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 interface RecipeFormProps {
   recipe?: {
@@ -19,6 +21,7 @@ interface RecipeFormProps {
     prepTimeMinutes: number | null;
     cookTimeMinutes: number | null;
     tags: string[] | null;
+    imageUrl: string | null;
   };
   isAdmin?: boolean;
 }
@@ -35,8 +38,28 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
   const [prepTime, setPrepTime] = useState(recipe?.prepTimeMinutes?.toString() ?? '');
   const [cookTime, setCookTime] = useState(recipe?.cookTimeMinutes?.toString() ?? '');
   const [tagsInput, setTagsInput] = useState(recipe?.tags?.join(', ') ?? '');
+  const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleGetUploadUrl = useCallback(
+    (file: { fileType: string; fileSize: number }) =>
+      getUploadUrl({ recipeId: recipe!.id, ...file }),
+    [recipe],
+  );
+
+  const handleUploadComplete = useCallback(
+    async (publicUrl: string) => {
+      await updateRecipeImage(recipe!.id, publicUrl);
+      setImageUrl(publicUrl);
+    },
+    [recipe],
+  );
+
+  const handleRemoveImage = useCallback(async () => {
+    await removeRecipeImage(recipe!.id);
+    setImageUrl(null);
+  }, [recipe]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +79,7 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
       prepTimeMinutes: prepTime ? parseInt(prepTime) : undefined,
       cookTimeMinutes: cookTime ? parseInt(cookTime) : undefined,
       tags: tags.length > 0 ? tags : undefined,
+      imageUrl: imageUrl || undefined,
     };
 
     const res = isEdit
@@ -158,6 +182,20 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
           placeholder="italian, pasta, quick"
         />
       </div>
+
+      {isEdit && (
+        <div>
+          <Label>Image</Label>
+          <div className="mt-1">
+            <ImageUpload
+              currentImageUrl={imageUrl}
+              getUploadUrl={handleGetUploadUrl}
+              onUploadComplete={handleUploadComplete}
+              onRemove={handleRemoveImage}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button type="submit" loading={loading}>

@@ -38,6 +38,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { DeleteRecipeButton } from './delete-button';
+import { RecipeImageSection } from './recipe-image-section';
 
 export default async function RecipeDetailPage({
   params,
@@ -152,6 +153,15 @@ export default async function RecipeDetailPage({
           {totalTime > 0 && <span>Total: {totalTime} min</span>}
         </div>
         <TagList tags={recipe.tags} />
+      </div>
+
+      {/* Recipe image */}
+      <div className="mt-6">
+        <RecipeImageSection
+          recipeId={recipeId}
+          imageUrl={recipe.imageUrl}
+          canEdit={canEdit}
+        />
       </div>
 
       {/* Content sections */}

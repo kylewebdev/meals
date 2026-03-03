@@ -7,6 +7,8 @@ import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { notifyNewRecipe, notifyRecipeReviewed } from '@/lib/notifications';
 import { recalculateWeekAssignments } from '@/actions/schedule';
+import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { r2Client, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2';
 
 interface RecipeInput {
   name: string;
@@ -16,6 +18,7 @@ interface RecipeInput {
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
   tags?: string[];
+  imageUrl?: string;
 }
 
 interface IngredientInput {
@@ -49,6 +52,7 @@ export async function createRecipe(data: RecipeInput) {
       prepTimeMinutes: data.prepTimeMinutes ?? null,
       cookTimeMinutes: data.cookTimeMinutes ?? null,
       tags: data.tags ?? null,
+      imageUrl: data.imageUrl ?? null,
       status,
       createdBy: auth.data.user.id,
     })
@@ -97,6 +101,7 @@ export async function updateRecipe(recipeId: string, data: RecipeInput) {
     prepTimeMinutes: data.prepTimeMinutes ?? null,
     cookTimeMinutes: data.cookTimeMinutes ?? null,
     tags: data.tags ?? null,
+    imageUrl: data.imageUrl ?? null,
     updatedAt: new Date(),
   };
 
@@ -116,18 +121,27 @@ export async function deleteRecipe(recipeId: string) {
   const isAdmin = auth.data.user.role === 'admin';
   const userId = auth.data.user.id;
 
+  // Fetch recipe for permission check + image cleanup
+  const [recipeRow] = await db
+    .select({
+      createdBy: recipes.createdBy,
+      status: recipes.status,
+      imageUrl: recipes.imageUrl,
+    })
+    .from(recipes)
+    .where(eq(recipes.id, recipeId))
+    .limit(1);
+
+  if (!recipeRow) {
+    return { success: false as const, error: 'Recipe not found' };
+  }
+
   // Creator-only for delete (communal editing ≠ communal deletion)
   if (!isAdmin) {
-    const [recipe] = await db
-      .select({ createdBy: recipes.createdBy, status: recipes.status })
-      .from(recipes)
-      .where(eq(recipes.id, recipeId))
-      .limit(1);
-
-    if (!recipe || recipe.createdBy !== userId) {
+    if (recipeRow.createdBy !== userId) {
       return { success: false as const, error: 'Not authorized to delete this recipe' };
     }
-    if (recipe.status === 'approved') {
+    if (recipeRow.status === 'approved') {
       return { success: false as const, error: 'Cannot delete an approved recipe' };
     }
   }
@@ -151,6 +165,12 @@ export async function deleteRecipe(recipeId: string) {
         .set({ recipeOrder: filtered })
         .where(eq(swapSettings.id, s.id));
     }
+  }
+
+  // Clean up R2 image if present
+  if (recipeRow.imageUrl?.startsWith(R2_PUBLIC_URL)) {
+    const key = recipeRow.imageUrl.slice(R2_PUBLIC_URL.length + 1);
+    r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key })).catch(() => {});
   }
 
   // Delete the recipe (ingredients cascade)
