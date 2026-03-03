@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { extraPeople, households } from '@/lib/db/schema';
 import { requireHouseholdHead } from '@/lib/auth-utils';
+import { isValidPortions } from '@/lib/validators';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -12,7 +13,7 @@ export async function addExtraPerson(householdId: string, name: string, portions
 
   const trimmed = name.trim();
   if (!trimmed) return { success: false as const, error: 'Name is required' };
-  if (!Number.isInteger(portions) || portions < 0 || portions > 3) {
+  if (!isValidPortions(portions)) {
     return { success: false as const, error: 'Portions must be between 0 and 3' };
   }
 
@@ -51,7 +52,7 @@ export async function updateExtraPerson(
   }
 
   if (data.portions !== undefined) {
-    if (!Number.isInteger(data.portions) || data.portions < 0 || data.portions > 3) {
+    if (!isValidPortions(data.portions)) {
       return { success: false as const, error: 'Portions must be between 0 and 3' };
     }
     updates.portions = data.portions;

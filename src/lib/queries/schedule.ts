@@ -7,7 +7,6 @@ interface ScheduleWeek {
   id: string;
   startDate: Date;
   status: string;
-  swapMode: string;
 }
 
 export interface ScheduleContribution {
@@ -30,7 +29,6 @@ export interface ScheduleWeekWithContributions {
   id: string;
   startDate: Date;
   status: string;
-  swapMode: string;
   swapDays: ScheduleSwapDay[];
 }
 
@@ -73,7 +71,6 @@ export interface CurrentWeek {
   id: string;
   startDate: Date;
   status: string;
-  swapMode: string;
   isCurrent: boolean;
   swapDays: {
     id: string;
@@ -137,7 +134,6 @@ interface RawCurrentWeek {
   id: string;
   startDate: Date;
   status: string;
-  swapMode: string;
   swapDays: RawCurrentWeekSwapDay[];
 }
 

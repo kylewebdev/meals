@@ -6,7 +6,6 @@ import { eq, inArray } from 'drizzle-orm';
 export interface SwapSettingsRow {
   id: string;
   startDate: Date;
-  swapMode: string;
   recipeOrder: string[];
   householdOrder: string[];
   householdOrderMode: string;

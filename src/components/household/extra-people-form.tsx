@@ -1,6 +1,7 @@
 'use client';
 
 import { addExtraPerson, removeExtraPerson, updateExtraPerson } from '@/actions/extra-people';
+import type { ExtraPersonItem } from '@/actions/households';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
@@ -8,19 +9,13 @@ import { useState } from 'react';
 
 const PORTION_OPTIONS = [0, 1, 2, 3] as const;
 
-interface ExtraPerson {
-  id: string;
-  name: string;
-  portions: number;
-}
-
 interface ExtraPeopleFormProps {
   householdId: string;
-  extraPeople: ExtraPerson[];
+  extraPeople: ExtraPersonItem[];
 }
 
 export function ExtraPeopleForm({ householdId, extraPeople: initial }: ExtraPeopleFormProps) {
-  const [people, setPeople] = useState<ExtraPerson[]>(initial);
+  const [people, setPeople] = useState<ExtraPersonItem[]>(initial);
   const [loading, setLoading] = useState<string | null>(null);
   const { toast } = useToast();
 

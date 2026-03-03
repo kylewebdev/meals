@@ -40,7 +40,6 @@ export interface WeekWithContributions {
   id: string;
   startDate: Date;
   status: string;
-  swapMode: string;
   swapDays: SwapDayWithContributions[];
 }
 

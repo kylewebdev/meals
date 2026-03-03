@@ -9,7 +9,7 @@ import {
   getMondaysInRange,
   getSwapDayDefaults,
 } from '@/lib/schedule-utils';
-import { eq, gte, and } from 'drizzle-orm';
+import { eq, gte, and, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -94,19 +94,21 @@ export async function ensureWeeksExist() {
         .returning() as (typeof swapDays.$inferSelect)[];
       const swapDay = sdResult[0];
 
-      // Create a contribution for every household with per-household recipe
-      for (let hhIdx = 0; hhIdx < allHouseholds.length; hhIdx++) {
+      // Create contributions for every household in one batch
+      const contribValues = allHouseholds.map((hhId, hhIdx) => {
         const recipeIdx = computeHouseholdRecipeIndex(
           s.startDate, monday, swapDaysPerWeek, sdIdx, hhIdx, recipeOrder.length,
         );
-        const recipeId = recipeIdx >= 0 ? recipeOrder[recipeIdx] : null;
-
-        await db.insert(contributions).values({
+        return {
           weekId: week.id,
-          householdId: allHouseholds[hhIdx],
+          householdId: hhId,
           swapDayId: swapDay.id,
-          recipeId,
-        });
+          recipeId: recipeIdx >= 0 ? recipeOrder[recipeIdx] : null,
+        };
+      });
+
+      if (contribValues.length > 0) {
+        await db.insert(contributions).values(contribValues);
       }
     }
 
@@ -177,6 +179,9 @@ export async function recalculateWeekAssignments() {
     }[];
   }[];
 
+  // Group contributions by their new recipeId for batch updates
+  const updatesByRecipe = new Map<string | null, string[]>();
+
   for (const week of futureWeeks) {
     for (let sdIdx = 0; sdIdx < week.swapDays.length; sdIdx++) {
       const sd = week.swapDays[sdIdx];
@@ -188,12 +193,19 @@ export async function recalculateWeekAssignments() {
         );
         const recipeId = recipeIdx >= 0 ? s.recipeOrder[recipeIdx] : null;
 
-        await db
-          .update(contributions)
-          .set({ recipeId, updatedAt: new Date() })
-          .where(eq(contributions.id, contrib.id));
+        const ids = updatesByRecipe.get(recipeId) ?? [];
+        ids.push(contrib.id);
+        updatesByRecipe.set(recipeId, ids);
       }
     }
+  }
+
+  const updatedAt = new Date();
+  for (const [recipeId, ids] of updatesByRecipe) {
+    await db
+      .update(contributions)
+      .set({ recipeId, updatedAt })
+      .where(inArray(contributions.id, ids));
   }
 
   revalidatePath('/schedule');

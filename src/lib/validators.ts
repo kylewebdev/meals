@@ -11,6 +11,10 @@ export const paginationSchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
 });
 
+export function isValidPortions(n: number): boolean {
+  return Number.isInteger(n) && n >= 0 && n <= 3;
+}
+
 export const ratingValueSchema = z.enum(['love', 'fine', 'dislike']);
 
 export const rateRecipeSchema = z.object({

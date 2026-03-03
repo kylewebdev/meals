@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { user } from '@/lib/db/schema';
 import { requireSession } from '@/lib/auth-utils';
+import { isValidPortions } from '@/lib/validators';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -10,8 +11,8 @@ export async function updatePortionsPerMeal(portions: number) {
   const auth = await requireSession();
   if (!auth.success) return auth;
 
-  if (!Number.isInteger(portions) || portions < 0 || portions > 3) {
-    return { success: false as const, error: 'Portions must be 0, 1, 2, or 3' };
+  if (!isValidPortions(portions)) {
+    return { success: false as const, error: 'Portions must be between 0 and 3' };
   }
 
   await db

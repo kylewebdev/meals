@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { account, households, invites, user } from '@/lib/db/schema';
 import { requireAdmin, requireHouseholdHead, requireSession } from '@/lib/auth-utils';
+import { isValidPortions } from '@/lib/validators';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { hashPassword } from 'better-auth/crypto';
@@ -102,8 +103,8 @@ export async function adminUpdatePortions(userId: string, portions: number) {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
-  if (!Number.isInteger(portions) || portions < 0 || portions > 3) {
-    return { success: false as const, error: 'Portions must be 0, 1, 2, or 3' };
+  if (!isValidPortions(portions)) {
+    return { success: false as const, error: 'Portions must be between 0 and 3' };
   }
 
   const [target] = await db

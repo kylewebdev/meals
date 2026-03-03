@@ -1,7 +1,6 @@
 import { db } from '@/lib/db';
 import { contributions, extraPeople, households, user } from '@/lib/db/schema';
 import { getPortionCount } from '@/lib/schedule-utils';
-import { getHeadcount } from './contributions';
 import { and, count, eq, gt, isNotNull, sum } from 'drizzle-orm';
 
 export interface HouseholdPortion {
@@ -19,7 +18,6 @@ export interface ScalingContext {
   portionCount: number;
   /** Total portions needed across all households */
   totalPortions: number;
-  headcount: number;
   swapDayLabel: string;
   weekStartDate: Date;
   weekId: string;
@@ -95,19 +93,12 @@ export async function getScalingContext(
 
   if (!contribution) return null;
 
-  const [headcount, householdPortions] = await Promise.all([
-    getHeadcount(),
-    getHouseholdPortions(
-      contribution.swapDay.coversFrom,
-      contribution.swapDay.coversTo,
-    ),
-  ]);
-
-  const totalPortions = getPortionCount(
-    headcount,
+  const householdPortions = await getHouseholdPortions(
     contribution.swapDay.coversFrom,
     contribution.swapDay.coversTo,
   );
+
+  const totalPortions = householdPortions.reduce((sum, hp) => sum + hp.portions, 0);
 
   const householdCount = householdPortions.length || 1;
   const portionCount = Math.ceil(totalPortions / householdCount);
@@ -116,7 +107,6 @@ export async function getScalingContext(
     contributionId: contribution.id,
     portionCount,
     totalPortions,
-    headcount,
     swapDayLabel: contribution.swapDay.label,
     weekStartDate: contribution.week.startDate,
     weekId,
