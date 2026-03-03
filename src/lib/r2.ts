@@ -25,7 +25,7 @@ export function getR2Client(): S3Client {
 }
 
 export async function deleteR2Object(publicUrl: string): Promise<void> {
-  if (!publicUrl.startsWith(R2_PUBLIC_URL)) return;
+  if (!R2_PUBLIC_URL || !publicUrl.startsWith(R2_PUBLIC_URL)) return;
   const key = publicUrl.slice(R2_PUBLIC_URL.length + 1);
   await getR2Client().send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
 }

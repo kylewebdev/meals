@@ -207,12 +207,7 @@ const RECIPES: RecipeSeed[] = [
 
 // ─── R2 image upload ──────────────────────────────────────────
 
-const MIME_TYPES: Record<string, string> = {
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp',
-};
+import { EXT_TO_MIME } from '@/lib/upload-constants';
 
 async function uploadImage(
   localPath: string,
@@ -220,7 +215,7 @@ async function uploadImage(
 ): Promise<string> {
   const fullPath = join(process.cwd(), 'public', localPath);
   const ext = localPath.slice(localPath.lastIndexOf('.'));
-  const contentType = MIME_TYPES[ext] ?? 'application/octet-stream';
+  const contentType = EXT_TO_MIME[ext] ?? 'application/octet-stream';
   const body = readFileSync(fullPath);
   const key = `recipes/${recipeId}/cover${ext}`;
 
@@ -269,7 +264,7 @@ async function seed() {
     let recipeId: string;
 
     if (existingId) {
-      // Update existing recipe (imageUrl set below after upload)
+      // Update existing recipe
       await db
         .update(recipes)
         .set({
@@ -279,6 +274,7 @@ async function seed() {
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
           tags: r.tags,
+          imageUrl: r.imageUrl,
           updatedAt: new Date(),
         })
         .where(eq(recipes.id, existingId));
@@ -289,7 +285,7 @@ async function seed() {
       updated++;
       console.log(`  ~ ${r.name} (updated)`);
     } else {
-      // Insert new recipe (imageUrl set below after upload)
+      // Insert new recipe
       const [recipe] = await db
         .insert(recipes)
         .values({
@@ -300,6 +296,7 @@ async function seed() {
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
           tags: r.tags,
+          imageUrl: r.imageUrl,
           createdBy: admin.id,
         })
         .returning() as (typeof recipes.$inferSelect)[];
@@ -308,20 +305,16 @@ async function seed() {
       console.log(`  + ${r.name} (created)`);
     }
 
-    // Upload image to R2 and persist the URL
-    let imageUrl = r.imageUrl;
+    // Upload image to R2 and update the URL
     if (hasR2 && r.imageUrl) {
       try {
-        imageUrl = await uploadImage(r.imageUrl, recipeId);
+        const r2Url = await uploadImage(r.imageUrl, recipeId);
+        await db.update(recipes).set({ imageUrl: r2Url }).where(eq(recipes.id, recipeId));
         console.log(`    uploaded ${r.imageUrl} → R2`);
       } catch (err) {
         console.warn(`    failed to upload image for ${r.name}:`, err);
       }
     }
-    await db
-      .update(recipes)
-      .set({ imageUrl })
-      .where(eq(recipes.id, recipeId));
 
     // Insert ingredients
     await db.insert(recipeIngredients).values(
