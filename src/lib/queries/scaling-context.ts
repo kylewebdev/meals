@@ -15,8 +15,12 @@ export interface HouseholdPortion {
 
 export interface ScalingContext {
   contributionId: string;
+  /** Portions this household needs to cook (total ÷ households) */
   portionCount: number;
+  /** Total portions needed across all households */
+  totalPortions: number;
   headcount: number;
+  householdCount: number;
   swapDayLabel: string;
   weekStartDate: Date;
   weekId: string;
@@ -88,16 +92,21 @@ export async function getScalingContext(
     ),
   ]);
 
-  const portionCount = getPortionCount(
+  const totalPortions = getPortionCount(
     headcount,
     contribution.swapDay.coversFrom,
     contribution.swapDay.coversTo,
   );
 
+  const householdCount = householdPortions.length || 1;
+  const portionCount = Math.ceil(totalPortions / householdCount);
+
   return {
     contributionId: contribution.id,
     portionCount,
+    totalPortions,
     headcount,
+    householdCount,
     swapDayLabel: contribution.swapDay.label,
     weekStartDate: contribution.week.startDate,
     weekId,

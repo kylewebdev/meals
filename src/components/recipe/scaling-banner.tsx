@@ -5,6 +5,8 @@ import Link from 'next/link';
 
 interface ScalingBannerProps {
   portionCount: number;
+  totalPortions: number;
+  householdCount: number;
   recipeServings: number;
   swapDayLabel: string;
   weekStartDate: Date;
@@ -15,6 +17,8 @@ interface ScalingBannerProps {
 
 export function ScalingBanner({
   portionCount,
+  totalPortions,
+  householdCount,
   recipeServings,
   swapDayLabel,
   weekStartDate,
@@ -28,9 +32,9 @@ export function ScalingBanner({
       className,
     )}>
       <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-        Scaled for <strong>{portionCount} portions</strong>{' '}
+        You cook <strong>{portionCount} portions</strong>{' '}
         <span className="text-blue-600 dark:text-blue-400">
-          (recipe makes {recipeServings})
+          ({totalPortions} total &divide; {householdCount} households &middot; recipe makes {recipeServings})
         </span>
       </p>
       <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
