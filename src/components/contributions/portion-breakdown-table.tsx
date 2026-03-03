@@ -49,8 +49,7 @@ export function PortionBreakdownTable({ householdPortions }: PortionBreakdownTab
             </td>
             <td className="py-1.5 pr-4 text-right font-semibold text-zinc-900 dark:text-zinc-100">{totalPortions}</td>
             <td className="py-1.5 text-right font-semibold text-zinc-900 dark:text-zinc-100">
-              {Math.ceil(totalPortions / (householdPortions.length || 1))}
-              <span className="font-normal text-zinc-400 dark:text-zinc-500"> /hh</span>
+              {totalPeople > 0 ? Math.round((totalPortions / totalPeople) * 10) / 10 : 0}
             </td>
           </tr>
         </tfoot>

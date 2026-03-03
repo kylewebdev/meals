@@ -29,12 +29,25 @@ export function getShortDayName(dayOfWeek: number): string {
   return SHORT_DAY_NAMES[dayOfWeek] ?? `Day ${dayOfWeek}`;
 }
 
-export function formatWeekRange(startDate: Date): string {
-  const end = new Date(startDate);
-  end.setDate(end.getDate() + 6);
+const DATE_RANGE_FMT: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
 
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  return `${startDate.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+export function formatDateRange(baseDate: Date, startOffset: number, endOffset: number): string {
+  const start = new Date(baseDate);
+  start.setDate(start.getDate() + startOffset);
+  const end = new Date(baseDate);
+  end.setDate(end.getDate() + endOffset);
+  return `${start.toLocaleDateString('en-US', DATE_RANGE_FMT)} – ${end.toLocaleDateString('en-US', DATE_RANGE_FMT)}`;
+}
+
+export function formatWeekRange(startDate: Date): string {
+  return formatDateRange(startDate, 0, 6);
+}
+
+/** Get the calendar date for a given dayOfWeek within a Monday-start week. */
+export function getSwapDate(weekStartDate: Date, dayOfWeek: number): Date {
+  const date = new Date(weekStartDate);
+  date.setDate(date.getDate() + (dayOfWeek - 1));
+  return date;
 }
 
 /**

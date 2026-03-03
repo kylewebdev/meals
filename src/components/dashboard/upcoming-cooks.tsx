@@ -1,29 +1,12 @@
 'use client';
 
+import { formatDateRange, getSwapDate } from '@/lib/schedule-utils';
 import type { UpcomingSwapDay } from '@/lib/queries/contributions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 interface UpcomingCooksProps {
   swapDays: UpcomingSwapDay[];
-}
-
-/** Get the actual calendar date of the swap, relative to the week's Monday start. */
-function getSwapDate(weekStartDate: Date, dayOfWeek: number): Date {
-  const date = new Date(weekStartDate);
-  // weekStartDate is Monday (1); Sunday (0) is the day before → offset -1
-  date.setDate(date.getDate() + (dayOfWeek - 1));
-  return date;
-}
-
-/** Format the coverage range (e.g. coversFrom=1, coversTo=5 → "Mar 2 – Mar 7") */
-function formatCoverageRange(weekStartDate: Date, coversFrom: number, coversTo: number): string {
-  const fmt: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  const start = new Date(weekStartDate);
-  start.setDate(start.getDate() + (coversFrom - 1));
-  const end = new Date(weekStartDate);
-  end.setDate(end.getDate() + (coversTo - 1));
-  return `${start.toLocaleDateString('en-US', fmt)} – ${end.toLocaleDateString('en-US', fmt)}`;
 }
 
 const swapDateFmt: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'short', day: 'numeric' };
@@ -56,7 +39,7 @@ export function UpcomingCooks({ swapDays }: UpcomingCooksProps) {
                   {sd.label} &middot; {swapDate.toLocaleDateString('en-US', swapDateFmt)}
                 </span>
                 <p className="text-xs text-zinc-500">
-                  Week of {formatCoverageRange(sd.weekStartDate, sd.coversFrom, sd.coversTo)}
+                  Week of {formatDateRange(sd.weekStartDate, sd.coversFrom - 1, sd.coversTo - 1)}
                 </p>
               </div>
               {sd.assignedRecipe ? (

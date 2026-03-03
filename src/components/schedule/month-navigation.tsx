@@ -39,13 +39,12 @@ export function MonthNavigation({ year, month }: MonthNavigationProps) {
     navigate(now.getFullYear(), now.getMonth());
   };
 
+  const chevronBtn =
+    'inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100';
+
   return (
     <div className="flex items-center gap-2">
-      <button
-        onClick={goToPrev}
-        className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-        aria-label="Previous month"
-      >
+      <button onClick={goToPrev} className={chevronBtn} aria-label="Previous month">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 5l-5 5 5 5" />
         </svg>
@@ -53,11 +52,7 @@ export function MonthNavigation({ year, month }: MonthNavigationProps) {
       <h3 className="min-w-[160px] text-center text-lg font-semibold">
         {MONTH_NAMES[month]} {year}
       </h3>
-      <button
-        onClick={goToNext}
-        className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-300 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-        aria-label="Next month"
-      >
+      <button onClick={goToNext} className={chevronBtn} aria-label="Next month">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M8 5l5 5-5 5" />
         </svg>
