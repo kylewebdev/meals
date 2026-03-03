@@ -3,7 +3,8 @@
 import { db } from '@/lib/db';
 import { notifications } from '@/lib/db/schema';
 import { requireSession } from '@/lib/auth-utils';
-import { and, eq, isNull, isNotNull, desc } from 'drizzle-orm';
+import { and, eq, isNull, isNotNull, desc, count } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
 
 export async function markAsRead(id: string) {
   const auth = await requireSession();
@@ -19,6 +20,7 @@ export async function markAsRead(id: string) {
       ),
     );
 
+  revalidatePath('/', 'layout');
   return { success: true as const, data: null };
 }
 
@@ -36,6 +38,7 @@ export async function markAllAsRead() {
       ),
     );
 
+  revalidatePath('/', 'layout');
   return { success: true as const, data: null };
 }
 
@@ -53,6 +56,7 @@ export async function archiveNotification(id: string) {
       ),
     );
 
+  revalidatePath('/', 'layout');
   return { success: true as const, data: null };
 }
 
@@ -71,6 +75,7 @@ export async function archiveAllRead() {
       ),
     );
 
+  revalidatePath('/', 'layout');
   return { success: true as const, data: null };
 }
 
@@ -88,16 +93,17 @@ export async function unarchiveNotification(id: string) {
       ),
     );
 
+  revalidatePath('/', 'layout');
   return { success: true as const, data: null };
 }
 
 export async function fetchNotifications() {
   const auth = await requireSession();
-  if (!auth.success) return { inbox: [], archived: [] };
+  if (!auth.success) return { inbox: [], archived: [], unreadCount: 0 };
 
   const userId = auth.data.user.id;
 
-  const [inbox, archived] = await Promise.all([
+  const [inbox, archived, unreadResult] = await Promise.all([
     db.query.notifications.findMany({
       where: and(eq(notifications.userId, userId), isNull(notifications.archivedAt)),
       orderBy: (n) => [desc(n.createdAt)],
@@ -108,7 +114,18 @@ export async function fetchNotifications() {
       orderBy: (n) => [desc(n.createdAt)],
       limit: 20,
     }),
+    db
+      .select({ count: count() })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          isNull(notifications.readAt),
+          isNull(notifications.archivedAt),
+        ),
+      )
+      .then((r) => r[0]),
   ]);
 
-  return { inbox, archived };
+  return { inbox, archived, unreadCount: unreadResult?.count ?? 0 };
 }
