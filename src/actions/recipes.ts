@@ -3,7 +3,7 @@
 import { db } from '@/lib/db';
 import { recipes, recipeIngredients, contributions, swapSettings } from '@/lib/db/schema';
 import { requireAdmin, requireSession } from '@/lib/auth-utils';
-import { eq, sql } from 'drizzle-orm';
+import { eq, isNotNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { notifyNewRecipe, notifyRecipeReviewed } from '@/lib/notifications';
 import { recalculateWeekAssignments } from '@/actions/schedule';
@@ -182,6 +182,7 @@ export async function deleteRecipe(recipeId: string) {
   revalidatePath('/recipes');
   revalidatePath('/schedule');
   revalidatePath('/admin/rotation');
+  revalidatePath('/admin/recipe-ratings');
   return { success: true as const, data: null };
 }
 
@@ -337,38 +338,32 @@ export async function resetAllRecipes() {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
-  // Fetch all recipes to clean up R2 images
+  const now = new Date();
+
+  // Fetch image URLs for R2 cleanup
   const allRecipes = await db
-    .select({ id: recipes.id, imageUrl: recipes.imageUrl })
+    .select({ imageUrl: recipes.imageUrl })
     .from(recipes);
 
-  // Nullify recipe references in contributions
-  await db
-    .update(contributions)
-    .set({ recipeId: null, updatedAt: new Date() })
-    .where(sql`${contributions.recipeId} IS NOT NULL`);
+  // Nullify contribution recipe refs + clear rotation order in parallel
+  await Promise.all([
+    db.update(contributions)
+      .set({ recipeId: null, updatedAt: now })
+      .where(isNotNull(contributions.recipeId)),
+    db.update(swapSettings)
+      .set({ recipeOrder: [], updatedAt: now }),
+  ]);
 
-  // Clear recipe order from swap settings
-  const settings = await db.query.swapSettings.findFirst();
-  if (settings) {
-    await db
-      .update(swapSettings)
-      .set({ recipeOrder: [], updatedAt: new Date() })
-      .where(eq(swapSettings.id, (settings as unknown as { id: string }).id));
-  }
-
-  // Delete R2 images in the background
-  for (const r of allRecipes) {
-    if (r.imageUrl) {
-      deleteR2Object(r.imageUrl).catch(() => {});
-    }
+  // Fire-and-forget R2 image cleanup (all concurrently)
+  const imageUrls = allRecipes
+    .map((r) => r.imageUrl)
+    .filter((url): url is string => !!url);
+  if (imageUrls.length > 0) {
+    Promise.allSettled(imageUrls.map((url) => deleteR2Object(url)));
   }
 
   // Delete all recipes (ingredients, ratings, comments cascade)
   await db.delete(recipes);
-
-  // Recalculate week assignments
-  await recalculateWeekAssignments();
 
   revalidatePath('/recipes');
   revalidatePath('/schedule');
