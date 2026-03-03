@@ -34,13 +34,13 @@ export default async function DashboardPage() {
           title="No week scheduled"
           description={
             session.user.role === 'admin'
-              ? 'Configure swap settings to start auto-generating weeks.'
-              : 'An admin needs to configure the swap settings.'
+              ? 'Configure rotation settings to start auto-generating weeks.'
+              : 'An admin needs to configure the rotation settings.'
           }
           action={
             session.user.role === 'admin' ? (
               <Link href="/admin/swap-config">
-                <Button variant="secondary">Configure Swap Settings</Button>
+                <Button variant="secondary">Configure Rotation Settings</Button>
               </Link>
             ) : undefined
           }

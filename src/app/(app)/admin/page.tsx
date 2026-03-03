@@ -41,11 +41,11 @@ export default async function AdminPage() {
         <Link href="/admin/swap-config">
           <Card className="transition-shadow hover:shadow-md">
             <CardHeader>
-              <h3 className="font-semibold">Swap Settings</h3>
+              <h3 className="font-semibold">Rotation Settings</h3>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-zinc-500">
-                Configure swap mode, generate weekly schedule, and manage swap logistics.
+                Configure rotation schedule, generate weeks, and manage swap logistics.
               </p>
             </CardContent>
           </Card>

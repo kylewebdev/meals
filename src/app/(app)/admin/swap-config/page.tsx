@@ -33,7 +33,7 @@ export default async function AdminSwapConfigPage() {
         <Link href="/admin" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Admin
         </Link>
-        <h2 className="mt-1 text-2xl font-bold">Swap Settings</h2>
+        <h2 className="mt-1 text-2xl font-bold">Rotation Settings</h2>
       </div>
 
       <Card>

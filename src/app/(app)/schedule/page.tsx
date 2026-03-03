@@ -53,7 +53,7 @@ export default async function SchedulePage({
         <h2 className="text-2xl font-bold">Schedule</h2>
         {isAdmin && (
           <Link href="/admin/swap-config">
-            <Button variant="secondary">Swap Settings</Button>
+            <Button variant="secondary">Rotation Settings</Button>
           </Link>
         )}
       </div>
