@@ -65,30 +65,32 @@ export default async function RecipeDetailPage({
   const showRatings = recipe.status === 'approved';
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto max-w-5xl">
+      {/* Header: breadcrumb, title, action buttons */}
       <div>
         <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; {weekId ? 'Back to Week' : 'Recipes'}
         </Link>
-        <div className="mt-1 flex items-center gap-3">
-          <h2 className="text-2xl font-semibold tracking-tight">{recipe.name}</h2>
-          {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
+        <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-semibold tracking-tight">{recipe.name}</h2>
+            {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
+          </div>
+          {(canEdit || canDelete) && (
+            <div className="flex gap-2">
+              {canEdit && (
+                <Link href={`/recipes/${recipeId}/edit`}>
+                  <Button variant="secondary">Edit</Button>
+                </Link>
+              )}
+              {canDelete && <DeleteRecipeButton recipeId={recipeId} />}
+            </div>
+          )}
         </div>
       </div>
 
-      {(canEdit || canDelete) && (
-        <div className="flex gap-2">
-          {canEdit && (
-            <Link href={`/recipes/${recipeId}/edit`}>
-              <Button variant="secondary">Edit</Button>
-            </Link>
-          )}
-          {canDelete && <DeleteRecipeButton recipeId={recipeId} />}
-        </div>
-      )}
-
       {isAdmin && recipe.status === 'pending' && (
-        <Card>
+        <Card className="mt-6">
           <CardHeader>
             <h3 className="text-lg font-semibold">Admin Review</h3>
           </CardHeader>
@@ -98,55 +100,76 @@ export default async function RecipeDetailPage({
         </Card>
       )}
 
-      {recipe.description && (
-        <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
-      )}
-
-      <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
-        {recipe.servings && <span>Servings: {recipe.servings}</span>}
-        {recipe.prepTimeMinutes && <span>Prep: {recipe.prepTimeMinutes} min</span>}
-        {recipe.cookTimeMinutes && <span>Cook: {recipe.cookTimeMinutes} min</span>}
-        {totalTime > 0 && <span>Total: {totalTime} min</span>}
+      {/* Meta: description, details, tags */}
+      <div className="mt-5 space-y-3">
+        {recipe.description && (
+          <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
+        )}
+        <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
+          {recipe.servings && <span>Servings: {recipe.servings}</span>}
+          {recipe.prepTimeMinutes && <span>Prep: {recipe.prepTimeMinutes} min</span>}
+          {recipe.cookTimeMinutes && <span>Cook: {recipe.cookTimeMinutes} min</span>}
+          {totalTime > 0 && <span>Total: {totalTime} min</span>}
+        </div>
+        <TagList tags={recipe.tags} />
       </div>
 
-      <TagList tags={recipe.tags} />
+      {/* Content sections */}
+      <div className="mt-8 space-y-8">
+        {hasNutrition && (
+          <>
+            <hr className="border-zinc-100 dark:border-zinc-800" />
+            <div>
+              <h3 className="text-lg font-semibold pb-3">Nutrition</h3>
+              <NutritionChart
+                calories={recipe.calories}
+                proteinG={recipe.proteinG}
+                carbsG={recipe.carbsG}
+                fatG={recipe.fatG}
+                layout="split"
+              />
+            </div>
+          </>
+        )}
 
-      {hasNutrition && (
-        <>
-          <hr className="border-zinc-100 dark:border-zinc-800" />
-          <div>
-            <h3 className="text-lg font-semibold pb-3">Nutrition</h3>
-            <NutritionChart
-              calories={recipe.calories}
-              proteinG={recipe.proteinG}
-              carbsG={recipe.carbsG}
-              fatG={recipe.fatG}
-              layout="split"
+        {scalingCtx && recipe.servings && (
+          <ScalingBanner
+            portionCount={scalingCtx.portionCount}
+            totalPortions={scalingCtx.totalPortions}
+            recipeServings={recipe.servings}
+            swapDayLabel={scalingCtx.swapDayLabel}
+            weekStartDate={scalingCtx.weekStartDate}
+            weekId={scalingCtx.weekId}
+            householdPortions={scalingCtx.householdPortions}
+            className="max-w-none"
+          />
+        )}
+
+        <hr className="border-zinc-100 dark:border-zinc-800" />
+
+        <div>
+          {groceryList ? (
+            <IngredientGroceryTabs
+              ingredientsContent={
+                recipe.ingredients.length === 0 ? (
+                  <p className="text-sm text-zinc-500">No ingredients listed.</p>
+                ) : (
+                  <IngredientTable
+                    ingredients={recipe.ingredients}
+                    recipeId={recipeId}
+                    editable={canEdit}
+                    scaleFactor={scaleFactor}
+                  />
+                )
+              }
+              groceryContent={
+                <GroceryListTab listId={groceryList.id} items={groceryList.items} />
+              }
             />
-          </div>
-        </>
-      )}
-
-      {scalingCtx && recipe.servings && (
-        <ScalingBanner
-          portionCount={scalingCtx.portionCount}
-          totalPortions={scalingCtx.totalPortions}
-          recipeServings={recipe.servings}
-          swapDayLabel={scalingCtx.swapDayLabel}
-          weekStartDate={scalingCtx.weekStartDate}
-          weekId={scalingCtx.weekId}
-          householdPortions={scalingCtx.householdPortions}
-          className="max-w-none"
-        />
-      )}
-
-      <hr className="border-zinc-100 dark:border-zinc-800" />
-
-      <div>
-        {groceryList ? (
-          <IngredientGroceryTabs
-            ingredientsContent={
-              recipe.ingredients.length === 0 ? (
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold pb-3">Ingredients</h3>
+              {recipe.ingredients.length === 0 ? (
                 <p className="text-sm text-zinc-500">No ingredients listed.</p>
               ) : (
                 <IngredientTable
@@ -155,55 +178,44 @@ export default async function RecipeDetailPage({
                   editable={canEdit}
                   scaleFactor={scaleFactor}
                 />
-              )
-            }
-            groceryContent={
-              <GroceryListTab listId={groceryList.id} items={groceryList.items} />
-            }
-          />
-        ) : (
+              )}
+              {canEdit && recipe.ingredients.length === 0 && (
+                <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
+              )}
+            </>
+          )}
+        </div>
+
+        {recipe.instructions && (
           <>
-            <h3 className="text-lg font-semibold pb-3">Ingredients</h3>
-            {recipe.ingredients.length === 0 ? (
-              <p className="text-sm text-zinc-500">No ingredients listed.</p>
-            ) : (
-              <IngredientTable
-                ingredients={recipe.ingredients}
-                recipeId={recipeId}
-                editable={canEdit}
-                scaleFactor={scaleFactor}
-              />
-            )}
-            {canEdit && recipe.ingredients.length === 0 && (
-              <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
-            )}
+            <hr className="border-zinc-100 dark:border-zinc-800" />
+            <div>
+              <h3 className="text-lg font-semibold pb-3">Instructions</h3>
+              <div className="rounded-lg bg-zinc-50 p-5 dark:bg-zinc-900">
+                <div className="space-y-3 font-serif text-base leading-relaxed">
+                  {recipe.instructions.split('\n').filter(Boolean).map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
           </>
         )}
+
+        {showRatings && (
+          <>
+            <hr className="border-zinc-100 dark:border-zinc-800" />
+            <RatingsSection
+              recipeId={recipeId}
+              householdId={session.user.householdId}
+            />
+          </>
+        )}
+
+        <p className="text-xs text-zinc-400">
+          Added by {recipe.creator.name}
+        </p>
       </div>
-
-      {recipe.instructions && (
-        <>
-          <hr className="border-zinc-100 dark:border-zinc-800" />
-          <div>
-            <h3 className="text-lg font-semibold pb-3">Instructions</h3>
-            <div className="whitespace-pre-wrap text-sm">{recipe.instructions}</div>
-          </div>
-        </>
-      )}
-
-      {showRatings && (
-        <>
-          <hr className="border-zinc-100 dark:border-zinc-800" />
-          <RatingsSection
-            recipeId={recipeId}
-            householdId={session.user.householdId}
-          />
-        </>
-      )}
-
-      <p className="text-xs text-zinc-400">
-        Added by {recipe.creator.name}
-      </p>
     </div>
   );
 }

@@ -100,9 +100,11 @@ export function NutritionChart({
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {cal > 0 && (
-          <div className="flex flex-col justify-center">
-            <h3 className="mb-2 text-sm font-medium text-zinc-500">Calories</h3>
-            <AnimatedCalories value={cal} />
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-zinc-500">Calories</h3>
+            <div className="flex h-52 items-center justify-center">
+              <AnimatedCalories value={cal} />
+            </div>
           </div>
         )}
         {hasMacros && (
