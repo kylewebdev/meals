@@ -16,14 +16,11 @@ export function PortionBreakdownTable({ householdPortions }: PortionBreakdownTab
           <tr className="border-b border-zinc-200 dark:border-zinc-700">
             <th className="py-1.5 pr-4 text-left font-medium text-zinc-500 dark:text-zinc-400">Household</th>
             <th className="py-1.5 pr-4 text-right font-medium text-zinc-500 dark:text-zinc-400">People</th>
-            <th className="py-1.5 pr-4 text-right font-medium text-zinc-500 dark:text-zinc-400">Portions</th>
-            <th className="py-1.5 text-right font-medium text-zinc-500 dark:text-zinc-400">Per person</th>
+            <th className="py-1.5 text-right font-medium text-zinc-500 dark:text-zinc-400">Portions</th>
           </tr>
         </thead>
         <tbody>
-          {householdPortions.map((hp) => {
-            const perPerson = Math.round((hp.portions / hp.memberCount) * 10) / 10;
-            return (
+          {householdPortions.map((hp) => (
               <tr key={hp.householdId} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
                 <td className="py-1.5 pr-4 font-medium text-zinc-900 dark:text-zinc-100">{hp.householdName}</td>
                 <td className="py-1.5 pr-4 text-right text-zinc-600 dark:text-zinc-400">
@@ -32,11 +29,9 @@ export function PortionBreakdownTable({ householdPortions }: PortionBreakdownTab
                     <span className="text-zinc-400 dark:text-zinc-500"> (+{hp.extraPortions})</span>
                   )}
                 </td>
-                <td className="py-1.5 pr-4 text-right text-zinc-600 dark:text-zinc-400">{hp.portions}</td>
-                <td className="py-1.5 text-right text-zinc-600 dark:text-zinc-400">{perPerson}</td>
+                <td className="py-1.5 text-right text-zinc-600 dark:text-zinc-400">{hp.portions}</td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
         <tfoot>
           <tr className="border-t border-zinc-200 dark:border-zinc-700">
@@ -47,10 +42,7 @@ export function PortionBreakdownTable({ householdPortions }: PortionBreakdownTab
                 <span className="text-zinc-400 dark:text-zinc-500"> (+{totalExtra})</span>
               )}
             </td>
-            <td className="py-1.5 pr-4 text-right font-semibold text-zinc-900 dark:text-zinc-100">{totalPortions}</td>
-            <td className="py-1.5 text-right font-semibold text-zinc-900 dark:text-zinc-100">
-              {totalPeople > 0 ? Math.round((totalPortions / totalPeople) * 10) / 10 : 0}
-            </td>
+            <td className="py-1.5 text-right font-semibold text-zinc-900 dark:text-zinc-100">{totalPortions}</td>
           </tr>
         </tfoot>
       </table>

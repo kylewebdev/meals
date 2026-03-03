@@ -14,6 +14,7 @@ interface Contribution {
     carbsG: number | null;
     fatG: number | null;
   } | null;
+  servings: number | null;
 }
 
 interface SwapDay {
@@ -38,12 +39,19 @@ export function WeekNutritionChart({ swapDays }: WeekNutritionChartProps) {
     { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
   );
 
+  // Total servings across all contributions for per-serving calculation
+  const totalServings = allContributions.reduce(
+    (sum, c) => sum + (c.servings ?? 0),
+    0,
+  );
+
   return (
     <NutritionChart
       calories={totals.calories}
       proteinG={totals.proteinG}
       carbsG={totals.carbsG}
       fatG={totals.fatG}
+      servings={totalServings > 1 ? totalServings : undefined}
     />
   );
 }

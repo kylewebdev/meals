@@ -31,13 +31,9 @@ export default async function CoopPage() {
 
   const headcountMap = new Map(headcountData.map((h) => [h.householdId, h]));
 
-  // User's household detail (editable) + reviews
   const [household, reviews] = householdId
-    ? await Promise.all([
-        getHousehold(householdId),
-        getHouseholdReviews(householdId),
-      ])
-    : [undefined, []];
+    ? await Promise.all([getHousehold(householdId), getHouseholdReviews(householdId)])
+    : [undefined, []] as const;
 
   const isHead = household?.headId === session.user.id;
   const isAdmin = session.user.role === 'admin';
