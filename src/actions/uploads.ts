@@ -1,27 +1,19 @@
 'use server';
 
 import { z } from 'zod';
-import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { recipes } from '@/lib/db/schema';
-import { r2Client, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2';
-import { requireSession } from '@/lib/auth-utils';
-import { revalidatePath } from 'next/cache';
-
-const ALLOWED_TYPES: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+import { getR2Client, R2_BUCKET, R2_PUBLIC_URL, deleteR2Object } from '@/lib/r2';
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload-constants';
+import { requireRecipeAccess, revalidateRecipePaths } from '@/actions/recipes';
 
 const uploadSchema = z.object({
   recipeId: z.string().uuid(),
-  fileType: z.string().refine((t) => t in ALLOWED_TYPES, 'Unsupported file type'),
-  fileSize: z.number().max(MAX_FILE_SIZE, 'File too large (max 5 MB)'),
+  fileType: z.string().refine((t) => t in ALLOWED_IMAGE_TYPES, 'Unsupported file type'),
+  fileSize: z.number().max(MAX_IMAGE_SIZE, 'File too large (max 10 MB)'),
 });
 
 export async function getUploadUrl(input: {
@@ -29,63 +21,62 @@ export async function getUploadUrl(input: {
   fileType: string;
   fileSize: number;
 }) {
-  const auth = await requireSession();
-  if (!auth.success) return auth;
-
   const parsed = uploadSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false as const, error: parsed.error.issues[0].message };
   }
 
   const { recipeId, fileType } = parsed.data;
-  const isAdmin = auth.data.user.role === 'admin';
 
-  // Permission check: admin can always upload, others only for non-approved
-  if (!isAdmin) {
-    const [recipe] = await db
-      .select({ status: recipes.status })
-      .from(recipes)
-      .where(eq(recipes.id, recipeId))
-      .limit(1);
-
-    if (!recipe) return { success: false as const, error: 'Recipe not found' };
-    if (recipe.status === 'approved') {
-      return { success: false as const, error: 'Cannot modify an approved recipe' };
-    }
+  if (!process.env.R2_ACCESS_KEY_ID) {
+    return { success: false as const, error: 'Image uploads are not configured' };
   }
 
-  const ext = ALLOWED_TYPES[fileType];
+  const auth = await requireRecipeAccess(recipeId);
+  if (!auth.success) return auth;
+
+  const ext = ALLOWED_IMAGE_TYPES[fileType];
   const key = `recipes/${recipeId}/${Date.now()}.${ext}`;
 
   const command = new PutObjectCommand({
     Bucket: R2_BUCKET,
     Key: key,
     ContentType: fileType,
-    ContentLength: parsed.data.fileSize,
   });
 
-  const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 300 });
+  const uploadUrl = await getSignedUrl(getR2Client(), command, { expiresIn: 300 });
   const publicUrl = `${R2_PUBLIC_URL}/${key}`;
 
   return { success: true as const, data: { uploadUrl, publicUrl } };
 }
 
 export async function updateRecipeImage(recipeId: string, imageUrl: string) {
-  const auth = await requireSession();
+  const auth = await requireRecipeAccess(recipeId);
   if (!auth.success) return auth;
+
+  // Fetch old image URL so we can clean up the previous R2 object
+  const [existing] = await db
+    .select({ imageUrl: recipes.imageUrl })
+    .from(recipes)
+    .where(eq(recipes.id, recipeId))
+    .limit(1);
 
   await db
     .update(recipes)
     .set({ imageUrl, updatedAt: new Date() })
     .where(eq(recipes.id, recipeId));
 
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath('/recipes');
+  // Clean up old image (fire-and-forget)
+  if (existing?.imageUrl && existing.imageUrl !== imageUrl) {
+    deleteR2Object(existing.imageUrl).catch(() => {});
+  }
+
+  revalidateRecipePaths(recipeId);
   return { success: true as const, data: null };
 }
 
 export async function removeRecipeImage(recipeId: string) {
-  const auth = await requireSession();
+  const auth = await requireRecipeAccess(recipeId);
   if (!auth.success) return auth;
 
   const [recipe] = await db
@@ -96,18 +87,16 @@ export async function removeRecipeImage(recipeId: string) {
 
   if (!recipe) return { success: false as const, error: 'Recipe not found' };
 
-  // Delete from R2 if the URL is on our domain
-  if (recipe.imageUrl?.startsWith(R2_PUBLIC_URL)) {
-    const key = recipe.imageUrl.slice(R2_PUBLIC_URL.length + 1); // strip domain + "/"
-    await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
-  }
-
   await db
     .update(recipes)
     .set({ imageUrl: null, updatedAt: new Date() })
     .where(eq(recipes.id, recipeId));
 
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath('/recipes');
+  // Delete from R2 (fire-and-forget)
+  if (recipe.imageUrl) {
+    deleteR2Object(recipe.imageUrl).catch(() => {});
+  }
+
+  revalidateRecipePaths(recipeId);
   return { success: true as const, data: null };
 }

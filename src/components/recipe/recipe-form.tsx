@@ -50,16 +50,24 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
 
   const handleUploadComplete = useCallback(
     async (publicUrl: string) => {
-      await updateRecipeImage(recipe!.id, publicUrl);
+      const res = await updateRecipeImage(recipe!.id, publicUrl);
+      if (!res.success) {
+        toast(res.error);
+        return;
+      }
       setImageUrl(publicUrl);
     },
-    [recipe],
+    [recipe, toast],
   );
 
   const handleRemoveImage = useCallback(async () => {
-    await removeRecipeImage(recipe!.id);
+    const res = await removeRecipeImage(recipe!.id);
+    if (!res.success) {
+      toast(res.error);
+      return;
+    }
     setImageUrl(null);
-  }, [recipe]);
+  }, [recipe, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

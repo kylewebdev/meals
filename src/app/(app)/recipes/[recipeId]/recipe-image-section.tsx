@@ -49,7 +49,7 @@ export function RecipeImageSection({ recipeId, imageUrl, canEdit }: RecipeImageS
   if (!canEdit && imageUrl) {
     return (
       <div className="relative aspect-video overflow-hidden rounded-lg md:aspect-auto md:min-h-48 md:h-full">
-        <Image src={imageUrl} alt="Recipe image" fill className="object-cover" />
+        <Image src={imageUrl} alt="Recipe image" fill sizes="(min-width: 768px) 50vw, 100vw" priority className="object-cover" />
       </div>
     );
   }

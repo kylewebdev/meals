@@ -4,9 +4,7 @@ import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
-
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+import { ALLOWED_IMAGE_MIMES, MAX_IMAGE_SIZE } from '@/lib/upload-constants';
 
 interface ImageUploadProps {
   currentImageUrl?: string | null;
@@ -39,12 +37,12 @@ export function ImageUpload({
     // Reset input so the same file can be re-selected
     e.target.value = '';
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (!ALLOWED_IMAGE_MIMES.includes(file.type)) {
       toast('Only JPEG, PNG, and WebP images are supported');
       return;
     }
-    if (file.size > MAX_FILE_SIZE) {
-      toast('Image must be under 5 MB');
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast('Image must be under 10 MB');
       return;
     }
 
@@ -104,7 +102,7 @@ export function ImageUpload({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={ALLOWED_IMAGE_MIMES.join(',')}
         className="hidden"
         onChange={handleFileChange}
       />
@@ -116,6 +114,8 @@ export function ImageUpload({
               src={displayUrl}
               alt="Recipe image"
               fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
               className="object-cover"
               unoptimized={preview !== null}
             />

@@ -7,8 +7,7 @@ import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { notifyNewRecipe, notifyRecipeReviewed } from '@/lib/notifications';
 import { recalculateWeekAssignments } from '@/actions/schedule';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { r2Client, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2';
+import { deleteR2Object } from '@/lib/r2';
 
 interface RecipeInput {
   name: string;
@@ -168,9 +167,8 @@ export async function deleteRecipe(recipeId: string) {
   }
 
   // Clean up R2 image if present
-  if (recipeRow.imageUrl?.startsWith(R2_PUBLIC_URL)) {
-    const key = recipeRow.imageUrl.slice(R2_PUBLIC_URL.length + 1);
-    r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key })).catch(() => {});
+  if (recipeRow.imageUrl) {
+    deleteR2Object(recipeRow.imageUrl).catch(() => {});
   }
 
   // Delete the recipe (ingredients cascade)
@@ -187,7 +185,7 @@ export async function deleteRecipe(recipeId: string) {
   return { success: true as const, data: null };
 }
 
-async function requireRecipeAccess(recipeId: string) {
+export async function requireRecipeAccess(recipeId: string) {
   const auth = await requireSession();
   if (!auth.success) return auth;
 
@@ -273,7 +271,7 @@ export async function removeIngredient(ingredientId: string, recipeId: string) {
   return { success: true as const, data: null };
 }
 
-function revalidateRecipePaths(recipeId: string) {
+export async function revalidateRecipePaths(recipeId: string) {
   revalidatePath('/recipes');
   revalidatePath(`/recipes/${recipeId}`);
   revalidatePath('/admin/recipe-review');

@@ -1,6 +1,10 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { db } from './index';
 import { recipes, recipeIngredients, user } from './schema';
 import { eq, inArray } from 'drizzle-orm';
+import { getR2Client, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2';
 
 // ─── Recipe seed data ──────────────────────────────────────────
 
@@ -201,6 +205,37 @@ const RECIPES: RecipeSeed[] = [
   },
 ];
 
+// ─── R2 image upload ──────────────────────────────────────────
+
+const MIME_TYPES: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+};
+
+async function uploadImage(
+  localPath: string,
+  recipeId: string,
+): Promise<string> {
+  const fullPath = join(process.cwd(), 'public', localPath);
+  const ext = localPath.slice(localPath.lastIndexOf('.'));
+  const contentType = MIME_TYPES[ext] ?? 'application/octet-stream';
+  const body = readFileSync(fullPath);
+  const key = `recipes/${recipeId}/cover${ext}`;
+
+  await getR2Client().send(
+    new PutObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    }),
+  );
+
+  return `${R2_PUBLIC_URL}/${key}`;
+}
+
 // ─── Seed function ─────────────────────────────────────────────
 
 async function seed() {
@@ -221,6 +256,11 @@ async function seed() {
     .where(inArray(recipes.name, seedNames));
   const existingByName = new Map(existingRecipes.map((r) => [r.name, r.id]));
 
+  const hasR2 = !!process.env.R2_ACCESS_KEY_ID;
+  if (!hasR2) {
+    console.log('R2 credentials not set — images will use local /meals/ paths.');
+  }
+
   let created = 0;
   let updated = 0;
 
@@ -229,7 +269,7 @@ async function seed() {
     let recipeId: string;
 
     if (existingId) {
-      // Update existing recipe
+      // Update existing recipe (imageUrl set below after upload)
       await db
         .update(recipes)
         .set({
@@ -239,7 +279,6 @@ async function seed() {
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
           tags: r.tags,
-          imageUrl: r.imageUrl,
           updatedAt: new Date(),
         })
         .where(eq(recipes.id, existingId));
@@ -250,7 +289,7 @@ async function seed() {
       updated++;
       console.log(`  ~ ${r.name} (updated)`);
     } else {
-      // Insert new recipe
+      // Insert new recipe (imageUrl set below after upload)
       const [recipe] = await db
         .insert(recipes)
         .values({
@@ -261,7 +300,6 @@ async function seed() {
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
           tags: r.tags,
-          imageUrl: r.imageUrl,
           createdBy: admin.id,
         })
         .returning() as (typeof recipes.$inferSelect)[];
@@ -269,6 +307,21 @@ async function seed() {
       created++;
       console.log(`  + ${r.name} (created)`);
     }
+
+    // Upload image to R2 and persist the URL
+    let imageUrl = r.imageUrl;
+    if (hasR2 && r.imageUrl) {
+      try {
+        imageUrl = await uploadImage(r.imageUrl, recipeId);
+        console.log(`    uploaded ${r.imageUrl} → R2`);
+      } catch (err) {
+        console.warn(`    failed to upload image for ${r.name}:`, err);
+      }
+    }
+    await db
+      .update(recipes)
+      .set({ imageUrl })
+      .where(eq(recipes.id, recipeId));
 
     // Insert ingredients
     await db.insert(recipeIngredients).values(
