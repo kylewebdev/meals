@@ -38,8 +38,7 @@ export async function createRecipe(data: RecipeInput) {
   const name = data.name.trim();
   if (!name) return { success: false as const, error: 'Name is required' };
 
-  const isAdmin = auth.data.user.role === 'admin';
-  const status = isAdmin ? 'approved' : 'submitted';
+  const status = 'submitted';
 
   const result = await db
     .insert(recipes)
@@ -59,10 +58,6 @@ export async function createRecipe(data: RecipeInput) {
   const recipe = result[0];
 
   revalidatePath('/recipes');
-
-  if (isAdmin) {
-    notifyNewRecipe(recipe.id, recipe.name).catch(() => {});
-  }
 
   return { success: true as const, data: recipe };
 }
