@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { contributions, households, swapDays, user, weeks } from '@/lib/db/schema';
+import { contributions, extraPeople, swapDays, user, weeks } from '@/lib/db/schema';
 import { and, eq, count, inArray, gte, sum, isNotNull } from 'drizzle-orm';
 import { computeNutrition } from './recipes';
 
@@ -226,10 +226,10 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
 }
 
 export async function getHeadcount(): Promise<number> {
-  const [[userResult], [hhResult]] = await Promise.all([
+  const [[userResult], [epResult]] = await Promise.all([
     db.select({ total: sum(user.portionsPerMeal) }).from(user)
       .where(isNotNull(user.householdId)),
-    db.select({ total: sum(households.extraPortions) }).from(households),
+    db.select({ total: sum(extraPeople.portions) }).from(extraPeople),
   ]);
-  return (Number(userResult?.total) || 0) + (Number(hhResult?.total) || 0);
+  return (Number(userResult?.total) || 0) + (Number(epResult?.total) || 0);
 }

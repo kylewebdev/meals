@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { contributions, households, user } from '@/lib/db/schema';
+import { contributions, extraPeople, households, user } from '@/lib/db/schema';
 import { getPortionCount } from '@/lib/schedule-utils';
 import { getHeadcount } from './contributions';
 import { and, count, eq, gt, isNotNull, sum } from 'drizzle-orm';
@@ -9,7 +9,7 @@ export interface HouseholdPortion {
   householdName: string;
   memberCount: number;
   portions: number;
-  /** Extra portions beyond 1-per-member (from user portionsPerMeal > 1 + household extraPortions) */
+  /** Extra portions beyond 1-per-member (from user portionsPerMeal > 1 + extra people) */
   extraPortions: number;
 }
 
@@ -30,28 +30,40 @@ async function getHouseholdPortions(
   coversFrom: number,
   coversTo: number,
 ): Promise<HouseholdPortion[]> {
+  // Subquery for extra_people portions per household
+  const epSub = db
+    .select({
+      householdId: extraPeople.householdId,
+      total: sum(extraPeople.portions).as('ep_total'),
+    })
+    .from(extraPeople)
+    .groupBy(extraPeople.householdId)
+    .as('ep');
+
   const rows = await db
     .select({
       householdId: households.id,
       householdName: households.name,
-      extraPortions: households.extraPortions,
+      epPortions: epSub.total,
       memberCount: count(user.id),
       portionCount: sum(user.portionsPerMeal),
     })
     .from(user)
     .innerJoin(households, eq(user.householdId, households.id))
+    .leftJoin(epSub, eq(households.id, epSub.householdId))
     .where(and(isNotNull(user.householdId), gt(user.portionsPerMeal, 0)))
-    .groupBy(households.id, households.name, households.extraPortions)
+    .groupBy(households.id, households.name, epSub.total)
     .orderBy(households.name);
 
   return rows.map((r) => {
     const portionSum = Number(r.portionCount) || 0;
-    const extra = (portionSum - r.memberCount) + r.extraPortions;
+    const epPortions = Number(r.epPortions) || 0;
+    const extra = (portionSum - r.memberCount) + epPortions;
     return {
       householdId: r.householdId,
       householdName: r.householdName,
       memberCount: r.memberCount,
-      portions: getPortionCount(portionSum + r.extraPortions, coversFrom, coversTo),
+      portions: getPortionCount(portionSum + epPortions, coversFrom, coversTo),
       extraPortions: extra,
     };
   });

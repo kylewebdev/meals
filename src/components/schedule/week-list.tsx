@@ -44,7 +44,6 @@ export function WeekList({ weeks, currentWeekId }: WeekListProps) {
             {/* Header */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="font-medium">{formatWeekRange(week.startDate)}</span>
-              <span className="text-sm text-zinc-500">{week.swapMode} swap</span>
               <div className="flex items-center gap-2 ml-auto">
                 {isCurrent && <Badge variant="success">Current</Badge>}
                 <Badge variant={statusVariant[week.status] ?? 'outline'}>{week.status}</Badge>

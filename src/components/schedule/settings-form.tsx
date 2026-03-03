@@ -10,7 +10,6 @@ import { useState } from 'react';
 
 interface SettingsFormProps {
   startDate: string;
-  swapMode: string;
   householdOrderMode: string;
   defaultLocation: string | null;
   defaultTime: string | null;
@@ -23,14 +22,12 @@ function toDateInputValue(dateStr: string): string {
 
 export function SettingsForm({
   startDate,
-  swapMode,
   householdOrderMode,
   defaultLocation,
   defaultTime,
 }: SettingsFormProps) {
   const [form, setForm] = useState({
     startDate: toDateInputValue(startDate),
-    swapMode,
     householdOrderMode,
     defaultLocation: defaultLocation ?? '',
     defaultTime: defaultTime ?? '',
@@ -44,7 +41,6 @@ export function SettingsForm({
     setError('');
     const res = await updateSwapSettings({
       startDate: form.startDate,
-      swapMode: form.swapMode as 'single' | 'dual',
       householdOrderMode: form.householdOrderMode as 'fixed' | 'random',
       defaultLocation: form.defaultLocation,
       defaultTime: form.defaultTime,
@@ -68,17 +64,6 @@ export function SettingsForm({
             value={form.startDate}
             onChange={(e) => setForm({ ...form, startDate: e.target.value })}
           />
-        </div>
-        <div>
-          <Label htmlFor="swap-mode">Swap Mode</Label>
-          <Select
-            id="swap-mode"
-            value={form.swapMode}
-            onChange={(e) => setForm({ ...form, swapMode: e.target.value })}
-          >
-            <option value="single">Single (Sun swap, Mon-Fri)</option>
-            <option value="dual">Dual (Sat + Wed swaps)</option>
-          </Select>
         </div>
         <div>
           <Label htmlFor="hh-order-mode">Household Order Mode</Label>

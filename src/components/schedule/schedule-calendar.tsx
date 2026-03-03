@@ -5,7 +5,6 @@ interface Week {
   id: string;
   startDate: Date;
   status: string;
-  swapMode: string;
 }
 
 interface ScheduleCalendarProps {
@@ -30,7 +29,6 @@ export function ScheduleCalendar({ weeks, currentWeekId }: ScheduleCalendarProps
           key={week.id}
           id={week.id}
           startDate={week.startDate}
-          swapMode={week.swapMode}
           status={week.status}
           isCurrent={week.id === currentWeekId}
         />

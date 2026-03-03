@@ -5,7 +5,6 @@ import Link from 'next/link';
 interface WeekRowProps {
   id: string;
   startDate: Date;
-  swapMode: string;
   status: string;
   isCurrent: boolean;
 }
@@ -16,7 +15,7 @@ const statusVariant: Record<string, 'default' | 'success' | 'warning'> = {
   complete: 'warning',
 };
 
-export function WeekRow({ id, startDate, swapMode, status, isCurrent }: WeekRowProps) {
+export function WeekRow({ id, startDate, status, isCurrent }: WeekRowProps) {
   return (
     <Link
       href={`/week/${id}`}
@@ -26,7 +25,6 @@ export function WeekRow({ id, startDate, swapMode, status, isCurrent }: WeekRowP
     >
       <div className="flex items-center gap-4">
         <span className="text-sm font-medium">{formatWeekRange(startDate)}</span>
-        <span className="text-sm text-zinc-500">{swapMode} swap</span>
       </div>
       <div className="flex items-center gap-2">
         {isCurrent && <Badge variant="success">Current</Badge>}

@@ -95,10 +95,26 @@ export const households = pgTable('households', {
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 255 }).notNull(),
   headId: text('head_id'), // FK to user.id — circular ref handled via relations
-  extraPortions: integer('extra_portions').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
+
+export const extraPeople = pgTable(
+  'extra_people',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    householdId: text('household_id')
+      .notNull()
+      .references(() => households.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    portions: integer('portions').notNull().default(1),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [index('extra_people_household_id_idx').on(table.householdId)],
+);
 
 export const weeks = pgTable(
   'weeks',
@@ -362,9 +378,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const householdRelations = relations(households, ({ one, many }) => ({
   head: one(user, { fields: [households.headId], references: [user.id] }),
   members: many(user),
+  extraPeople: many(extraPeople),
   contributions: many(contributions),
   ratings: many(recipeRatings),
   invites: many(invites),
+}));
+
+export const extraPeopleRelations = relations(extraPeople, ({ one }) => ({
+  household: one(households, { fields: [extraPeople.householdId], references: [households.id] }),
 }));
 
 export const weekRelations = relations(weeks, ({ many }) => ({

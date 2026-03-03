@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth-utils';
 import { getHousehold } from '@/actions/households';
-import { ExtraPortionsForm } from '@/components/household/extra-portions-form';
+import { ExtraPeopleForm } from '@/components/household/extra-people-form';
 import { HouseholdReviews } from '@/components/household/household-reviews';
 import { InviteForm } from '@/components/household/invite-form';
 import { MemberList } from '@/components/household/member-list';
@@ -73,12 +73,12 @@ export default async function HouseholdPage() {
         {canManage && (
           <Card className="max-w-5xl">
             <CardHeader>
-              <h3 className="font-semibold">Extra Portions</h3>
+              <h3 className="font-semibold">Extra People</h3>
             </CardHeader>
             <CardContent>
-              <ExtraPortionsForm
+              <ExtraPeopleForm
                 householdId={householdId}
-                currentExtraPortions={household.extraPortions}
+                extraPeople={household.extraPeople}
               />
             </CardContent>
           </Card>

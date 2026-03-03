@@ -26,7 +26,6 @@ export async function ensureWeeksExist() {
   const s = settings as unknown as {
     id: string;
     startDate: Date;
-    swapMode: 'single' | 'dual';
     recipeOrder: string[];
     householdOrder: string[];
     defaultLocation: string | null;
@@ -36,7 +35,7 @@ export async function ensureWeeksExist() {
   const target = getEndOfNextMonth();
   const recipeOrder = s.recipeOrder;
   const householdOrder = s.householdOrder;
-  const swapDayDefs = getSwapDayDefaults(s.swapMode);
+  const swapDayDefs = getSwapDayDefaults();
   const swapDaysPerWeek = swapDayDefs.length;
 
   // Find the latest existing week
@@ -74,7 +73,7 @@ export async function ensureWeeksExist() {
 
     const weekResult = await db
       .insert(weeks)
-      .values({ startDate: monday, swapMode: s.swapMode })
+      .values({ startDate: monday })
       .returning() as (typeof weeks.$inferSelect)[];
     const week = weekResult[0];
 
@@ -135,12 +134,11 @@ export async function recalculateWeekAssignments() {
   const s = settings as unknown as {
     id: string;
     startDate: Date;
-    swapMode: 'single' | 'dual';
     recipeOrder: string[];
     householdOrder: string[];
   };
 
-  const swapDayDefs = getSwapDayDefaults(s.swapMode);
+  const swapDayDefs = getSwapDayDefaults();
   const swapDaysPerWeek = swapDayDefs.length;
 
   // Build household index map

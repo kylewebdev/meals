@@ -8,7 +8,6 @@ import { revalidatePath } from 'next/cache';
 
 export async function updateSwapSettings(data: {
   startDate?: string;
-  swapMode?: 'single' | 'dual';
   householdOrderMode?: 'fixed' | 'random';
   defaultLocation?: string;
   defaultTime?: string;
@@ -25,7 +24,6 @@ export async function updateSwapSettings(data: {
     .update(swapSettings)
     .set({
       ...(data.startDate !== undefined && { startDate: new Date(data.startDate) }),
-      ...(data.swapMode !== undefined && { swapMode: data.swapMode }),
       ...(data.householdOrderMode !== undefined && {
         householdOrderMode: data.householdOrderMode,
       }),

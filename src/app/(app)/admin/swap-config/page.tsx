@@ -43,7 +43,6 @@ export default async function AdminSwapConfigPage() {
         <CardContent>
           <SettingsForm
             startDate={(settings.startDate as Date).toISOString()}
-            swapMode={settings.swapMode as string}
             householdOrderMode={settings.householdOrderMode as string}
             defaultLocation={settings.defaultLocation as string | null}
             defaultTime={settings.defaultTime as string | null}

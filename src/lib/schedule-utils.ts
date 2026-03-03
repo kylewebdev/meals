@@ -14,13 +14,7 @@ interface SwapDayDefault {
   coversTo: number;
 }
 
-export function getSwapDayDefaults(mode: 'single' | 'dual'): SwapDayDefault[] {
-  if (mode === 'dual') {
-    return [
-      { dayOfWeek: 6, label: 'Saturday Swap', coversFrom: 1, coversTo: 2 },
-      { dayOfWeek: 3, label: 'Wednesday Swap', coversFrom: 3, coversTo: 5 },
-    ];
-  }
+export function getSwapDayDefaults(): SwapDayDefault[] {
   return [{ dayOfWeek: 0, label: 'Sunday Swap', coversFrom: 1, coversTo: 5 }];
 }
 

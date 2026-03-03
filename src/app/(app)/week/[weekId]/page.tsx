@@ -41,7 +41,6 @@ export default async function WeekDetailPage({
         <h2 className="mt-1 text-2xl font-bold">{formatWeekRange(week.startDate)}</h2>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <Badge>{week.status}</Badge>
-          <Badge variant="outline">{week.swapMode} swap</Badge>
         </div>
       </div>
 
