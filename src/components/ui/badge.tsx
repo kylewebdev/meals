@@ -8,7 +8,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   success: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   warning: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
   destructive: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  outline: 'text-zinc-700 dark:text-zinc-300',
+  outline: 'border border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300',
 };
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

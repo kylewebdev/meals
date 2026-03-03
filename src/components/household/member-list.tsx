@@ -40,7 +40,7 @@ export function MemberList({ members, householdId, headId, canManage, currentUse
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium">{member.name}</span>
-              <Badge variant="outline">
+              <Badge variant="outline" className="border-0">
                 {member.portionsPerMeal} {member.portionsPerMeal === 1 ? 'portion' : 'portions'}
               </Badge>
               {member.id === headId && (
