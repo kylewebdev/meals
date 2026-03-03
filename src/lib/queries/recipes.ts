@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { recipes, recipeIngredients } from '@/lib/db/schema';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql, count } from 'drizzle-orm';
 
 type IngredientNutrition = {
   calories: number | null;
@@ -152,4 +152,19 @@ export async function getMyRecipes(userId: string): Promise<RecipeListItem[]> {
     .from(recipes)
     .where(eq(recipes.createdBy, userId))
     .orderBy(sql`${recipes.createdAt} DESC`) as unknown as Promise<RecipeListItem[]>;
+}
+
+export interface RecipeNavCounts {
+  recipes: number;
+  workshop: number;
+  mine: number;
+}
+
+export async function getRecipeNavCounts(userId: string): Promise<RecipeNavCounts> {
+  const [recipesCount, workshopCount, mineCount] = await Promise.all([
+    db.select({ count: count() }).from(recipes).where(eq(recipes.status, 'approved')).then((r) => r[0]?.count ?? 0),
+    db.select({ count: count() }).from(recipes).where(inArray(recipes.status, ['submitted', 'pending_review'])).then((r) => r[0]?.count ?? 0),
+    db.select({ count: count() }).from(recipes).where(eq(recipes.createdBy, userId)).then((r) => r[0]?.count ?? 0),
+  ]);
+  return { recipes: recipesCount, workshop: workshopCount, mine: mineCount };
 }

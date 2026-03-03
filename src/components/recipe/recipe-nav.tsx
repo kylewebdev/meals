@@ -3,20 +3,26 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { RecipeNavCounts } from '@/lib/queries/recipes';
 
 const links = [
-  { href: '/recipes', label: 'Recipes' },
-  { href: '/recipes/workshop', label: 'Workshop' },
-  { href: '/recipes/mine', label: 'My Submissions' },
+  { href: '/recipes', label: 'Recipes', countKey: 'recipes' },
+  { href: '/recipes/workshop', label: 'Workshop', countKey: 'workshop' },
+  { href: '/recipes/mine', label: 'My Submissions', countKey: 'mine' },
 ] as const;
 
-export function RecipeNav() {
+interface RecipeNavProps {
+  counts: RecipeNavCounts;
+}
+
+export function RecipeNav({ counts }: RecipeNavProps) {
   const pathname = usePathname();
 
   return (
     <nav className="flex gap-2">
-      {links.map(({ href, label }) => {
+      {links.map(({ href, label, countKey }) => {
         const isActive = pathname === href;
+        const c = counts[countKey];
         return (
           <Link
             key={href}
@@ -29,6 +35,16 @@ export function RecipeNav() {
             )}
           >
             {label}
+            <span
+              className={cn(
+                'ml-1.5 text-xs',
+                isActive
+                  ? 'text-zinc-400 dark:text-zinc-500'
+                  : 'text-zinc-400 dark:text-zinc-500',
+              )}
+            >
+              {c}
+            </span>
           </Link>
         );
       })}

@@ -1,5 +1,5 @@
 import { getSession } from '@/lib/auth-utils';
-import { getWorkshopRecipes } from '@/lib/queries/recipes';
+import { getWorkshopRecipes, getRecipeNavCounts } from '@/lib/queries/recipes';
 import { RecipeNav } from '@/components/recipe/recipe-nav';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,10 @@ export default async function WorkshopPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const workshopRecipes = await getWorkshopRecipes();
+  const [workshopRecipes, counts] = await Promise.all([
+    getWorkshopRecipes(),
+    getRecipeNavCounts(session.user.id),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -21,7 +24,7 @@ export default async function WorkshopPage() {
           <Button>Submit Recipe</Button>
         </Link>
       </div>
-      <RecipeNav />
+      <RecipeNav counts={counts} />
 
       <div className="space-y-4">
         <div>

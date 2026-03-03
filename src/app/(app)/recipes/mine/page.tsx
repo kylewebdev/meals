@@ -1,5 +1,5 @@
 import { getSession } from '@/lib/auth-utils';
-import { getMyRecipes } from '@/lib/queries/recipes';
+import { getMyRecipes, getRecipeNavCounts } from '@/lib/queries/recipes';
 import { RecipeNav } from '@/components/recipe/recipe-nav';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,10 @@ export default async function MyRecipesPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const myRecipes = await getMyRecipes(session.user.id);
+  const [myRecipes, counts] = await Promise.all([
+    getMyRecipes(session.user.id),
+    getRecipeNavCounts(session.user.id),
+  ]);
 
   const submitted = myRecipes.filter((r) => r.status === 'submitted');
   const pendingReview = myRecipes.filter((r) => r.status === 'pending_review');
@@ -25,7 +28,7 @@ export default async function MyRecipesPage() {
           <Button>Submit Recipe</Button>
         </Link>
       </div>
-      <RecipeNav />
+      <RecipeNav counts={counts} />
 
       {myRecipes.length === 0 ? (
         <EmptyState

@@ -1,5 +1,5 @@
 import { getSession } from '@/lib/auth-utils';
-import { getRecipes } from '@/lib/queries/recipes';
+import { getRecipes, getRecipeNavCounts } from '@/lib/queries/recipes';
 import { getRecipeRatingSummaries } from '@/lib/queries/ratings';
 import { RecipeListClient } from '@/components/recipe/recipe-list-client';
 import { RecipeNav } from '@/components/recipe/recipe-nav';
@@ -15,9 +15,10 @@ export default async function RecipesPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
-  const [allRecipes, summaries] = await Promise.all([
+  const [allRecipes, summaries, counts] = await Promise.all([
     getRecipes(),
     getRecipeRatingSummaries(),
+    getRecipeNavCounts(session.user.id),
   ]);
 
   return (
@@ -29,7 +30,7 @@ export default async function RecipesPage() {
         </Link>
       </div>
 
-      <RecipeNav />
+      <RecipeNav counts={counts} />
 
       <RecipeListClient recipes={allRecipes} summaries={summaries} />
     </div>
