@@ -141,22 +141,20 @@ export default async function RecipeDetailPage({
         </Card>
       )}
 
-      {/* Meta: description, details, tags */}
-      <div className="mt-5 space-y-3">
-        {recipe.description && (
-          <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
-        )}
-        <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
-          {recipe.servings && <span>Servings: {recipe.servings}</span>}
-          {recipe.prepTimeMinutes && <span>Prep: {recipe.prepTimeMinutes} min</span>}
-          {recipe.cookTimeMinutes && <span>Cook: {recipe.cookTimeMinutes} min</span>}
-          {totalTime > 0 && <span>Total: {totalTime} min</span>}
+      {/* Meta + image side-by-side on desktop, stacked on mobile */}
+      <div className="mt-5 grid gap-6 md:grid-cols-2">
+        <div className="space-y-3">
+          {recipe.description && (
+            <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
+          )}
+          <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
+            {recipe.servings && <span>Servings: {recipe.servings}</span>}
+            {recipe.prepTimeMinutes && <span>Prep: {recipe.prepTimeMinutes} min</span>}
+            {recipe.cookTimeMinutes && <span>Cook: {recipe.cookTimeMinutes} min</span>}
+            {totalTime > 0 && <span>Total: {totalTime} min</span>}
+          </div>
+          <TagList tags={recipe.tags} />
         </div>
-        <TagList tags={recipe.tags} />
-      </div>
-
-      {/* Recipe image */}
-      <div className="mt-6">
         <RecipeImageSection
           recipeId={recipeId}
           imageUrl={recipe.imageUrl}
