@@ -67,7 +67,7 @@ export default async function UpNextPage() {
     <div className="mx-auto max-w-5xl space-y-8">
       <h2 className="text-2xl font-semibold tracking-tight">Up Next</h2>
 
-      <div className="gap-8 md:grid md:grid-cols-2">
+      <div className="space-y-8 md:grid md:grid-cols-2 md:gap-8 md:space-y-0">
         <YourCook upcomingCooks={upcomingCooks} />
         <ThisWeekSwap week={currentWeek} userHouseholdId={userHouseholdId ?? null} />
       </div>
