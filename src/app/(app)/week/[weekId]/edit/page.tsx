@@ -1,7 +1,6 @@
 import { getSession } from '@/lib/auth-utils';
 import { getWeekWithContributions } from '@/lib/queries/contributions';
 import { SwapDayForm } from '@/components/swap/swap-day-form';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatWeekRange } from '@/lib/schedule-utils';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
@@ -25,19 +24,17 @@ export default async function EditWeekPage({
   if (!week) notFound();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div>
         <Link href={`/week/${weekId}`} className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; {formatWeekRange(week.startDate)}
         </Link>
-        <h2 className="mt-1 text-2xl font-bold">Edit Logistics</h2>
+        <h2 className="mt-1 text-2xl font-semibold tracking-tight">Edit Logistics</h2>
       </div>
 
-      <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Swap Day Logistics</h3>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div>
+        <h3 className="text-lg font-semibold pb-3">Swap Day Logistics</h3>
+        <div className="space-y-4">
           {week.swapDays.map((sd) => (
             <SwapDayForm
               key={sd.id}
@@ -48,8 +45,8 @@ export default async function EditWeekPage({
               notes={sd.notes}
             />
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

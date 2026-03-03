@@ -12,9 +12,9 @@ export default async function AdminHouseholdsPage() {
   const householdsList = await getHouseholds();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Households</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Households</h2>
       </div>
 
       <CreateHouseholdForm />

@@ -24,8 +24,8 @@ export default async function DashboardPage() {
     : [];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4">
-      <h2 className="text-2xl font-bold">Upcoming Cooks</h2>
+    <div className="mx-auto max-w-5xl space-y-8">
+      <h2 className="text-2xl font-semibold tracking-tight">Upcoming Cooks</h2>
 
       {userHouseholdId && upcomingSwapDays.length > 0 ? (
         <UpcomingCooks swapDays={upcomingSwapDays} />

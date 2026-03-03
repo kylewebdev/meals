@@ -31,7 +31,7 @@ export function ContributionCard({
   const displayName = dishName || recipeName || 'Untitled dish';
 
   return (
-    <div className="rounded-lg border border-zinc-200 p-3 md:p-4 dark:border-zinc-800">
+    <div className="rounded-lg bg-zinc-50 p-3 md:p-4 dark:bg-zinc-900">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <p className="font-semibold">{householdName}</p>

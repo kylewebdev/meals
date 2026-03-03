@@ -26,7 +26,7 @@ export function UpcomingCooks({ swapDays }: UpcomingCooksProps) {
               router.push(`/week/${sd.weekId}`);
             }
           }}
-          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-3 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+          className="cursor-pointer rounded-lg border border-zinc-100 px-4 py-3 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
         >
           <div className="space-y-1">
             <div className="flex items-center gap-2">

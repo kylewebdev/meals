@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ContributionList } from '@/components/contributions/contribution-list';
 import { SwapDayInfo } from './swap-day-info';
 
@@ -43,11 +42,9 @@ export function SwapDaySection({
   weekId,
 }: SwapDaySectionProps) {
   return (
-    <Card>
-      <CardHeader>
-        <h3 className="font-semibold">{label}</h3>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div>
+      <h3 className="text-lg font-semibold pb-3">{label}</h3>
+      <div className="space-y-4">
         <SwapDayInfo
           label={label}
           dayOfWeek={dayOfWeek}
@@ -58,7 +55,7 @@ export function SwapDaySection({
           notes={notes}
         />
         <ContributionList contributions={contributions} weekId={weekId} />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -15,8 +15,8 @@ export function AppShell({ children, userName, userRole, notificationSlot }: App
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="flex items-center justify-between px-4 py-3 md:px-6">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
+        <div className="flex items-center justify-between px-4 py-4 md:px-6">
           <div className="flex items-center gap-2 md:gap-6">
             <MobileNav />
             <span className="text-lg font-semibold">Meals</span>
@@ -33,7 +33,7 @@ export function AppShell({ children, userName, userRole, notificationSlot }: App
           </div>
         </div>
       </header>
-      <main className="p-4 md:p-6">{children}</main>
+      <main className="px-4 pt-6 pb-12 md:px-6 md:pt-8">{children}</main>
     </div>
   );
 }

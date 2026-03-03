@@ -65,13 +65,13 @@ export default async function RecipeDetailPage({
   const showRatings = recipe.status === 'approved';
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div>
         <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; {weekId ? 'Back to Week' : 'Recipes'}
         </Link>
         <div className="mt-1 flex items-center gap-3">
-          <h2 className="text-2xl font-bold">{recipe.name}</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">{recipe.name}</h2>
           {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
         </div>
       </div>
@@ -90,7 +90,7 @@ export default async function RecipeDetailPage({
       {isAdmin && recipe.status === 'pending' && (
         <Card>
           <CardHeader>
-            <h3 className="font-semibold">Admin Review</h3>
+            <h3 className="text-lg font-semibold">Admin Review</h3>
           </CardHeader>
           <CardContent>
             <ReviewActions recipeId={recipeId} />
@@ -112,11 +112,10 @@ export default async function RecipeDetailPage({
       <TagList tags={recipe.tags} />
 
       {hasNutrition && (
-        <Card>
-          <CardHeader>
-            <h3 className="font-semibold">Nutrition</h3>
-          </CardHeader>
-          <CardContent>
+        <>
+          <hr className="border-zinc-100 dark:border-zinc-800" />
+          <div>
+            <h3 className="text-lg font-semibold pb-3">Nutrition</h3>
             <NutritionChart
               calories={recipe.calories}
               proteinG={recipe.proteinG}
@@ -124,8 +123,8 @@ export default async function RecipeDetailPage({
               fatG={recipe.fatG}
               layout="split"
             />
-          </CardContent>
-        </Card>
+          </div>
+        </>
       )}
 
       {scalingCtx && recipe.servings && (
@@ -141,34 +140,13 @@ export default async function RecipeDetailPage({
         />
       )}
 
-      <Card>
+      <hr className="border-zinc-100 dark:border-zinc-800" />
+
+      <div>
         {groceryList ? (
-          <CardContent className="pt-4">
-            <IngredientGroceryTabs
-              ingredientsContent={
-                recipe.ingredients.length === 0 ? (
-                  <p className="text-sm text-zinc-500">No ingredients listed.</p>
-                ) : (
-                  <IngredientTable
-                    ingredients={recipe.ingredients}
-                    recipeId={recipeId}
-                    editable={canEdit}
-                    scaleFactor={scaleFactor}
-                  />
-                )
-              }
-              groceryContent={
-                <GroceryListTab listId={groceryList.id} items={groceryList.items} />
-              }
-            />
-          </CardContent>
-        ) : (
-          <>
-            <CardHeader>
-              <h3 className="font-semibold">Ingredients</h3>
-            </CardHeader>
-            <CardContent>
-              {recipe.ingredients.length === 0 ? (
+          <IngredientGroceryTabs
+            ingredientsContent={
+              recipe.ingredients.length === 0 ? (
                 <p className="text-sm text-zinc-500">No ingredients listed.</p>
               ) : (
                 <IngredientTable
@@ -177,31 +155,50 @@ export default async function RecipeDetailPage({
                   editable={canEdit}
                   scaleFactor={scaleFactor}
                 />
-              )}
-              {canEdit && recipe.ingredients.length === 0 && (
-                <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
-              )}
-            </CardContent>
+              )
+            }
+            groceryContent={
+              <GroceryListTab listId={groceryList.id} items={groceryList.items} />
+            }
+          />
+        ) : (
+          <>
+            <h3 className="text-lg font-semibold pb-3">Ingredients</h3>
+            {recipe.ingredients.length === 0 ? (
+              <p className="text-sm text-zinc-500">No ingredients listed.</p>
+            ) : (
+              <IngredientTable
+                ingredients={recipe.ingredients}
+                recipeId={recipeId}
+                editable={canEdit}
+                scaleFactor={scaleFactor}
+              />
+            )}
+            {canEdit && recipe.ingredients.length === 0 && (
+              <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
+            )}
           </>
         )}
-      </Card>
+      </div>
 
       {recipe.instructions && (
-        <Card>
-          <CardHeader>
-            <h3 className="font-semibold">Instructions</h3>
-          </CardHeader>
-          <CardContent>
+        <>
+          <hr className="border-zinc-100 dark:border-zinc-800" />
+          <div>
+            <h3 className="text-lg font-semibold pb-3">Instructions</h3>
             <div className="whitespace-pre-wrap text-sm">{recipe.instructions}</div>
-          </CardContent>
-        </Card>
+          </div>
+        </>
       )}
 
       {showRatings && (
-        <RatingsSection
-          recipeId={recipeId}
-          householdId={session.user.householdId}
-        />
+        <>
+          <hr className="border-zinc-100 dark:border-zinc-800" />
+          <RatingsSection
+            recipeId={recipeId}
+            householdId={session.user.householdId}
+          />
+        </>
       )}
 
       <p className="text-xs text-zinc-400">
@@ -226,18 +223,18 @@ async function RatingsSection({
   const hasBothSections = !!householdId && ratings.length > 0;
 
   return (
-    <Card>
-      <CardHeader>
+    <div>
+      <div className="pb-3">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-semibold">Ratings</h3>
+          <h3 className="text-lg font-semibold">Ratings</h3>
           {total > 0 && (
             <span className="text-sm text-zinc-500 dark:text-zinc-400">
               {total} household{total !== 1 ? 's' : ''} rated
             </span>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+      </div>
+      <div className="space-y-6">
         {total > 0 && (
           <div className="space-y-2">
             <div className="flex h-2.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
@@ -311,7 +308,7 @@ async function RatingsSection({
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

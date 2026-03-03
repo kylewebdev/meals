@@ -1,6 +1,5 @@
 import { requireAdmin } from '@/lib/auth-utils';
 import { getRecipeRatingSummaries } from '@/lib/queries/ratings';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -12,12 +11,12 @@ export default async function RecipeRatingsPage() {
   const summaries = await getRecipeRatingSummaries();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div>
         <Link href="/admin" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Admin
         </Link>
-        <h2 className="mt-1 text-2xl font-bold">Recipe Ratings</h2>
+        <h2 className="mt-1 text-2xl font-semibold tracking-tight">Recipe Ratings</h2>
       </div>
 
       {summaries.length === 0 ? (
@@ -26,16 +25,13 @@ export default async function RecipeRatingsPage() {
           description="Households can rate recipes from the recipe detail page."
         />
       ) : (
-        <Card>
-          <CardHeader>
-            <h3 className="font-semibold">All Rated Recipes</h3>
-            <p className="text-sm text-zinc-500">Sorted by most disliked first.</p>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-200 text-left dark:border-zinc-800">
+        <div>
+          <h3 className="text-lg font-semibold">All Rated Recipes</h3>
+          <p className="pb-3 text-sm text-zinc-500">Sorted by most disliked first.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-100 text-left dark:border-zinc-800">
                     <th className="pb-3 pr-4 font-medium">Recipe</th>
                     <th className="pb-3 pr-4 text-center font-medium text-green-600">Love</th>
                     <th className="pb-3 pr-4 text-center font-medium text-zinc-500">Fine</th>
@@ -65,9 +61,8 @@ export default async function RecipeRatingsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

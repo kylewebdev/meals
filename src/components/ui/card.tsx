@@ -1,15 +1,23 @@
 import { cn } from '@/lib/utils';
 import { type HTMLAttributes, forwardRef } from 'react';
 
-export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+type CardVariant = 'section' | 'interactive' | 'bordered';
+
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: CardVariant;
+}
+
+const cardVariants: Record<CardVariant, string> = {
+  section: '',
+  interactive: 'rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900',
+  bordered: 'rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950',
+};
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant = 'section', ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        'rounded-lg border border-zinc-200 bg-white shadow-sm',
-        'dark:border-zinc-800 dark:bg-zinc-950',
-        className,
-      )}
+      className={cn(cardVariants[variant], className)}
       {...props}
     />
   ),
@@ -18,14 +26,14 @@ Card.displayName = 'Card';
 
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('border-b border-zinc-200 px-4 py-4 md:px-6 dark:border-zinc-800', className)} {...props} />
+    <div ref={ref} className={cn('pb-3', className)} {...props} />
   ),
 );
 CardHeader.displayName = 'CardHeader';
 
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('px-4 py-4 md:px-6', className)} {...props} />
+    <div ref={ref} className={cn(className)} {...props} />
   ),
 );
 CardContent.displayName = 'CardContent';
@@ -34,7 +42,7 @@ export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('border-t border-zinc-200 px-4 py-4 md:px-6 dark:border-zinc-800', className)}
+      className={cn('pt-3', className)}
       {...props}
     />
   ),

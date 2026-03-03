@@ -38,7 +38,7 @@ export function WeekList({ weeks, currentWeekId }: WeekListProps) {
               'block rounded-lg border px-4 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900',
               isCurrent
                 ? 'border-zinc-900 dark:border-zinc-100'
-                : 'border-zinc-200 dark:border-zinc-800',
+                : 'border-zinc-100 dark:border-zinc-800',
             )}
           >
             {/* Header */}

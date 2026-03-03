@@ -4,7 +4,6 @@ import { ExtraPeopleForm } from '@/components/household/extra-people-form';
 import { HouseholdReviews } from '@/components/household/household-reviews';
 import { InviteForm } from '@/components/household/invite-form';
 import { MemberList } from '@/components/household/member-list';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getHouseholdReviews } from '@/lib/queries/ratings';
 import { redirect } from 'next/navigation';
@@ -16,8 +15,8 @@ export default async function HouseholdPage() {
   const householdId = session.user.householdId;
   if (!householdId) {
     return (
-      <div className="mx-auto max-w-5xl space-y-6">
-        <h2 className="text-2xl font-bold">My Household</h2>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <h2 className="text-2xl font-semibold tracking-tight">My Household</h2>
         <EmptyState
           title="Not assigned to a household"
           description="Ask your admin to add you to a household."
@@ -38,60 +37,47 @@ export default async function HouseholdPage() {
 
   return (
     <div className={`mx-auto max-w-5xl${canManage ? ' 2xl:max-w-[83.5rem]' : ''}`}>
-      <h2 className="mb-6 text-2xl font-bold">{household.name}</h2>
-      <div className="space-y-6">
+      <h2 className="mb-8 text-2xl font-semibold tracking-tight">{household.name}</h2>
+      <div className="space-y-8">
         <div className={canManage ? '2xl:flex 2xl:items-start 2xl:gap-6' : ''}>
-          <Card className="min-w-0 2xl:flex-1">
-            <CardHeader>
-              <h3 className="font-semibold">Members ({household.members.length})</h3>
-            </CardHeader>
-            <CardContent>
-              <MemberList
-                members={household.members}
-                householdId={householdId}
-                headId={household.headId}
-                canManage={canManage}
-                currentUserId={session.user.id}
-              />
-            </CardContent>
-          </Card>
+          <div className="min-w-0 2xl:flex-1">
+            <h3 className="text-lg font-semibold pb-3">Members ({household.members.length})</h3>
+            <MemberList
+              members={household.members}
+              householdId={householdId}
+              headId={household.headId}
+              canManage={canManage}
+              currentUserId={session.user.id}
+            />
+          </div>
 
           {canManage && (
             <aside className="mt-6 shrink-0 2xl:mt-0 2xl:w-72">
-              <Card>
-                <CardHeader>
-                  <h3 className="font-semibold">Invite Members</h3>
-                </CardHeader>
-                <CardContent>
-                  <InviteForm householdId={householdId} />
-                </CardContent>
-              </Card>
+              <h3 className="text-lg font-semibold pb-3">Invite Members</h3>
+              <InviteForm householdId={householdId} />
             </aside>
           )}
         </div>
 
         {canManage && (
-          <Card className="max-w-5xl">
-            <CardHeader>
-              <h3 className="font-semibold">Extra People</h3>
-            </CardHeader>
-            <CardContent>
+          <>
+            <hr className="max-w-5xl border-zinc-100 dark:border-zinc-800" />
+            <div className="max-w-5xl">
+              <h3 className="text-lg font-semibold pb-3">Extra People</h3>
               <ExtraPeopleForm
                 householdId={householdId}
                 extraPeople={household.extraPeople}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </>
         )}
 
-        <Card className="max-w-5xl">
-          <CardHeader>
-            <h3 className="font-semibold">Our Reviews ({reviews.length})</h3>
-          </CardHeader>
-          <CardContent>
-            <HouseholdReviews reviews={reviews} />
-          </CardContent>
-        </Card>
+        <hr className="max-w-5xl border-zinc-100 dark:border-zinc-800" />
+
+        <div className="max-w-5xl">
+          <h3 className="text-lg font-semibold pb-3">Our Reviews ({reviews.length})</h3>
+          <HouseholdReviews reviews={reviews} />
+        </div>
       </div>
     </div>
   );

@@ -33,12 +33,12 @@ export default async function WeekDetailPage({
   );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div>
         <Link href="/schedule" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Schedule
         </Link>
-        <h2 className="mt-1 text-2xl font-bold">{formatWeekRange(week.startDate)}</h2>
+        <h2 className="mt-1 text-2xl font-semibold tracking-tight">{formatWeekRange(week.startDate)}</h2>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <Badge>{week.status}</Badge>
         </div>

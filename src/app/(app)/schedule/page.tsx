@@ -48,9 +48,9 @@ export default async function SchedulePage({
   });
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Schedule</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Schedule</h2>
         {isAdmin && (
           <Link href="/admin/rotation">
             <Button variant="secondary">Rotation Settings</Button>

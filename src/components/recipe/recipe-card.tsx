@@ -34,7 +34,7 @@ export function RecipeCard({
 
   return (
     <Link href={`/recipes/${id}`}>
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+      <Card variant="interactive" className="h-full overflow-hidden transition-colors">
         {imageUrl && (
           <div className="relative aspect-[16/9] w-full">
             <Image
@@ -46,13 +46,13 @@ export function RecipeCard({
             />
           </div>
         )}
-        <CardHeader>
-          <h3 className="font-semibold">{name}</h3>
+        <CardHeader className="px-4 pt-4 md:px-5">
+          <h3 className="text-lg font-semibold">{name}</h3>
           {description && (
             <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{description}</p>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4 md:px-5">
           <div className="flex flex-wrap gap-3 text-xs text-zinc-500">
             {servings && <span>{servings} servings</span>}
             {totalTime > 0 && <span>{totalTime} min</span>}

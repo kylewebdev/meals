@@ -7,8 +7,6 @@ import { InviteForm } from '@/components/household/invite-form';
 import { MemberList } from '@/components/household/member-list';
 import { PendingInviteList } from '@/components/household/pending-invite-list';
 import { RenameHouseholdForm } from '@/components/household/rename-household-form';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
@@ -32,84 +30,66 @@ export default async function AdminHouseholdDetailPage({
   const currentMemberIds = household.members.map((m) => m.id);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div>
         <Link href="/admin/households" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Households
         </Link>
-        <h2 className="mt-1 text-2xl font-bold">{household.name}</h2>
+        <h2 className="mt-1 text-2xl font-semibold tracking-tight">{household.name}</h2>
       </div>
 
-      <Card>
-        <CardHeader>
-          <h3 className="font-semibold">Household Name</h3>
-        </CardHeader>
-        <CardContent>
-          <RenameHouseholdForm householdId={householdId} currentName={household.name} />
-        </CardContent>
-      </Card>
+      <div>
+        <h3 className="text-lg font-semibold pb-3">Household Name</h3>
+        <RenameHouseholdForm householdId={householdId} currentName={household.name} />
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <h3 className="font-semibold">Members ({household.members.length})</h3>
-          </CardHeader>
-          <CardContent>
-            {household.members.length === 0 ? (
-              <p className="text-sm text-zinc-500">No members yet. Send an invite or add one below.</p>
-            ) : (
-              <MemberList
-                members={household.members}
-                householdId={householdId}
-                headId={household.headId}
-                canManage={true}
-                currentUserId={auth.data.user.id}
-              />
+      <hr className="border-zinc-100 dark:border-zinc-800" />
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div>
+          <h3 className="text-lg font-semibold pb-3">Members ({household.members.length})</h3>
+          {household.members.length === 0 ? (
+            <p className="text-sm text-zinc-500">No members yet. Send an invite or add one below.</p>
+          ) : (
+            <MemberList
+              members={household.members}
+              householdId={householdId}
+              headId={household.headId}
+              canManage={true}
+              currentUserId={auth.data.user.id}
+            />
+          )}
+        </div>
+
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-lg font-semibold pb-3">Head of Household</h3>
+            <HeadSelector
+              householdId={householdId}
+              members={household.members}
+              currentHeadId={household.headId}
+            />
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold pb-3">Add Existing User</h3>
+            <p className="mb-3 text-sm text-zinc-500">
+              Move an existing user into this household (works for admins in other households too).
+            </p>
+            <AddMemberForm
+              householdId={householdId}
+              allUsers={allUsers}
+              currentMemberIds={currentMemberIds}
+            />
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold pb-3">Invite New Members</h3>
+            <InviteForm householdId={householdId} />
+            {pendingInvites.length > 0 && (
+              <PendingInviteList invites={pendingInvites} householdId={householdId} />
             )}
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <h3 className="font-semibold">Head of Household</h3>
-            </CardHeader>
-            <CardContent>
-              <HeadSelector
-                householdId={householdId}
-                members={household.members}
-                currentHeadId={household.headId}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <h3 className="font-semibold">Add Existing User</h3>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-3 text-sm text-zinc-500">
-                Move an existing user into this household (works for admins in other households too).
-              </p>
-              <AddMemberForm
-                householdId={householdId}
-                allUsers={allUsers}
-                currentMemberIds={currentMemberIds}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <h3 className="font-semibold">Invite New Members</h3>
-            </CardHeader>
-            <CardContent>
-              <InviteForm householdId={householdId} />
-              {pendingInvites.length > 0 && (
-                <PendingInviteList invites={pendingInvites} householdId={householdId} />
-              )}
-            </CardContent>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

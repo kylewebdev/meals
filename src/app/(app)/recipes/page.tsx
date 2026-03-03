@@ -47,9 +47,9 @@ export default async function RecipesPage({
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-2xl font-bold">Recipes</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Recipes</h2>
         <div className="flex gap-2">
           <Link href="/recipes/mine">
             <Button variant="secondary">My Submissions</Button>

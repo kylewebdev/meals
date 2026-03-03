@@ -2,7 +2,6 @@ import { getSession } from '@/lib/auth-utils';
 import { getMyRecipes } from '@/lib/queries/recipes';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -18,12 +17,12 @@ export default async function MyRecipesPage() {
   const rejected = myRecipes.filter((r) => r.status === 'rejected');
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-8">
       <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
         &larr; Recipes
       </Link>
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">My Recipes</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">My Recipes</h2>
         <Link href="/recipes/new">
           <Button>Submit Recipe</Button>
         </Link>
@@ -68,23 +67,21 @@ function RecipeStatusSection({
   return (
     <div>
       <h3 className="mb-3 text-lg font-semibold">{title}</h3>
-      <div className="space-y-2">
+      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {recipes.map((recipe) => (
-          <Card key={recipe.id}>
-            <CardContent className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
-                <Link href={`/recipes/${recipe.id}`} className="font-medium hover:underline">
-                  {recipe.name}
-                </Link>
-                <RecipeStatusBadge status={recipe.status} />
-              </div>
-              {editable && (
-                <Link href={`/recipes/${recipe.id}/edit`}>
-                  <Button variant="secondary" size="sm">Edit</Button>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+          <div key={recipe.id} className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-3">
+              <Link href={`/recipes/${recipe.id}`} className="font-medium hover:underline">
+                {recipe.name}
+              </Link>
+              <RecipeStatusBadge status={recipe.status} />
+            </div>
+            {editable && (
+              <Link href={`/recipes/${recipe.id}/edit`}>
+                <Button variant="secondary" size="sm">Edit</Button>
+              </Link>
+            )}
+          </div>
         ))}
       </div>
     </div>
