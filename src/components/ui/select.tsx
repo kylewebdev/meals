@@ -6,7 +6,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {}
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, ...props }, ref) => {
     return (
-      <div className="relative">
+      <div className={cn('relative', className)}>
         <select
           ref={ref}
           className={cn(
@@ -14,7 +14,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             'focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500',
             'disabled:cursor-not-allowed disabled:opacity-50',
             'dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100',
-            className,
           )}
           {...props}
         />
