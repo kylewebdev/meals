@@ -174,6 +174,7 @@ export default async function RecipeDetailPage({
                 proteinG={recipe.proteinG}
                 carbsG={recipe.carbsG}
                 fatG={recipe.fatG}
+                servings={recipe.servings}
                 layout="split"
               />
             </div>

@@ -18,6 +18,7 @@ interface NutritionChartProps {
   proteinG: number | null;
   carbsG: number | null;
   fatG: number | null;
+  servings?: number | null;
   layout?: 'stacked' | 'split';
 }
 
@@ -30,38 +31,57 @@ const COLORS = {
 function AnimatedCalories({ value }: { value: number }) {
   const [display, setDisplay] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  const hasAnimated = useRef(false);
+  const isVisible = useRef(false);
+  const targetValue = useRef(0);
 
   useEffect(() => {
-    if (hasAnimated.current) return;
-
     const el = ref.current;
     if (!el) return;
 
+    let rafId = 0;
+
+    const animate = (from: number, to: number) => {
+      cancelAnimationFrame(rafId);
+      const duration = from === 0 ? 600 : 400;
+      const start = performance.now();
+
+      const tick = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplay(Math.round(from + (to - from) * eased));
+        if (progress < 1) rafId = requestAnimationFrame(tick);
+      };
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    if (isVisible.current) {
+      if (targetValue.current !== value) {
+        const from = targetValue.current;
+        targetValue.current = value;
+        animate(from, value);
+      }
+      return () => cancelAnimationFrame(rafId);
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          const duration = 600;
-          const start = performance.now();
-
-          const tick = (now: number) => {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setDisplay(Math.round(eased * value));
-            if (progress < 1) requestAnimationFrame(tick);
-          };
-
-          requestAnimationFrame(tick);
+        if (entry.isIntersecting) {
+          isVisible.current = true;
+          targetValue.current = value;
           observer.disconnect();
+          animate(0, value);
         }
       },
       { threshold: 0.5 },
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(rafId);
+    };
   }, [value]);
 
   return (
@@ -79,6 +99,7 @@ export function NutritionChart({
   proteinG,
   carbsG,
   fatG,
+  servings,
   layout = 'stacked',
 }: NutritionChartProps) {
   const cal = calories ?? 0;
@@ -102,8 +123,13 @@ export function NutritionChart({
         {cal > 0 && (
           <div>
             <h3 className="mb-3 text-sm font-medium text-zinc-500">Calories</h3>
-            <div className="flex h-52 items-center justify-center">
+            <div className="flex h-52 flex-col items-center justify-center gap-1">
               <AnimatedCalories value={cal} />
+              {servings && servings > 1 && (
+                <span className="text-sm text-zinc-400">
+                  {Math.round(cal / servings)} kcal / serving
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -149,6 +175,11 @@ export function NutritionChart({
         <div>
           <h3 className="mb-2 text-sm font-medium text-zinc-500">Calories</h3>
           <AnimatedCalories value={cal} />
+          {servings && servings > 1 && (
+            <span className="mt-1 text-sm text-zinc-400">
+              {Math.round(cal / servings)} kcal / serving
+            </span>
+          )}
         </div>
       )}
       {hasMacros && (
