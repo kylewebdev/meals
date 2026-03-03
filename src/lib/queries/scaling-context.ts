@@ -24,10 +24,17 @@ export interface ScalingContext {
   householdPortions: HouseholdPortion[];
 }
 
-async function getHouseholdPortions(
-  coversFrom: number,
-  coversTo: number,
-): Promise<HouseholdPortion[]> {
+export interface BaseHouseholdData {
+  householdId: string;
+  householdName: string;
+  memberCount: number;
+  /** Per-day headcount (portionsPerMeal sum + extra people) */
+  basePortions: number;
+  extraPortions: number;
+}
+
+/** Fetch per-household headcount data (DB call, independent of day coverage). */
+export async function getBaseHouseholdData(): Promise<BaseHouseholdData[]> {
   // Subquery for extra_people portions per household
   const epSub = db
     .select({
@@ -56,15 +63,38 @@ async function getHouseholdPortions(
   return rows.map((r) => {
     const portionSum = Number(r.portionCount) || 0;
     const epPortions = Number(r.epPortions) || 0;
-    const extra = (portionSum - r.memberCount) + epPortions;
     return {
       householdId: r.householdId,
       householdName: r.householdName,
       memberCount: r.memberCount,
-      portions: getPortionCount(portionSum + epPortions, coversFrom, coversTo),
-      extraPortions: extra,
+      basePortions: portionSum + epPortions,
+      extraPortions: (portionSum - r.memberCount) + epPortions,
     };
   });
+}
+
+/** Pure: apply day-coverage multiplier to base household data. */
+export function applyDayCoverage(
+  base: BaseHouseholdData[],
+  coversFrom: number,
+  coversTo: number,
+): HouseholdPortion[] {
+  return base.map((b) => ({
+    householdId: b.householdId,
+    householdName: b.householdName,
+    memberCount: b.memberCount,
+    portions: getPortionCount(b.basePortions, coversFrom, coversTo),
+    extraPortions: b.extraPortions,
+  }));
+}
+
+/** Convenience: single DB call + day-coverage in one step. */
+export async function getHouseholdPortions(
+  coversFrom: number,
+  coversTo: number,
+): Promise<HouseholdPortion[]> {
+  const base = await getBaseHouseholdData();
+  return applyDayCoverage(base, coversFrom, coversTo);
 }
 
 export async function getScalingContext(

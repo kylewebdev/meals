@@ -1,5 +1,4 @@
 import { Fragment } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { formatWeekRange, getShortDayName } from '@/lib/schedule-utils';
 import { cn } from '@/lib/utils';
 import type { ScheduleWeekWithContributions } from '@/lib/queries/schedule';
@@ -9,12 +8,6 @@ interface WeekListProps {
   weeks: ScheduleWeekWithContributions[];
   currentWeekId: string | null;
 }
-
-const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'outline'> = {
-  upcoming: 'outline',
-  active: 'success',
-  complete: 'default',
-};
 
 export function WeekList({ weeks, currentWeekId }: WeekListProps) {
   if (weeks.length === 0) {
@@ -37,17 +30,13 @@ export function WeekList({ weeks, currentWeekId }: WeekListProps) {
             className={cn(
               'block rounded-lg border px-4 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900',
               isCurrent
-                ? 'border-zinc-900 dark:border-zinc-100'
+                ? 'border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-900'
                 : 'border-zinc-100 dark:border-zinc-800',
             )}
           >
             {/* Header */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <div className="flex items-center gap-x-3">
               <span className="font-medium">{formatWeekRange(week.startDate)}</span>
-              <div className="flex items-center gap-2 ml-auto">
-                {isCurrent && <Badge variant="success">Current</Badge>}
-                <Badge variant={statusVariant[week.status] ?? 'outline'}>{week.status}</Badge>
-              </div>
             </div>
 
             {/* Meal list per swap day */}

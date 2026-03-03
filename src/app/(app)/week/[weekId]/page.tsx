@@ -1,12 +1,12 @@
 import { getSession } from '@/lib/auth-utils';
-import { getWeekWithContributions, getHeadcount } from '@/lib/queries/contributions';
+import { getWeekWithContributions } from '@/lib/queries/contributions';
+import { applyDayCoverage, getBaseHouseholdData } from '@/lib/queries/scaling-context';
 import { WeekNutritionChart } from '@/components/contributions/week-nutrition-chart';
-import { PortionDisplay } from '@/components/contributions/portion-display';
+import { PortionBreakdownTable } from '@/components/contributions/portion-breakdown-table';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { formatWeekRange, getPortionCount } from '@/lib/schedule-utils';
+import { formatWeekRange } from '@/lib/schedule-utils';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
@@ -19,9 +19,9 @@ export default async function WeekDetailPage({
   if (!session) redirect('/login');
 
   const { weekId } = await params;
-  const [week, headcount] = await Promise.all([
+  const [week, baseHouseholdData] = await Promise.all([
     getWeekWithContributions(weekId),
-    getHeadcount(),
+    getBaseHouseholdData(),
   ]);
 
   if (!week) notFound();
@@ -38,17 +38,15 @@ export default async function WeekDetailPage({
         <Link href="/schedule" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Schedule
         </Link>
-        <h2 className="mt-1 text-2xl font-semibold tracking-tight">{formatWeekRange(week.startDate)}</h2>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <Badge>{week.status}</Badge>
+        <div className="mt-1 flex items-center justify-between">
+          <h2 className="text-2xl font-semibold tracking-tight">{formatWeekRange(week.startDate)}</h2>
+          {isAdmin && (
+            <Link href={`/week/${weekId}/edit`}>
+              <Button variant="secondary" size="sm">Edit Logistics</Button>
+            </Link>
+          )}
         </div>
       </div>
-
-      {isAdmin && (
-        <Link href={`/week/${weekId}/edit`}>
-          <Button variant="secondary">Edit Logistics</Button>
-        </Link>
-      )}
 
       {week.swapDays.length === 0 ? (
         <EmptyState
@@ -57,10 +55,7 @@ export default async function WeekDetailPage({
         />
       ) : (
         week.swapDays.map((sd) => (
-          <div key={sd.id} className="space-y-2">
-            <div className="flex items-center justify-end">
-              <PortionDisplay portions={getPortionCount(headcount, sd.coversFrom, sd.coversTo)} />
-            </div>
+          <div key={sd.id} className="space-y-4">
             <SwapDaySection
               label={sd.label}
               dayOfWeek={sd.dayOfWeek}
@@ -72,6 +67,7 @@ export default async function WeekDetailPage({
               contributions={sd.contributions}
               weekId={weekId}
             />
+            <PortionBreakdownTable householdPortions={applyDayCoverage(baseHouseholdData, sd.coversFrom, sd.coversTo)} />
           </div>
         ))
       )}
