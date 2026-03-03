@@ -197,7 +197,7 @@ export async function recalculateWeekAssignments() {
   }
 
   revalidatePath('/schedule');
-  revalidatePath('/admin/swap-config');
+  revalidatePath('/admin/rotation');
   revalidatePath('/dashboard');
   return { success: true as const, data: null };
 }

@@ -38,7 +38,7 @@ export default async function AdminPage() {
           </Card>
         </Link>
 
-        <Link href="/admin/swap-config">
+        <Link href="/admin/rotation">
           <Card className="transition-shadow hover:shadow-md">
             <CardHeader>
               <h3 className="font-semibold">Rotation Settings</h3>

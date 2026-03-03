@@ -37,7 +37,7 @@ export async function updateSwapSettings(data: {
     })
     .where(eq(swapSettings.id, existing.id));
 
-  revalidatePath('/admin/swap-config');
+  revalidatePath('/admin/rotation');
   revalidatePath('/schedule');
   return { success: true as const, data: null };
 }
@@ -70,7 +70,7 @@ export async function updateRecipeOrder(recipeIds: string[]) {
     .set({ recipeOrder: recipeIds, updatedAt: new Date() })
     .where(eq(swapSettings.id, existing.id));
 
-  revalidatePath('/admin/swap-config');
+  revalidatePath('/admin/rotation');
   return { success: true as const, data: null };
 }
 
@@ -102,7 +102,7 @@ export async function updateHouseholdOrder(householdIds: string[]) {
     .set({ householdOrder: householdIds, updatedAt: new Date() })
     .where(eq(swapSettings.id, settings.id));
 
-  revalidatePath('/admin/swap-config');
+  revalidatePath('/admin/rotation');
   return { success: true as const, data: null };
 }
 
@@ -127,6 +127,6 @@ export async function shuffleHouseholdOrder() {
     .set({ householdOrder: order, updatedAt: new Date() })
     .where(eq(swapSettings.id, settings.id));
 
-  revalidatePath('/admin/swap-config');
+  revalidatePath('/admin/rotation');
   return { success: true as const, data: order };
 }

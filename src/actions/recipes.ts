@@ -172,7 +172,7 @@ export async function deleteRecipe(recipeId: string) {
 
   revalidatePath('/recipes');
   revalidatePath('/schedule');
-  revalidatePath('/admin/swap-config');
+  revalidatePath('/admin/rotation');
   return { success: true as const, data: null };
 }
 

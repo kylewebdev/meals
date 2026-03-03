@@ -39,7 +39,7 @@ export default async function DashboardPage() {
           }
           action={
             session.user.role === 'admin' ? (
-              <Link href="/admin/swap-config">
+              <Link href="/admin/rotation">
                 <Button variant="secondary">Configure Rotation Settings</Button>
               </Link>
             ) : undefined
