@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 
 export default async function AdminPage() {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">

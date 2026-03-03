@@ -17,7 +17,7 @@ import { revalidatePath } from 'next/cache';
  * Creates weeks, swap_days (with recipe assignments), and contributions for
  * every active household on every swap day.
  *
- * Called at the top of /schedule and /dashboard pages.
+ * Called at the top of the /up-next page.
  */
 export async function ensureWeeksExist() {
   const settings = await db.query.swapSettings.findFirst();
@@ -116,8 +116,8 @@ export async function ensureWeeksExist() {
   }
 
   if (didCreate) {
-    revalidatePath('/schedule');
-    revalidatePath('/dashboard');
+    revalidatePath('/up-next');
+    revalidatePath('/up-next');
   }
 }
 
@@ -208,8 +208,8 @@ export async function recalculateWeekAssignments() {
       .where(inArray(contributions.id, ids));
   }
 
-  revalidatePath('/schedule');
+  revalidatePath('/up-next');
   revalidatePath('/admin/rotation');
-  revalidatePath('/dashboard');
+  revalidatePath('/up-next');
   return { success: true as const, data: null };
 }

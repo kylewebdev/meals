@@ -5,22 +5,32 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { RecipeNavCounts } from '@/lib/queries/recipes';
 
-const links = [
+interface RecipeNavLink {
+  href: string;
+  label: string;
+  countKey: keyof RecipeNavCounts;
+  adminOnly?: boolean;
+}
+
+const links: RecipeNavLink[] = [
   { href: '/recipes', label: 'Recipes', countKey: 'recipes' },
   { href: '/recipes/workshop', label: 'Workshop', countKey: 'workshop' },
   { href: '/recipes/mine', label: 'My Submissions', countKey: 'mine' },
-] as const;
+  { href: '/admin/recipe-review', label: 'Review', countKey: 'pendingReview', adminOnly: true },
+];
 
 interface RecipeNavProps {
   counts: RecipeNavCounts;
+  isAdmin?: boolean;
 }
 
-export function RecipeNav({ counts }: RecipeNavProps) {
+export function RecipeNav({ counts, isAdmin }: RecipeNavProps) {
   const pathname = usePathname();
 
   return (
     <nav className="flex gap-2">
-      {links.map(({ href, label, countKey }) => {
+      {links.map(({ href, label, countKey, adminOnly }) => {
+        if (adminOnly && !isAdmin) return null;
         const isActive = pathname === href;
         const c = counts[countKey];
         return (
@@ -35,16 +45,18 @@ export function RecipeNav({ counts }: RecipeNavProps) {
             )}
           >
             {label}
-            <span
-              className={cn(
-                'ml-1.5 text-xs',
-                isActive
-                  ? 'text-zinc-400 dark:text-zinc-500'
-                  : 'text-zinc-400 dark:text-zinc-500',
-              )}
-            >
-              {c}
-            </span>
+            {c != null && (
+              <span
+                className={cn(
+                  'ml-1.5 text-xs',
+                  isActive
+                    ? 'text-zinc-400 dark:text-zinc-500'
+                    : 'text-zinc-400 dark:text-zinc-500',
+                )}
+              >
+                {c}
+              </span>
+            )}
           </Link>
         );
       })}

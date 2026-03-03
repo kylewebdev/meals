@@ -12,7 +12,7 @@ import { redirect } from 'next/navigation';
 
 export default async function RecipeRatingsPage() {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   const summaries = await getRecipeRatingSummaries();
 

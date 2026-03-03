@@ -21,7 +21,7 @@ export async function notifyMemberJoined(
       type: 'member_joined' as const,
       title: 'New household member!',
       body: `${newMemberName} has joined your household.`,
-      linkUrl: '/household',
+      linkUrl: '/co-op',
     })),
   );
 }
@@ -186,7 +186,7 @@ export async function notifySwapDayReminder() {
         type: 'swap_reminder',
         title: 'Swap day tomorrow!',
         body: `Reminder: Your household is making "${mealName}" for tomorrow's swap.`,
-        linkUrl: '/schedule',
+        linkUrl: '/up-next',
       });
     }
   }

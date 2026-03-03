@@ -38,7 +38,7 @@ export async function updateSwapSettings(data: {
     .where(eq(swapSettings.id, existing.id));
 
   revalidatePath('/admin/rotation');
-  revalidatePath('/schedule');
+  revalidatePath('/up-next');
   return { success: true as const, data: null };
 }
 

@@ -20,7 +20,7 @@ import { redirect } from 'next/navigation';
 
 export default async function AdminRotationPage() {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   const settings = await getOrCreateSwapSettings();
 

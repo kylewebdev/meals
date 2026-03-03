@@ -158,13 +158,20 @@ export interface RecipeNavCounts {
   recipes: number;
   workshop: number;
   mine: number;
+  pendingReview?: number;
 }
 
-export async function getRecipeNavCounts(userId: string): Promise<RecipeNavCounts> {
-  const [recipesCount, workshopCount, mineCount] = await Promise.all([
+export async function getRecipeNavCounts(
+  userId: string,
+  includeAdmin = false,
+): Promise<RecipeNavCounts> {
+  const [recipesCount, workshopCount, mineCount, pendingReviewCount] = await Promise.all([
     db.select({ count: count() }).from(recipes).where(eq(recipes.status, 'approved')).then((r) => r[0]?.count ?? 0),
     db.select({ count: count() }).from(recipes).where(inArray(recipes.status, ['submitted', 'pending_review'])).then((r) => r[0]?.count ?? 0),
     db.select({ count: count() }).from(recipes).where(eq(recipes.createdBy, userId)).then((r) => r[0]?.count ?? 0),
+    includeAdmin
+      ? db.select({ count: count() }).from(recipes).where(eq(recipes.status, 'pending_review')).then((r) => r[0]?.count ?? 0)
+      : Promise.resolve(undefined),
   ]);
-  return { recipes: recipesCount, workshop: workshopCount, mine: mineCount };
+  return { recipes: recipesCount, workshop: workshopCount, mine: mineCount, pendingReview: pendingReviewCount };
 }

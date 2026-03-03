@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   // Has session cookie + on auth route → redirect to dashboard
   if (sessionCookie && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/up-next', request.url));
   }
 
   return NextResponse.next();

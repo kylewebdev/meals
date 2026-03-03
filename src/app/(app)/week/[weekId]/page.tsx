@@ -41,7 +41,7 @@ export default async function WeekDetailPage({
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div>
-        <BackLink href="/schedule">Schedule</BackLink>
+        <BackLink href="/up-next">Up Next</BackLink>
         <div className="mt-1 flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">{formatWeekRange(week.startDate)}</h2>
           {isAdmin && (

@@ -184,6 +184,74 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
   return result;
 }
 
+export interface RecentCook {
+  contributionId: string;
+  weekId: string;
+  weekStartDate: Date;
+  swapDayLabel: string;
+  dayOfWeek: number;
+  recipeName: string | null;
+  recipeId: string | null;
+}
+
+export async function getRecentCooksForHousehold(
+  householdId: string,
+  limit = 3,
+): Promise<RecentCook[]> {
+  const pastWeeks = await db.query.weeks.findMany({
+    where: inArray(weeks.status, ['complete', 'active']),
+    with: {
+      swapDays: {
+        with: {
+          contributions: {
+            where: eq(contributions.householdId, householdId),
+            with: {
+              recipe: { columns: { id: true, name: true } },
+            },
+          },
+        },
+        orderBy: (sd, { asc }) => [asc(sd.dayOfWeek)],
+      },
+    },
+    orderBy: (w, { desc }) => [desc(w.startDate)],
+    limit: limit + 2,
+  }) as unknown as {
+    id: string;
+    startDate: Date;
+    status: string;
+    swapDays: {
+      id: string;
+      dayOfWeek: number;
+      label: string;
+      contributions: {
+        id: string;
+        recipe: { id: string; name: string } | null;
+      }[];
+    }[];
+  }[];
+
+  const result: RecentCook[] = [];
+  for (const week of pastWeeks) {
+    for (const sd of week.swapDays) {
+      const contrib = sd.contributions[0];
+      if (!contrib) continue;
+      result.push({
+        contributionId: contrib.id,
+        weekId: week.id,
+        weekStartDate: week.startDate,
+        swapDayLabel: sd.label,
+        dayOfWeek: sd.dayOfWeek,
+        recipeName: contrib.recipe?.name ?? null,
+        recipeId: contrib.recipe?.id ?? null,
+      });
+      if (result.length >= limit) break;
+    }
+    if (result.length >= limit) break;
+  }
+
+  return result;
+}
+
 export async function getHeadcount(): Promise<number> {
   const [[userResult], [epResult]] = await Promise.all([
     db.select({ total: sum(user.portionsPerMeal) }).from(user)

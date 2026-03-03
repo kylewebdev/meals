@@ -175,7 +175,7 @@ export async function deleteRecipe(recipeId: string) {
   }
 
   revalidatePath('/recipes');
-  revalidatePath('/schedule');
+  revalidatePath('/up-next');
   revalidatePath('/admin/rotation');
   revalidatePath('/admin/recipe-ratings');
   return { success: true as const, data: null };
@@ -361,7 +361,7 @@ export async function resetAllRecipes() {
   await db.delete(recipes);
 
   revalidatePath('/recipes');
-  revalidatePath('/schedule');
+  revalidatePath('/up-next');
   revalidatePath('/admin/rotation');
   revalidatePath('/admin/recipe-ratings');
 

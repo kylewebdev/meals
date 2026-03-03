@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 
 export default async function AdminHouseholdsPage() {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   const householdsList = await getHouseholds();
 

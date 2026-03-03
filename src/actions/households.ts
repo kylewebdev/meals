@@ -44,7 +44,7 @@ export async function setHouseholdHead(householdId: string, userId: string | nul
 
   revalidatePath('/admin/households');
   revalidatePath(`/admin/households/${householdId}`);
-  revalidatePath('/household');
+  revalidatePath('/co-op');
   return { success: true as const, data: null };
 }
 
@@ -62,8 +62,8 @@ export async function renameHousehold(householdId: string, name: string) {
 
   revalidatePath('/admin/households');
   revalidatePath(`/admin/households/${householdId}`);
-  revalidatePath('/household');
-  revalidatePath('/schedule');
+  revalidatePath('/co-op');
+  revalidatePath('/up-next');
   return { success: true as const, data: null };
 }
 

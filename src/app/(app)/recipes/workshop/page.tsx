@@ -11,9 +11,11 @@ export default async function WorkshopPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
+  const isAdmin = session.user.role === 'admin';
+
   const [workshopRecipes, counts] = await Promise.all([
     getWorkshopRecipes(),
-    getRecipeNavCounts(session.user.id),
+    getRecipeNavCounts(session.user.id, isAdmin),
   ]);
 
   return (
@@ -24,7 +26,7 @@ export default async function WorkshopPage() {
           <Button>Submit Recipe</Button>
         </Link>
       </div>
-      <RecipeNav counts={counts} />
+      <RecipeNav counts={counts} isAdmin={isAdmin} />
 
       <div className="space-y-4">
         <div>

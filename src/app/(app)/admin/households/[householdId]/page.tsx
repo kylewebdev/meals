@@ -17,7 +17,7 @@ export default async function AdminHouseholdDetailPage({
   params: Promise<{ householdId: string }>;
 }) {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   const { householdId } = await params;
   const [household, allUsers] = await Promise.all([

@@ -62,7 +62,7 @@ function RegisterForm() {
         return;
       }
 
-      router.push('/dashboard');
+      router.push('/up-next');
     } catch {
       setError('Something went wrong');
       setLoading(false);

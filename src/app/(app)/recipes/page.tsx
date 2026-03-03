@@ -15,10 +15,12 @@ export default async function RecipesPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
+  const isAdmin = session.user.role === 'admin';
+
   const [allRecipes, summaries, counts] = await Promise.all([
     getRecipes(),
     getRecipeRatingSummaries(),
-    getRecipeNavCounts(session.user.id),
+    getRecipeNavCounts(session.user.id, isAdmin),
   ]);
 
   return (
@@ -30,7 +32,7 @@ export default async function RecipesPage() {
         </Link>
       </div>
 
-      <RecipeNav counts={counts} />
+      <RecipeNav counts={counts} isAdmin={isAdmin} />
 
       <RecipeListClient recipes={allRecipes} summaries={summaries} />
     </div>

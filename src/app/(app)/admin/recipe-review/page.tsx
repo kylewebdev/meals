@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 
 export default async function RecipeReviewPage() {
   const auth = await requireAdmin();
-  if (!auth.success) redirect('/dashboard');
+  if (!auth.success) redirect('/up-next');
 
   const pending = await getPendingReviewRecipes();
 

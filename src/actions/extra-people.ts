@@ -22,8 +22,8 @@ export async function addExtraPerson(householdId: string, name: string, portions
     .values({ householdId, name: trimmed, portions })
     .returning() as (typeof extraPeople.$inferSelect)[];
 
-  revalidatePath('/household');
-  revalidatePath('/schedule');
+  revalidatePath('/co-op');
+  revalidatePath('/up-next');
   return { success: true as const, data: result[0] };
 }
 
@@ -60,8 +60,8 @@ export async function updateExtraPerson(
 
   await db.update(extraPeople).set(updates).where(eq(extraPeople.id, id));
 
-  revalidatePath('/household');
-  revalidatePath('/schedule');
+  revalidatePath('/co-op');
+  revalidatePath('/up-next');
   return { success: true as const, data: null };
 }
 
@@ -79,7 +79,7 @@ export async function removeExtraPerson(id: string) {
 
   await db.delete(extraPeople).where(eq(extraPeople.id, id));
 
-  revalidatePath('/household');
-  revalidatePath('/schedule');
+  revalidatePath('/co-op');
+  revalidatePath('/up-next');
   return { success: true as const, data: null };
 }

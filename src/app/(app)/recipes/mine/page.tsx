@@ -11,9 +11,11 @@ export default async function MyRecipesPage() {
   const session = await getSession();
   if (!session) redirect('/login');
 
+  const isAdmin = session.user.role === 'admin';
+
   const [myRecipes, counts] = await Promise.all([
     getMyRecipes(session.user.id),
-    getRecipeNavCounts(session.user.id),
+    getRecipeNavCounts(session.user.id, isAdmin),
   ]);
 
   const submitted = myRecipes.filter((r) => r.status === 'submitted');
@@ -28,7 +30,7 @@ export default async function MyRecipesPage() {
           <Button>Submit Recipe</Button>
         </Link>
       </div>
-      <RecipeNav counts={counts} />
+      <RecipeNav counts={counts} isAdmin={isAdmin} />
 
       {myRecipes.length === 0 ? (
         <EmptyState

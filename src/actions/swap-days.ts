@@ -38,6 +38,6 @@ export async function updateSwapDayInfo(
     .where(eq(swapDays.id, swapDayId));
 
   revalidatePath(`/week/${existing.weekId}`);
-  revalidatePath('/dashboard');
+  revalidatePath('/up-next');
   return { success: true as const, data: null };
 }
