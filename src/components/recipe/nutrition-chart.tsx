@@ -165,7 +165,7 @@ export function NutritionChart({
                     return [`${value} ${unit}`, name];
                   }}
                 />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                <Bar dataKey="value" radius={0}>
                   {macrosData.map((entry) => (
                     <Cell
                       key={entry.name}

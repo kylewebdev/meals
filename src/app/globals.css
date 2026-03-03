@@ -15,6 +15,15 @@ html {
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius: 0px;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +36,15 @@ html {
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Kill rounded-full (not token-based in Tailwind v4) */
+.rounded-full { border-radius: 0 !important; }
+
+/* Pointer cursor on all clickable elements */
+button, [role="button"], a, select, input[type="checkbox"], input[type="radio"],
+summary, label[for] {
+  cursor: pointer;
 }
 
 body {
