@@ -1,10 +1,8 @@
 import { getSession } from '@/lib/auth-utils';
 import { getCurrentWeek } from '@/lib/queries/schedule';
-import { getDashboardStats } from '@/lib/queries/dashboard';
 import { getUpcomingSwapDays } from '@/lib/queries/contributions';
 import { ensureWeeksExist } from '@/actions/schedule';
-import { DashboardStatsRow } from '@/components/dashboard/dashboard-stats';
-import { MyTasks } from '@/components/dashboard/my-tasks';
+import { UpcomingCooks } from '@/components/dashboard/upcoming-cooks';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
@@ -19,24 +17,18 @@ export default async function DashboardPage() {
 
   const userHouseholdId = session.user.householdId;
 
-  const [currentWeek, stats] = await Promise.all([
-    getCurrentWeek(),
-    getDashboardStats(userHouseholdId ?? null),
-  ]);
+  const currentWeek = await getCurrentWeek();
 
   const upcomingSwapDays = userHouseholdId
     ? await getUpcomingSwapDays(userHouseholdId)
     : [];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Dashboard</h2>
-      <p className="text-zinc-600 dark:text-zinc-400">Welcome back, {session.user.name}.</p>
-
-      <DashboardStatsRow stats={stats} />
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold">Upcoming Cooks</h2>
 
       {userHouseholdId && upcomingSwapDays.length > 0 ? (
-        <MyTasks swapDays={upcomingSwapDays} />
+        <UpcomingCooks swapDays={upcomingSwapDays} />
       ) : !currentWeek ? (
         <EmptyState
           title="No week scheduled"
@@ -53,7 +45,12 @@ export default async function DashboardPage() {
             ) : undefined
           }
         />
-      ) : null}
+      ) : (
+        <EmptyState
+          title="No upcoming cooks"
+          description="You don't have any recipes assigned yet."
+        />
+      )}
     </div>
   );
 }

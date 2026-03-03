@@ -39,7 +39,7 @@ export function MobileNav() {
       {open && (
         <div className="absolute left-0 top-full z-50 mt-1 min-w-[180px] rounded-md border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
           <nav className="flex flex-col" onClick={() => setOpen(false)}>
-            <NavLink href="/dashboard">Dashboard</NavLink>
+            <NavLink href="/dashboard">My Cooks</NavLink>
             <NavLink href="/schedule">Schedule</NavLink>
             <NavLink href="/recipes">Recipes</NavLink>
             <NavLink href="/household">Household</NavLink>

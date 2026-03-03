@@ -21,7 +21,7 @@ export function AppShell({ children, userName, userRole, notificationSlot }: App
             <MobileNav />
             <span className="text-lg font-semibold">Meals</span>
             <nav className="hidden items-center gap-1 md:flex">
-              <NavLink href="/dashboard">Dashboard</NavLink>
+              <NavLink href="/dashboard">My Cooks</NavLink>
               <NavLink href="/schedule">Schedule</NavLink>
               <NavLink href="/recipes">Recipes</NavLink>
               <NavLink href="/household">Household</NavLink>
