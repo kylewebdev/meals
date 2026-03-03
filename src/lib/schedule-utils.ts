@@ -15,7 +15,7 @@ interface SwapDayDefault {
 }
 
 export function getSwapDayDefaults(): SwapDayDefault[] {
-  return [{ dayOfWeek: 0, label: 'Sunday Swap', coversFrom: 1, coversTo: 5 }];
+  return [{ dayOfWeek: 0, label: 'Swap Day', coversFrom: 1, coversTo: 5 }];
 }
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
