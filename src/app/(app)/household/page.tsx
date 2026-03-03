@@ -36,33 +36,29 @@ export default async function HouseholdPage() {
   const canManage = isHead || isAdmin;
 
   return (
-    <div className={`mx-auto max-w-5xl${canManage ? ' 2xl:max-w-[83.5rem]' : ''}`}>
+    <div className="mx-auto max-w-5xl">
       <h2 className="mb-8 text-2xl font-semibold tracking-tight">{household.name}</h2>
       <div className="space-y-8">
-        <div className={canManage ? '2xl:flex 2xl:items-start 2xl:gap-6' : ''}>
-          <div className="min-w-0 2xl:flex-1">
-            <h3 className="text-lg font-semibold pb-3">Members ({household.members.length})</h3>
-            <MemberList
-              members={household.members}
-              householdId={householdId}
-              headId={household.headId}
-              canManage={canManage}
-              currentUserId={session.user.id}
-            />
-          </div>
-
+        <div>
+          <h3 className="text-lg font-semibold pb-3">Members ({household.members.length})</h3>
+          <MemberList
+            members={household.members}
+            householdId={householdId}
+            headId={household.headId}
+            canManage={canManage}
+            currentUserId={session.user.id}
+          />
           {canManage && (
-            <aside className="mt-6 shrink-0 2xl:mt-0 2xl:w-72">
-              <h3 className="text-lg font-semibold pb-3">Invite Members</h3>
+            <div className="mt-4">
               <InviteForm householdId={householdId} />
-            </aside>
+            </div>
           )}
         </div>
 
         {canManage && (
           <>
-            <hr className="max-w-5xl border-zinc-100 dark:border-zinc-800" />
-            <div className="max-w-5xl">
+            <hr className="border-zinc-100 dark:border-zinc-800" />
+            <div>
               <h3 className="text-lg font-semibold pb-3">Extra People</h3>
               <ExtraPeopleForm
                 householdId={householdId}
@@ -72,9 +68,9 @@ export default async function HouseholdPage() {
           </>
         )}
 
-        <hr className="max-w-5xl border-zinc-100 dark:border-zinc-800" />
+        <hr className="border-zinc-100 dark:border-zinc-800" />
 
-        <div className="max-w-5xl">
+        <div>
           <h3 className="text-lg font-semibold pb-3">Our Reviews ({reviews.length})</h3>
           <HouseholdReviews reviews={reviews} />
         </div>
