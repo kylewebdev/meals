@@ -37,6 +37,7 @@ export interface RecipeListItem {
   carbsG: number | null;
   fatG: number | null;
   tags: string[] | null;
+  imageUrl: string | null;
   status: string;
   createdAt: Date;
 }
@@ -45,6 +46,7 @@ export interface RecipeDetail {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   instructions: string | null;
   servings: number | null;
   prepTimeMinutes: number | null;
@@ -76,6 +78,7 @@ interface RawRecipeWithIngredients {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   servings: number | null;
   prepTimeMinutes: number | null;
   cookTimeMinutes: number | null;
@@ -91,6 +94,7 @@ function toRecipeListItem(r: RawRecipeWithIngredients): RecipeListItem {
     id: r.id,
     name: r.name,
     description: r.description,
+    imageUrl: r.imageUrl,
     servings: r.servings,
     prepTimeMinutes: r.prepTimeMinutes,
     cookTimeMinutes: r.cookTimeMinutes,
@@ -108,6 +112,7 @@ export async function getRecipes(): Promise<RecipeListItem[]> {
       id: true,
       name: true,
       description: true,
+      imageUrl: true,
       servings: true,
       prepTimeMinutes: true,
       cookTimeMinutes: true,
@@ -154,6 +159,7 @@ export async function getPendingRecipes(): Promise<RecipeListItem[]> {
       id: true,
       name: true,
       description: true,
+      imageUrl: true,
       servings: true,
       prepTimeMinutes: true,
       cookTimeMinutes: true,
@@ -179,6 +185,7 @@ export async function getMyRecipes(userId: string): Promise<RecipeListItem[]> {
       id: true,
       name: true,
       description: true,
+      imageUrl: true,
       servings: true,
       prepTimeMinutes: true,
       cookTimeMinutes: true,

@@ -5,6 +5,7 @@ interface Recipe {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   servings: number | null;
   prepTimeMinutes: number | null;
   cookTimeMinutes: number | null;

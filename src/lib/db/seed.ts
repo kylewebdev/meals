@@ -12,6 +12,7 @@ type RecipeSeed = {
   prepTimeMinutes: number;
   cookTimeMinutes: number;
   tags: string[];
+  imageUrl: string | null;
   ingredients: {
     name: string;
     quantity: string;
@@ -30,6 +31,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Chicken Alfredo Pasta',
     description: 'Fettuccine, grilled chicken, butter-parm cream sauce. Reheats great with a splash of water.',
+    imageUrl: '/meals/Chicken Alfredo Pasta.png',
     instructions:
       '1. Cook fettuccine to al dente, reserve 1 cup pasta water, drain.\n2. Season chicken breasts with salt, pepper, and garlic powder. Grill or pan-sear 6-7 min per side until done. Let rest, then slice.\n3. Melt butter in a large skillet over medium heat. Add minced garlic, cook 30 sec.\n4. Pour in heavy cream, bring to a gentle simmer.\n5. Stir in parmesan until melted and smooth. Season with salt and pepper.\n6. Toss fettuccine in the sauce, adding pasta water as needed for consistency.\n7. Top with sliced chicken and extra parmesan.',
     servings: 6,
@@ -50,6 +52,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'BBQ Chicken Rice Bowls',
     description: 'Shredded chicken in BBQ sauce over rice with cheddar and corn.',
+    imageUrl: '/meals/BBQ Chicken Rice Bowls.png',
     instructions:
       '1. Cook rice according to package directions.\n2. Place chicken breasts in a pot, cover with water, bring to a boil, reduce heat and simmer 15 min until cooked through.\n3. Shred chicken with two forks.\n4. Toss shredded chicken with BBQ sauce.\n5. Warm corn in the microwave or a skillet.\n6. Divide rice into containers, top with BBQ chicken, corn, and shredded cheddar.',
     servings: 6,
@@ -67,6 +70,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Chicken Teriyaki Rice Bowls',
     description: 'Chicken thighs in a soy-brown sugar glaze with rice and steamed broccoli.',
+    imageUrl: '/meals/Chicken Teriyaki Rice Bowls.png',
     instructions:
       '1. Cook rice.\n2. Mix teriyaki sauce: soy sauce, brown sugar, rice vinegar, minced garlic, grated ginger, and cornstarch slurry (1 tbsp cornstarch + 2 tbsp water).\n3. Season chicken thighs with salt and pepper. Pan-sear in a hot skillet 6-7 min per side until cooked through.\n4. Pour teriyaki sauce over chicken in the pan, simmer 2 min until thickened and glossy.\n5. Steam broccoli florets 4-5 min until tender-crisp.\n6. Slice chicken and divide into containers with rice and broccoli.',
     servings: 6,
@@ -88,6 +92,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Beef & Broccoli with Rice',
     description: 'Sliced steak in a simple soy-garlic sauce over white rice.',
+    imageUrl: '/meals/Beef & Broccoli with Rice.png',
     instructions:
       '1. Cook rice.\n2. Slice steak thinly against the grain.\n3. Toss steak slices with soy sauce, sesame oil, and cornstarch. Let sit 10 min.\n4. Heat oil in a wok or large skillet over high heat. Sear beef in batches, 1-2 min per side. Set aside.\n5. Stir fry broccoli with garlic 3-4 min until tender-crisp.\n6. Return beef, add sauce (soy sauce, oyster sauce, brown sugar, water). Toss until thickened.\n7. Serve over rice.',
     servings: 6,
@@ -110,6 +115,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Spaghetti & Meatballs',
     description: 'Classic marinara, beef meatballs, spaghetti. A meal prep staple.',
+    imageUrl: '/meals/Spaghetti & Meatballs.png',
     instructions:
       '1. Preheat oven to 400°F.\n2. Mix ground beef with breadcrumbs, egg, parmesan, garlic, Italian seasoning, salt, and pepper. Roll into golf-ball sized meatballs.\n3. Place on a lined sheet pan. Bake 18-20 min until cooked through.\n4. Cook spaghetti to al dente.\n5. Warm marinara sauce in a large pot, add baked meatballs, simmer together 5 min.\n6. Toss spaghetti with sauce and meatballs. Top with extra parmesan.',
     servings: 6,
@@ -131,6 +137,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Pulled Pork Rice Bowls',
     description: 'Slow cooker BBQ pulled pork over rice with cheese and baked beans on the side.',
+    imageUrl: '/meals/Pulled Pork Rice Bowls.png',
     instructions:
       '1. Rub pork shoulder with salt, pepper, garlic powder, onion powder, and smoked paprika.\n2. Place in slow cooker, pour half the BBQ sauce over top. Cook on low 8 hours or high 4 hours.\n3. Shred pork with two forks, stir in remaining BBQ sauce.\n4. Cook rice.\n5. Warm baked beans.\n6. Divide rice into containers, top with pulled pork and cheddar. Serve beans on the side.',
     servings: 8,
@@ -151,6 +158,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Chicken Fried Rice',
     description: 'Chicken, egg, rice, soy sauce, butter, optional peas and carrots.',
+    imageUrl: '/meals/Chicken Fried Rice.png',
     instructions:
       '1. Use day-old rice (or cook rice and spread on a sheet pan to cool 20 min).\n2. Season diced chicken with salt, pepper, and garlic powder. Cook in butter in a hot skillet until done, about 5-6 min. Set aside.\n3. Scramble eggs in the same skillet. Set aside.\n4. Add more butter to the skillet, stir fry peas and carrots 2 min.\n5. Add rice, soy sauce, and sesame oil. Toss on high heat 3-4 min.\n6. Fold in chicken and scrambled eggs.\n7. Top with green onions.',
     servings: 6,
@@ -172,6 +180,7 @@ const RECIPES: RecipeSeed[] = [
   {
     name: 'Baked Mac & Cheese with Bacon or Chicken',
     description: 'Creamy from-scratch mac with your choice of protein mixed in.',
+    imageUrl: '/meals/Baked Mac & Cheese with Bacon.png',
     instructions:
       '1. Preheat oven to 375°F.\n2. Cook elbow macaroni to al dente, drain.\n3. Cook bacon until crispy (or dice and cook chicken breast). Chop or crumble.\n4. Melt butter in a large pot, whisk in flour to make a roux. Cook 1 min.\n5. Gradually whisk in milk. Cook until thickened, about 5 min.\n6. Remove from heat, stir in shredded cheddar and half the mozzarella until smooth. Season with salt, pepper, mustard powder.\n7. Fold in pasta and protein.\n8. Pour into a baking dish, top with remaining mozzarella and breadcrumbs.\n9. Bake 20-25 min until golden and bubbly.',
     servings: 6,
@@ -230,6 +239,7 @@ async function seed() {
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
           tags: r.tags,
+          imageUrl: r.imageUrl,
           updatedAt: new Date(),
         })
         .where(eq(recipes.id, existingId));
@@ -251,6 +261,7 @@ async function seed() {
           prepTimeMinutes: r.prepTimeMinutes,
           cookTimeMinutes: r.cookTimeMinutes,
           tags: r.tags,
+          imageUrl: r.imageUrl,
           createdBy: admin.id,
         })
         .returning() as (typeof recipes.$inferSelect)[];

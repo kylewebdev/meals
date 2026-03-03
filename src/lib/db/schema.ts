@@ -185,6 +185,7 @@ export const recipes = pgTable(
     prepTimeMinutes: integer('prep_time_minutes'),
     cookTimeMinutes: integer('cook_time_minutes'),
     tags: text('tags').array(),
+    imageUrl: text('image_url'),
     status: recipeStatusEnum('status').notNull().default('pending'),
     createdBy: text('created_by')
       .notNull()

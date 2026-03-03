@@ -2,12 +2,14 @@ import type { RecipeRatingSummary } from '@/lib/queries/ratings';
 import { RatingSummary } from '@/components/recipe/rating-summary';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface RecipeCardProps {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   servings: number | null;
   prepTimeMinutes: number | null;
   cookTimeMinutes: number | null;
@@ -20,6 +22,7 @@ export function RecipeCard({
   id,
   name,
   description,
+  imageUrl,
   servings,
   prepTimeMinutes,
   cookTimeMinutes,
@@ -31,7 +34,18 @@ export function RecipeCard({
 
   return (
     <Link href={`/recipes/${id}`}>
-      <Card className="h-full transition-shadow hover:shadow-md">
+      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+        {imageUrl && (
+          <div className="relative aspect-[16/9] w-full">
+            <Image
+              src={imageUrl}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, 50vw"
+            />
+          </div>
+        )}
         <CardHeader>
           <h3 className="font-semibold">{name}</h3>
           {description && (
