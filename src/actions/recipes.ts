@@ -37,7 +37,7 @@ export async function createRecipe(data: RecipeInput) {
   if (!name) return { success: false as const, error: 'Name is required' };
 
   const isAdmin = auth.data.user.role === 'admin';
-  const status = isAdmin ? 'approved' : 'pending';
+  const status = isAdmin ? 'approved' : 'submitted';
 
   const result = await db
     .insert(recipes)
@@ -69,30 +69,26 @@ export async function updateRecipe(recipeId: string, data: RecipeInput) {
   if (!auth.success) return auth;
 
   const isAdmin = auth.data.user.role === 'admin';
-  const userId = auth.data.user.id;
 
-  // Check permissions: admin can edit any, creator can edit pending/rejected
-  let currentStatus: string | undefined;
+  // Any member can edit non-approved recipes; only admin can edit approved
   if (!isAdmin) {
     const [recipe] = await db
-      .select({ createdBy: recipes.createdBy, status: recipes.status })
+      .select({ status: recipes.status })
       .from(recipes)
       .where(eq(recipes.id, recipeId))
       .limit(1);
 
-    if (!recipe || recipe.createdBy !== userId) {
-      return { success: false as const, error: 'Not authorized to edit this recipe' };
+    if (!recipe) {
+      return { success: false as const, error: 'Recipe not found' };
     }
     if (recipe.status === 'approved') {
       return { success: false as const, error: 'Cannot edit an approved recipe' };
     }
-    currentStatus = recipe.status;
   }
 
   const name = data.name.trim();
   if (!name) return { success: false as const, error: 'Name is required' };
 
-  // If a member edits a rejected recipe, reset to pending
   const updateFields: Record<string, unknown> = {
     name,
     description: data.description?.trim() || null,
@@ -104,18 +100,12 @@ export async function updateRecipe(recipeId: string, data: RecipeInput) {
     updatedAt: new Date(),
   };
 
-  if (!isAdmin && currentStatus === 'rejected') {
-    updateFields.status = 'pending';
-  }
-
   await db
     .update(recipes)
     .set(updateFields)
     .where(eq(recipes.id, recipeId));
 
-  revalidatePath('/recipes');
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath('/recipes/mine');
+  revalidateRecipePaths(recipeId);
   return { success: true as const, data: null };
 }
 
@@ -126,6 +116,7 @@ export async function deleteRecipe(recipeId: string) {
   const isAdmin = auth.data.user.role === 'admin';
   const userId = auth.data.user.id;
 
+  // Creator-only for delete (communal editing ≠ communal deletion)
   if (!isAdmin) {
     const [recipe] = await db
       .select({ createdBy: recipes.createdBy, status: recipes.status })
@@ -183,14 +174,15 @@ async function requireRecipeAccess(recipeId: string) {
   const isAdmin = auth.data.user.role === 'admin';
   if (isAdmin) return auth;
 
+  // Any member can modify non-approved recipes
   const [recipe] = await db
-    .select({ createdBy: recipes.createdBy, status: recipes.status })
+    .select({ status: recipes.status })
     .from(recipes)
     .where(eq(recipes.id, recipeId))
     .limit(1);
 
-  if (!recipe || recipe.createdBy !== auth.data.user.id) {
-    return { success: false as const, error: 'Not authorized' };
+  if (!recipe) {
+    return { success: false as const, error: 'Recipe not found' };
   }
   if (recipe.status === 'approved') {
     return { success: false as const, error: 'Cannot modify an approved recipe' };
@@ -261,9 +253,16 @@ export async function removeIngredient(ingredientId: string, recipeId: string) {
   return { success: true as const, data: null };
 }
 
+function revalidateRecipePaths(recipeId: string) {
+  revalidatePath('/recipes');
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath('/admin/recipe-review');
+  revalidatePath('/recipes/mine');
+}
+
 export async function reviewRecipe(
   recipeId: string,
-  action: 'approve' | 'reject',
+  action: 'approve' | 'send_back' | 'demote',
   feedback?: string,
 ) {
   const auth = await requireAdmin();
@@ -276,33 +275,71 @@ export async function reviewRecipe(
     .limit(1);
 
   if (!recipe) return { success: false as const, error: 'Recipe not found' };
-  if (recipe.status !== 'pending') {
-    return { success: false as const, error: 'Recipe is not pending review' };
+
+  if (action === 'approve') {
+    if (recipe.status !== 'pending_review') {
+      return { success: false as const, error: 'Recipe is not pending review' };
+    }
+    await db
+      .update(recipes)
+      .set({
+        status: 'approved',
+        adminFeedback: null,
+        adminFeedbackAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(recipes.id, recipeId));
+
+    notifyNewRecipe(recipeId, recipe.name).catch(() => {});
+    notifyRecipeReviewed(recipeId, recipe.name, recipe.createdBy, true).catch(() => {});
+  } else {
+    const requiredStatus = action === 'send_back' ? 'pending_review' : 'approved';
+    if (recipe.status !== requiredStatus) {
+      return { success: false as const, error: `Recipe is not ${requiredStatus.replace('_', ' ')}` };
+    }
+    const trimmed = feedback?.trim() || null;
+    await db
+      .update(recipes)
+      .set({
+        status: 'submitted',
+        adminFeedback: trimmed,
+        adminFeedbackAt: trimmed ? new Date() : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(recipes.id, recipeId));
+
+    notifyRecipeReviewed(recipeId, recipe.name, recipe.createdBy, false, feedback).catch(() => {});
   }
 
-  const newStatus = action === 'approve' ? 'approved' : 'rejected';
+  revalidateRecipePaths(recipeId);
+  return { success: true as const, data: null };
+}
+
+export async function flagForReview(recipeId: string) {
+  const auth = await requireSession();
+  if (!auth.success) return auth;
+
+  const [recipe] = await db
+    .select({ status: recipes.status })
+    .from(recipes)
+    .where(eq(recipes.id, recipeId))
+    .limit(1);
+
+  if (!recipe) return { success: false as const, error: 'Recipe not found' };
+  if (recipe.status !== 'submitted') {
+    return { success: false as const, error: 'Only workshop recipes can be flagged for review' };
+  }
 
   await db
     .update(recipes)
-    .set({ status: newStatus, updatedAt: new Date() })
+    .set({
+      status: 'pending_review',
+      adminFeedback: null,
+      adminFeedbackAt: null,
+      updatedAt: new Date(),
+    })
     .where(eq(recipes.id, recipeId));
 
-  revalidatePath('/recipes');
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath('/admin/recipe-review');
-  revalidatePath('/recipes/mine');
-
-  notifyRecipeReviewed(
-    recipeId,
-    recipe.name,
-    recipe.createdBy,
-    action === 'approve',
-    feedback,
-  ).catch(() => {});
-
-  if (action === 'approve') {
-    notifyNewRecipe(recipeId, recipe.name).catch(() => {});
-  }
-
+  revalidateRecipePaths(recipeId);
   return { success: true as const, data: null };
 }

@@ -16,7 +16,9 @@ import {
 export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
 export const weekStatusEnum = pgEnum('week_status', ['upcoming', 'active', 'complete']);
 export const swapModeEnum = pgEnum('swap_mode', ['single', 'dual']);
-export const recipeStatusEnum = pgEnum('recipe_status', ['pending', 'approved', 'rejected']);
+export const recipeStatusEnum = pgEnum('recipe_status', [
+  'pending', 'approved', 'rejected', 'submitted', 'pending_review',
+]);
 export const householdOrderModeEnum = pgEnum('household_order_mode', ['fixed', 'random']);
 export const recipeRatingValueEnum = pgEnum('recipe_rating_value', ['love', 'fine', 'dislike']);
 
@@ -202,7 +204,9 @@ export const recipes = pgTable(
     cookTimeMinutes: integer('cook_time_minutes'),
     tags: text('tags').array(),
     imageUrl: text('image_url'),
-    status: recipeStatusEnum('status').notNull().default('pending'),
+    status: recipeStatusEnum('status').notNull().default('submitted'),
+    adminFeedback: text('admin_feedback'),
+    adminFeedbackAt: timestamp('admin_feedback_at'),
     createdBy: text('created_by')
       .notNull()
       .references(() => user.id),
@@ -263,12 +267,35 @@ export const recipeRatings = pgTable(
   ],
 );
 
+export const recipeComments = pgTable(
+  'recipe_comments',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    recipeId: text('recipe_id')
+      .notNull()
+      .references(() => recipes.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('recipe_comments_recipe_id_idx').on(table.recipeId),
+    index('recipe_comments_user_id_idx').on(table.userId),
+  ],
+);
+
 export const notificationTypeEnum = pgEnum('notification_type', [
   'new_recipe',
   'opt_out_reset',
   'recipe_reviewed',
   'member_joined',
   'swap_reminder',
+  'recipe_commented',
 ]);
 
 export const notifications = pgTable(
@@ -416,10 +443,16 @@ export const recipeRelations = relations(recipes, ({ one, many }) => ({
   ingredients: many(recipeIngredients),
   contributions: many(contributions),
   ratings: many(recipeRatings),
+  comments: many(recipeComments),
 }));
 
 export const recipeIngredientRelations = relations(recipeIngredients, ({ one }) => ({
   recipe: one(recipes, { fields: [recipeIngredients.recipeId], references: [recipes.id] }),
+}));
+
+export const recipeCommentRelations = relations(recipeComments, ({ one }) => ({
+  recipe: one(recipes, { fields: [recipeComments.recipeId], references: [recipes.id] }),
+  author: one(user, { fields: [recipeComments.userId], references: [user.id] }),
 }));
 
 export const recipeRatingRelations = relations(recipeRatings, ({ one }) => ({

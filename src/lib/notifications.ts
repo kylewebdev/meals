@@ -49,10 +49,10 @@ export async function notifyRecipeReviewed(
 ) {
   const title = approved
     ? 'Your recipe was approved!'
-    : 'Your recipe needs changes';
+    : 'Your recipe was sent back for changes';
   const body = approved
     ? `"${recipeName}" has been approved and is now in the recipe catalog.`
-    : `"${recipeName}" was not approved.${feedback ? ` Feedback: ${feedback}` : ''}`;
+    : `"${recipeName}" was sent back for changes.${feedback ? ` Feedback: ${feedback}` : ''}`;
 
   await db.insert(notifications).values({
     userId: creatorId,
@@ -61,6 +61,31 @@ export async function notifyRecipeReviewed(
     body,
     linkUrl: `/recipes/${recipeId}`,
   });
+}
+
+export async function notifyRecipeComment(
+  recipeId: string,
+  recipeName: string,
+  creatorId: string,
+  commenterId: string,
+  commenterName: string,
+  priorCommenterIds: string[],
+) {
+  const recipientIds = new Set<string>();
+  if (creatorId !== commenterId) recipientIds.add(creatorId);
+  for (const id of priorCommenterIds) recipientIds.add(id);
+
+  const rows = [...recipientIds].map((userId) => ({
+    userId,
+    type: 'recipe_commented' as const,
+    title: 'New comment on recipe',
+    body: `${commenterName} commented on "${recipeName}".`,
+    linkUrl: `/recipes/${recipeId}`,
+  }));
+
+  if (rows.length > 0) {
+    await db.insert(notifications).values(rows);
+  }
 }
 
 /**

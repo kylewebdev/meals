@@ -28,7 +28,7 @@ export default async function NewRecipePage() {
             <p className="mt-2 text-sm text-zinc-500">
               {isAdmin
                 ? 'Fill out the basic info here, then add ingredients and nutrition on the recipe detail page after saving.'
-                : 'Submit your recipe for admin review. Once approved, it will appear in the catalog for everyone. You can add ingredients after saving.'}
+                : 'Your recipe starts in the Workshop where anyone can help refine it. When it\'s ready, flag it for admin review to get it approved into the catalog. You can add ingredients after saving.'}
             </p>
           </div>
 

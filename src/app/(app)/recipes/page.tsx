@@ -19,8 +19,11 @@ export default async function RecipesPage({
   if (!session) redirect('/login');
 
   const { q, rating } = await searchParams;
-  let allRecipes = await getRecipes();
-  const summaries = await getRecipeRatingSummaries();
+  const [allRecipesRaw, summaries] = await Promise.all([
+    getRecipes(),
+    getRecipeRatingSummaries(),
+  ]);
+  let allRecipes = allRecipesRaw;
   const ratingsMap = new Map(summaries.map((s) => [s.recipeId, s]));
 
   if (q) {

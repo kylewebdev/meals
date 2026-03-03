@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { recipes, recipeIngredients } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 type IngredientNutrition = {
   calories: number | null;
@@ -57,6 +57,8 @@ export interface RecipeDetail {
   fatG: number | null;
   tags: string[] | null;
   status: string;
+  adminFeedback: string | null;
+  adminFeedbackAt: Date | null;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -88,6 +90,18 @@ interface RawRecipeWithIngredients {
   ingredients: IngredientNutrition[];
 }
 
+const recipeListColumns = {
+  id: true, name: true, description: true, imageUrl: true,
+  servings: true, prepTimeMinutes: true, cookTimeMinutes: true,
+  tags: true, status: true, createdAt: true,
+} as const;
+
+const ingredientNutritionWith = {
+  ingredients: {
+    columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
+  },
+} as const;
+
 function toRecipeListItem(r: RawRecipeWithIngredients): RecipeListItem {
   const nutrition = computeNutrition(r.ingredients);
   return {
@@ -108,23 +122,8 @@ function toRecipeListItem(r: RawRecipeWithIngredients): RecipeListItem {
 export async function getRecipes(): Promise<RecipeListItem[]> {
   const rows = await db.query.recipes.findMany({
     where: eq(recipes.status, 'approved'),
-    columns: {
-      id: true,
-      name: true,
-      description: true,
-      imageUrl: true,
-      servings: true,
-      prepTimeMinutes: true,
-      cookTimeMinutes: true,
-      tags: true,
-      status: true,
-      createdAt: true,
-    },
-    with: {
-      ingredients: {
-        columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
-      },
-    },
+    columns: recipeListColumns,
+    with: ingredientNutritionWith,
     orderBy: (r, { desc }) => [desc(r.createdAt)],
   }) as unknown as RawRecipeWithIngredients[];
 
@@ -152,27 +151,23 @@ export async function getRecipe(id: string): Promise<RecipeDetail | undefined> {
   return { ...row, ...nutrition };
 }
 
-export async function getPendingRecipes(): Promise<RecipeListItem[]> {
+export async function getPendingReviewRecipes(): Promise<RecipeListItem[]> {
   const rows = await db.query.recipes.findMany({
-    where: eq(recipes.status, 'pending'),
-    columns: {
-      id: true,
-      name: true,
-      description: true,
-      imageUrl: true,
-      servings: true,
-      prepTimeMinutes: true,
-      cookTimeMinutes: true,
-      tags: true,
-      status: true,
-      createdAt: true,
-    },
-    with: {
-      ingredients: {
-        columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
-      },
-    },
+    where: eq(recipes.status, 'pending_review'),
+    columns: recipeListColumns,
+    with: ingredientNutritionWith,
     orderBy: (r, { asc }) => [asc(r.createdAt)],
+  }) as unknown as RawRecipeWithIngredients[];
+
+  return rows.map(toRecipeListItem);
+}
+
+export async function getWorkshopRecipes(): Promise<RecipeListItem[]> {
+  const rows = await db.query.recipes.findMany({
+    where: inArray(recipes.status, ['submitted', 'pending_review']),
+    columns: recipeListColumns,
+    with: ingredientNutritionWith,
+    orderBy: (r, { desc }) => [desc(r.createdAt)],
   }) as unknown as RawRecipeWithIngredients[];
 
   return rows.map(toRecipeListItem);
@@ -181,23 +176,8 @@ export async function getPendingRecipes(): Promise<RecipeListItem[]> {
 export async function getMyRecipes(userId: string): Promise<RecipeListItem[]> {
   const rows = await db.query.recipes.findMany({
     where: eq(recipes.createdBy, userId),
-    columns: {
-      id: true,
-      name: true,
-      description: true,
-      imageUrl: true,
-      servings: true,
-      prepTimeMinutes: true,
-      cookTimeMinutes: true,
-      tags: true,
-      status: true,
-      createdAt: true,
-    },
-    with: {
-      ingredients: {
-        columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
-      },
-    },
+    columns: recipeListColumns,
+    with: ingredientNutritionWith,
     orderBy: (r, { desc }) => [desc(r.createdAt)],
   }) as unknown as RawRecipeWithIngredients[];
 

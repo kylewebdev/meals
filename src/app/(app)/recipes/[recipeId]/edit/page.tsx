@@ -16,10 +16,9 @@ export default async function EditRecipePage({
   if (!recipe) notFound();
 
   const isAdmin = session.user.role === 'admin';
-  const isCreator = recipe.createdBy === session.user.id;
 
-  // Admin can edit any. Creator can edit pending/rejected.
-  if (!isAdmin && !(isCreator && recipe.status !== 'approved')) {
+  // Any member can edit non-approved; only admin can edit approved
+  if (!isAdmin && recipe.status === 'approved') {
     redirect(`/recipes/${recipeId}`);
   }
 

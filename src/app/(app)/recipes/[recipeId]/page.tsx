@@ -1,14 +1,18 @@
 import { getSession } from '@/lib/auth-utils';
 import { getRecipe } from '@/lib/queries/recipes';
+import { getRecipeComments } from '@/lib/queries/recipe-comments';
 import { getGroceryList } from '@/lib/queries/grocery';
 import { getRecipeRatings } from '@/lib/queries/ratings';
 import { getScalingContext } from '@/lib/queries/scaling-context';
+import { AdminFeedbackBanner } from '@/components/recipe/admin-feedback-banner';
+import { FlagForReviewButton } from '@/components/recipe/flag-for-review-button';
 import { GroceryListTab } from '@/components/grocery/grocery-list-tab';
 import { IngredientGroceryTabs } from '@/components/grocery/ingredient-grocery-tabs';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
 import { NutritionChart } from '@/components/recipe/nutrition-chart';
 import { RatingList } from '@/components/recipe/rating-list';
 import { RatingWidget } from '@/components/recipe/rating-widget';
+import { RecipeDiscussion } from '@/components/recipe/recipe-discussion';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { ReviewActions } from '@/components/recipe/review-actions';
 import { ScalingBanner } from '@/components/recipe/scaling-banner';
@@ -37,11 +41,6 @@ export default async function RecipeDetailPage({
   const isAdmin = session.user.role === 'admin';
   const isCreator = recipe.createdBy === session.user.id;
 
-  // Non-admin, non-creator can't see unapproved recipes
-  if (recipe.status !== 'approved' && !isAdmin && !isCreator) {
-    notFound();
-  }
-
   // Compute scaling context when viewing from a week
   let scaleFactor: number | undefined;
   let scalingCtx: Awaited<ReturnType<typeof getScalingContext>> = null;
@@ -58,11 +57,12 @@ export default async function RecipeDetailPage({
     ? await getGroceryList(scalingCtx.contributionId)
     : null;
 
-  const canEdit = isAdmin || (isCreator && recipe.status !== 'approved');
+  const canEdit = isAdmin || recipe.status !== 'approved';
   const canDelete = isAdmin || (isCreator && recipe.status !== 'approved');
   const totalTime = (recipe.prepTimeMinutes ?? 0) + (recipe.cookTimeMinutes ?? 0);
   const hasNutrition = !!(recipe.calories || recipe.proteinG || recipe.carbsG || recipe.fatG);
   const showRatings = recipe.status === 'approved';
+  const showDiscussion = recipe.status !== 'approved';
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -77,26 +77,50 @@ export default async function RecipeDetailPage({
             <h2 className="text-2xl font-semibold tracking-tight">{recipe.name}</h2>
             {recipe.status !== 'approved' && <RecipeStatusBadge status={recipe.status} />}
           </div>
-          {(canEdit || canDelete) && (
-            <div className="flex gap-2">
-              {canEdit && (
-                <Link href={`/recipes/${recipeId}/edit`}>
-                  <Button variant="secondary">Edit</Button>
-                </Link>
-              )}
-              {canDelete && <DeleteRecipeButton recipeId={recipeId} />}
-            </div>
-          )}
+          <div className="flex gap-2">
+            {recipe.status === 'submitted' && (
+              <FlagForReviewButton recipeId={recipeId} />
+            )}
+            {canEdit && (
+              <Link href={`/recipes/${recipeId}/edit`}>
+                <Button variant="secondary">Edit</Button>
+              </Link>
+            )}
+            {canDelete && <DeleteRecipeButton recipeId={recipeId} />}
+          </div>
         </div>
       </div>
 
-      {isAdmin && recipe.status === 'pending' && (
+      {/* Admin feedback banner */}
+      {recipe.status === 'submitted' && recipe.adminFeedback && (
+        <div className="mt-4">
+          <AdminFeedbackBanner
+            feedback={recipe.adminFeedback}
+            feedbackAt={recipe.adminFeedbackAt}
+          />
+        </div>
+      )}
+
+      {/* Admin review card for pending_review recipes */}
+      {isAdmin && recipe.status === 'pending_review' && (
         <Card className="mt-6">
           <CardHeader>
             <h3 className="text-lg font-semibold">Admin Review</h3>
           </CardHeader>
           <CardContent>
-            <ReviewActions recipeId={recipeId} />
+            <ReviewActions recipeId={recipeId} currentStatus="pending_review" />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Admin demote card for approved recipes */}
+      {isAdmin && recipe.status === 'approved' && (
+        <Card className="mt-6">
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Admin Actions</h3>
+          </CardHeader>
+          <CardContent>
+            <ReviewActions recipeId={recipeId} currentStatus="approved" />
           </CardContent>
         </Card>
       )}
@@ -213,10 +237,45 @@ export default async function RecipeDetailPage({
           </>
         )}
 
+        {showDiscussion && (
+          <>
+            <hr className="border-zinc-100 dark:border-zinc-800" />
+            <DiscussionSection
+              recipeId={recipeId}
+              currentUserId={session.user.id}
+              isAdmin={isAdmin}
+            />
+          </>
+        )}
+
         <p className="text-xs text-zinc-400">
           Added by {recipe.creator.name}
         </p>
       </div>
+    </div>
+  );
+}
+
+async function DiscussionSection({
+  recipeId,
+  currentUserId,
+  isAdmin,
+}: {
+  recipeId: string;
+  currentUserId: string;
+  isAdmin: boolean;
+}) {
+  const comments = await getRecipeComments(recipeId);
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold pb-3">Discussion</h3>
+      <RecipeDiscussion
+        recipeId={recipeId}
+        comments={comments}
+        currentUserId={currentUserId}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/auth-utils';
-import { getPendingRecipes } from '@/lib/queries/recipes';
+import { getPendingReviewRecipes } from '@/lib/queries/recipes';
 import { ReviewActions } from '@/components/recipe/review-actions';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ export default async function RecipeReviewPage() {
   const auth = await requireAdmin();
   if (!auth.success) redirect('/dashboard');
 
-  const pending = await getPendingRecipes();
+  const pending = await getPendingReviewRecipes();
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -38,7 +38,7 @@ export default async function RecipeReviewPage() {
                     {recipe.description}
                   </p>
                 )}
-                <ReviewActions recipeId={recipe.id} />
+                <ReviewActions recipeId={recipe.id} currentStatus="pending_review" />
               </div>
             </div>
           ))}
