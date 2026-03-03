@@ -38,21 +38,23 @@ export function MemberList({ members, householdId, headId, canManage, currentUse
       {members.map((member) => (
         <li key={member.id} className="flex items-center justify-between py-3">
           <div>
-            <span className="font-medium">{member.name}</span>
-            <span className="ml-2 text-sm text-zinc-500">{member.email}</span>
-            <span className="ml-2 text-sm text-zinc-500">
-              ({member.portionsPerMeal} {member.portionsPerMeal === 1 ? 'portion' : 'portions'})
-            </span>
-            {member.id === headId && (
-              <Badge variant="success" className="ml-2">Head</Badge>
-            )}
-            {member.role === 'admin' && (
-              <Badge className="ml-2">Admin</Badge>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{member.name}</span>
+              <Badge variant="outline">
+                {member.portionsPerMeal} {member.portionsPerMeal === 1 ? 'portion' : 'portions'}
+              </Badge>
+              {member.id === headId && (
+                <Badge variant="success">Head</Badge>
+              )}
+              {member.role === 'admin' && (
+                <Badge>Admin</Badge>
+              )}
+            </div>
+            <span className="text-sm text-zinc-500">{member.email}</span>
           </div>
           {canManage && member.id !== currentUserId && (
             <Button
-              variant="ghost"
+              variant="destructive"
               size="sm"
               loading={removing === member.id}
               onClick={() => handleRemove(member.id)}
