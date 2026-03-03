@@ -1,5 +1,16 @@
+import type { Metadata } from 'next';
 import { getSession } from '@/lib/auth-utils';
 import { getRecipe } from '@/lib/queries/recipes';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ recipeId: string }>;
+}): Promise<Metadata> {
+  const { recipeId } = await params;
+  const recipe = await getRecipe(recipeId);
+  return { title: recipe ? `${recipe.name} — Meals` : 'Recipe — Meals' };
+}
 import { getRecipeComments } from '@/lib/queries/recipe-comments';
 import { getGroceryList } from '@/lib/queries/grocery';
 import { getRecipeRatings } from '@/lib/queries/ratings';
@@ -9,7 +20,11 @@ import { FlagForReviewButton } from '@/components/recipe/flag-for-review-button'
 import { GroceryListTab } from '@/components/grocery/grocery-list-tab';
 import { IngredientGroceryTabs } from '@/components/grocery/ingredient-grocery-tabs';
 import { IngredientTable } from '@/components/recipe/ingredient-table';
-import { NutritionChart } from '@/components/recipe/nutrition-chart';
+import dynamic from 'next/dynamic';
+
+const NutritionChart = dynamic(
+  () => import('@/components/recipe/nutrition-chart').then((m) => m.NutritionChart),
+);
 import { RatingList } from '@/components/recipe/rating-list';
 import { RatingWidget } from '@/components/recipe/rating-widget';
 import { RecipeDiscussion } from '@/components/recipe/recipe-discussion';
@@ -17,6 +32,7 @@ import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { ReviewActions } from '@/components/recipe/review-actions';
 import { ScalingBanner } from '@/components/recipe/scaling-banner';
 import { TagList } from '@/components/recipe/tag-list';
+import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
@@ -68,10 +84,9 @@ export default async function RecipeDetailPage({
     <div className="mx-auto max-w-5xl">
       {/* Header: breadcrumb, title, action buttons */}
       <div>
-        <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
-          <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
+        <BackLink href={weekId ? `/week/${weekId}` : '/recipes'}>
           {weekId ? 'Back to Week' : 'Recipes'}
-        </Link>
+        </BackLink>
         <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-semibold tracking-tight">{recipe.name}</h2>

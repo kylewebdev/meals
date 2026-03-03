@@ -187,6 +187,7 @@ export const contributions = pgTable(
     ),
     index('contributions_week_id_idx').on(table.weekId),
     index('contributions_household_id_idx').on(table.householdId),
+    index('contributions_swap_day_id_idx').on(table.swapDayId),
   ],
 );
 

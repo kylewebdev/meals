@@ -4,7 +4,7 @@ import { notifications } from '@/lib/db/schema';
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/layout/providers';
 import { NotificationBell } from '@/components/notifications/notification-bell';
-import { and, eq, isNull, isNotNull, count } from 'drizzle-orm';
+import { and, eq, isNull, count } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -17,27 +17,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const userId = session.user.id;
 
-  const [unreadResult, inboxNotifications, archivedNotifications] = await Promise.all([
-    db
-      .select({ count: count() })
-      .from(notifications)
-      .where(and(
-        eq(notifications.userId, userId),
-        isNull(notifications.readAt),
-        isNull(notifications.archivedAt),
-      ))
-      .then((r) => r[0]),
-    db.query.notifications.findMany({
-      where: and(eq(notifications.userId, userId), isNull(notifications.archivedAt)),
-      orderBy: (n, { desc }) => [desc(n.createdAt)],
-      limit: 20,
-    }),
-    db.query.notifications.findMany({
-      where: and(eq(notifications.userId, userId), isNotNull(notifications.archivedAt)),
-      orderBy: (n, { desc }) => [desc(n.createdAt)],
-      limit: 20,
-    }),
-  ]);
+  const unreadResult = await db
+    .select({ count: count() })
+    .from(notifications)
+    .where(and(
+      eq(notifications.userId, userId),
+      isNull(notifications.readAt),
+      isNull(notifications.archivedAt),
+    ))
+    .then((r) => r[0]);
 
   return (
     <Providers>
@@ -47,8 +35,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         notificationSlot={
           <NotificationBell
             unreadCount={unreadResult?.count ?? 0}
-            inboxNotifications={inboxNotifications}
-            archivedNotifications={archivedNotifications}
           />
         }
       >

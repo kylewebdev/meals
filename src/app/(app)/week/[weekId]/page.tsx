@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import { getSession } from '@/lib/auth-utils';
+
+export const metadata: Metadata = {
+  title: 'Week Detail — Meals',
+};
 import { getWeekWithContributions } from '@/lib/queries/contributions';
 import { applyDayCoverage, getBaseHouseholdData } from '@/lib/queries/scaling-context';
 import { WeekNutritionChart } from '@/components/contributions/week-nutrition-chart';
 import { PortionBreakdownTable } from '@/components/contributions/portion-breakdown-table';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
+import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatWeekRange } from '@/lib/schedule-utils';
@@ -35,10 +41,7 @@ export default async function WeekDetailPage({
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div>
-        <Link href="/schedule" className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
-          <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
-          Schedule
-        </Link>
+        <BackLink href="/schedule">Schedule</BackLink>
         <div className="mt-1 flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">{formatWeekRange(week.startDate)}</h2>
           {isAdmin && (

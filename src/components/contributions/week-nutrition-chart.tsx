@@ -1,4 +1,11 @@
-import { NutritionChart } from '@/components/recipe/nutrition-chart';
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const NutritionChart = dynamic(
+  () => import('@/components/recipe/nutrition-chart').then((m) => m.NutritionChart),
+  { ssr: false },
+);
 
 interface Contribution {
   recipe: {

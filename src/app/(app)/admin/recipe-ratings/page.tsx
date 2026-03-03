@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import { requireAdmin } from '@/lib/auth-utils';
+
+export const metadata: Metadata = {
+  title: 'Recipe Ratings — Meals',
+};
 import { getRecipeRatingSummaries } from '@/lib/queries/ratings';
+import { BackLink } from '@/components/ui/back-link';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -13,10 +19,7 @@ export default async function RecipeRatingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div>
-        <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
-          <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
-          Admin
-        </Link>
+        <BackLink href="/admin">Admin</BackLink>
         <h2 className="mt-1 text-2xl font-semibold tracking-tight">Recipe Ratings</h2>
       </div>
 

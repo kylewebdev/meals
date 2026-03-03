@@ -1,4 +1,9 @@
+import type { Metadata } from 'next';
 import { getSession } from '@/lib/auth-utils';
+
+export const metadata: Metadata = {
+  title: 'My Household — Meals',
+};
 import { getHousehold } from '@/actions/households';
 import { ExtraPeopleForm } from '@/components/household/extra-people-form';
 import { HouseholdReviews } from '@/components/household/household-reviews';

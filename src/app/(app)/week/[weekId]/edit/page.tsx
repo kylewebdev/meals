@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/auth-utils';
 import { getWeekWithContributions } from '@/lib/queries/contributions';
 import { SwapDayForm } from '@/components/swap/swap-day-form';
+import { BackLink } from '@/components/ui/back-link';
 import { formatWeekRange } from '@/lib/schedule-utils';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
@@ -26,10 +27,7 @@ export default async function EditWeekPage({
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div>
-        <Link href={`/week/${weekId}`} className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700">
-          <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0z" clipRule="evenodd" /></svg>
-          {formatWeekRange(week.startDate)}
-        </Link>
+        <BackLink href={`/week/${weekId}`}>{formatWeekRange(week.startDate)}</BackLink>
         <h2 className="mt-1 text-2xl font-semibold tracking-tight">Edit Logistics</h2>
       </div>
 

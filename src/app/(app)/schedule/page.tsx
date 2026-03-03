@@ -1,4 +1,9 @@
+import type { Metadata } from 'next';
 import { getSession } from '@/lib/auth-utils';
+
+export const metadata: Metadata = {
+  title: 'Schedule — Meals',
+};
 import { getScheduleWithContributions, getCurrentWeek } from '@/lib/queries/schedule';
 import { ensureWeeksExist } from '@/actions/schedule';
 import { MonthNavigation } from '@/components/schedule/month-navigation';

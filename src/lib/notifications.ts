@@ -13,15 +13,17 @@ export async function notifyMemberJoined(
     .from(user)
     .where(and(eq(user.householdId, householdId), ne(user.id, newMemberId)));
 
-  for (const member of members) {
-    await db.insert(notifications).values({
+  if (members.length === 0) return;
+
+  await db.insert(notifications).values(
+    members.map((member) => ({
       userId: member.id,
-      type: 'member_joined',
+      type: 'member_joined' as const,
       title: 'New household member!',
       body: `${newMemberName} has joined your household.`,
       linkUrl: '/household',
-    });
-  }
+    })),
+  );
 }
 
 export async function notifyNewRecipe(recipeId: string, recipeName: string) {
@@ -29,15 +31,17 @@ export async function notifyNewRecipe(recipeId: string, recipeName: string) {
     .select({ id: user.id })
     .from(user);
 
-  for (const member of members) {
-    await db.insert(notifications).values({
+  if (members.length === 0) return;
+
+  await db.insert(notifications).values(
+    members.map((member) => ({
       userId: member.id,
-      type: 'new_recipe',
+      type: 'new_recipe' as const,
       title: 'New recipe added!',
       body: `"${recipeName}" has been added to the recipe catalog.`,
       linkUrl: `/recipes/${recipeId}`,
-    });
-  }
+    })),
+  );
 }
 
 export async function notifyRecipeReviewed(
@@ -97,57 +101,99 @@ export async function notifySwapDayReminder() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0);
 
-  const activeWeeks = await db
-    .select()
-    .from(weeks)
-    .where(inArray(weeks.status, ['upcoming', 'active']));
+  // Fetch all active/upcoming weeks with their swap days + contributions in one query
+  const activeWeeks = await db.query.weeks.findMany({
+    where: inArray(weeks.status, ['upcoming', 'active']),
+    with: {
+      swapDays: {
+        with: {
+          contributions: {
+            columns: { householdId: true, dishName: true },
+            with: {
+              recipe: { columns: { name: true } },
+            },
+          },
+        },
+      },
+    },
+  }) as {
+    id: string;
+    startDate: Date;
+    swapDays: {
+      id: string;
+      dayOfWeek: number;
+      contributions: {
+        householdId: string;
+        dishName: string | null;
+        recipe: { name: string } | null;
+      }[];
+    }[];
+  }[];
 
-  let sent = 0;
+  // Collect all notification rows to insert
+  const pendingNotifications: {
+    householdId: string;
+    mealName: string;
+  }[] = [];
 
   for (const week of activeWeeks) {
-    const dayRows = await db
-      .select()
-      .from(swapDays)
-      .where(eq(swapDays.weekId, week.id));
-
-    for (const sd of dayRows) {
+    for (const sd of week.swapDays) {
       const swapDate = getSwapDate(week.startDate, sd.dayOfWeek);
       swapDate.setHours(0, 0, 0, 0);
 
       if (swapDate.getTime() !== tomorrow.getTime()) continue;
 
-      // Get contributions with their recipe names
-      const contribs = await db
-        .select({
-          householdId: contributions.householdId,
-          recipeName: recipes.name,
-          dishName: contributions.dishName,
-        })
-        .from(contributions)
-        .leftJoin(recipes, eq(contributions.recipeId, recipes.id))
-        .where(eq(contributions.swapDayId, sd.id));
-
-      for (const contrib of contribs) {
-        const mealName = contrib.recipeName ?? contrib.dishName ?? 'your assigned meal';
-
-        const members = await db
-          .select({ id: user.id })
-          .from(user)
-          .where(eq(user.householdId, contrib.householdId));
-
-        for (const member of members) {
-          await db.insert(notifications).values({
-            userId: member.id,
-            type: 'swap_reminder',
-            title: 'Swap day tomorrow!',
-            body: `Reminder: Your household is making "${mealName}" for tomorrow's swap.`,
-            linkUrl: '/schedule',
-          });
-        }
-        sent += members.length;
+      for (const contrib of sd.contributions) {
+        pendingNotifications.push({
+          householdId: contrib.householdId,
+          mealName: contrib.recipe?.name ?? contrib.dishName ?? 'your assigned meal',
+        });
       }
     }
   }
 
-  return sent;
+  if (pendingNotifications.length === 0) return 0;
+
+  // Batch-fetch all members for the relevant households
+  const householdIds = [...new Set(pendingNotifications.map((p) => p.householdId))];
+  const allMembers = await db
+    .select({ id: user.id, householdId: user.householdId })
+    .from(user)
+    .where(inArray(user.householdId, householdIds));
+
+  const membersByHousehold = new Map<string, string[]>();
+  for (const m of allMembers) {
+    if (!m.householdId) continue;
+    const list = membersByHousehold.get(m.householdId) ?? [];
+    list.push(m.id);
+    membersByHousehold.set(m.householdId, list);
+  }
+
+  // Build all notification rows and batch-insert
+  const rows: {
+    userId: string;
+    type: 'swap_reminder';
+    title: string;
+    body: string;
+    linkUrl: string;
+  }[] = [];
+
+  for (const { householdId, mealName } of pendingNotifications) {
+    const memberIds = membersByHousehold.get(householdId) ?? [];
+    for (const memberId of memberIds) {
+      rows.push({
+        userId: memberId,
+        type: 'swap_reminder',
+        title: 'Swap day tomorrow!',
+        body: `Reminder: Your household is making "${mealName}" for tomorrow's swap.`,
+        linkUrl: '/schedule',
+      });
+    }
+  }
+
+  if (rows.length > 0) {
+    await db.insert(notifications).values(rows);
+  }
+
+  return rows.length;
 }

@@ -9,7 +9,6 @@ import {
 } from '@/actions/notifications';
 import { Button } from '@/components/ui/button';
 import { NotificationItem } from './notification-item';
-import { useRouter } from 'next/navigation';
 
 interface Notification {
   id: string;
@@ -24,36 +23,36 @@ interface Notification {
 interface NotificationListProps {
   notifications: Notification[];
   mode: 'inbox' | 'archive';
+  onMutate?: () => void;
 }
 
-export function NotificationList({ notifications, mode }: NotificationListProps) {
-  const router = useRouter();
+export function NotificationList({ notifications, mode, onMutate }: NotificationListProps) {
   const hasUnread = notifications.some((n) => !n.readAt);
   const hasRead = notifications.some((n) => n.readAt);
 
   const handleMarkRead = async (id: string) => {
     await markAsRead(id);
-    router.refresh();
+    onMutate?.();
   };
 
   const handleMarkAll = async () => {
     await markAllAsRead();
-    router.refresh();
+    onMutate?.();
   };
 
   const handleArchive = async (id: string) => {
     await archiveNotification(id);
-    router.refresh();
+    onMutate?.();
   };
 
   const handleArchiveAllRead = async () => {
     await archiveAllRead();
-    router.refresh();
+    onMutate?.();
   };
 
   const handleUnarchive = async (id: string) => {
     await unarchiveNotification(id);
-    router.refresh();
+    onMutate?.();
   };
 
   if (notifications.length === 0) {

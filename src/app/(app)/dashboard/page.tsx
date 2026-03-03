@@ -1,4 +1,9 @@
+import type { Metadata } from 'next';
 import { getSession } from '@/lib/auth-utils';
+
+export const metadata: Metadata = {
+  title: 'Dashboard — Meals',
+};
 import { getCurrentWeek } from '@/lib/queries/schedule';
 import { getUpcomingSwapDays } from '@/lib/queries/contributions';
 import { ensureWeeksExist } from '@/actions/schedule';
@@ -17,11 +22,10 @@ export default async function DashboardPage() {
 
   const userHouseholdId = session.user.householdId;
 
-  const currentWeek = await getCurrentWeek();
-
-  const upcomingSwapDays = userHouseholdId
-    ? await getUpcomingSwapDays(userHouseholdId)
-    : [];
+  const [currentWeek, upcomingSwapDays] = await Promise.all([
+    getCurrentWeek(),
+    userHouseholdId ? getUpcomingSwapDays(userHouseholdId) : Promise.resolve([]),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">

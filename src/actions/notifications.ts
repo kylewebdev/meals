@@ -3,7 +3,7 @@
 import { db } from '@/lib/db';
 import { notifications } from '@/lib/db/schema';
 import { requireSession } from '@/lib/auth-utils';
-import { and, eq, isNull, isNotNull } from 'drizzle-orm';
+import { and, eq, isNull, isNotNull, desc } from 'drizzle-orm';
 
 export async function markAsRead(id: string) {
   const auth = await requireSession();
@@ -89,4 +89,26 @@ export async function unarchiveNotification(id: string) {
     );
 
   return { success: true as const, data: null };
+}
+
+export async function fetchNotifications() {
+  const auth = await requireSession();
+  if (!auth.success) return { inbox: [], archived: [] };
+
+  const userId = auth.data.user.id;
+
+  const [inbox, archived] = await Promise.all([
+    db.query.notifications.findMany({
+      where: and(eq(notifications.userId, userId), isNull(notifications.archivedAt)),
+      orderBy: (n) => [desc(n.createdAt)],
+      limit: 20,
+    }),
+    db.query.notifications.findMany({
+      where: and(eq(notifications.userId, userId), isNotNull(notifications.archivedAt)),
+      orderBy: (n) => [desc(n.createdAt)],
+      limit: 20,
+    }),
+  ]);
+
+  return { inbox, archived };
 }

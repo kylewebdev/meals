@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { recipes, recipeIngredients } from '@/lib/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 
 type IngredientNutrition = {
   calories: number | null;
@@ -76,58 +76,37 @@ export interface RecipeDetail {
   creator: { id: string; name: string };
 }
 
-interface RawRecipeWithIngredients {
-  id: string;
-  name: string;
-  description: string | null;
-  imageUrl: string | null;
-  servings: number | null;
-  prepTimeMinutes: number | null;
-  cookTimeMinutes: number | null;
-  tags: string[] | null;
-  status: string;
-  createdAt: Date;
-  ingredients: IngredientNutrition[];
-}
+// SQL subqueries for aggregated nutrition — avoids fetching all ingredient rows
+const nutritionSubquery = {
+  calories: sql<number | null>`(SELECT SUM(${recipeIngredients.calories}) FROM ${recipeIngredients} WHERE ${recipeIngredients.recipeId} = ${recipes.id})`,
+  proteinG: sql<number | null>`(SELECT SUM(${recipeIngredients.proteinG}) FROM ${recipeIngredients} WHERE ${recipeIngredients.recipeId} = ${recipes.id})`,
+  carbsG: sql<number | null>`(SELECT SUM(${recipeIngredients.carbsG}) FROM ${recipeIngredients} WHERE ${recipeIngredients.recipeId} = ${recipes.id})`,
+  fatG: sql<number | null>`(SELECT SUM(${recipeIngredients.fatG}) FROM ${recipeIngredients} WHERE ${recipeIngredients.recipeId} = ${recipes.id})`,
+};
 
-const recipeListColumns = {
-  id: true, name: true, description: true, imageUrl: true,
-  servings: true, prepTimeMinutes: true, cookTimeMinutes: true,
-  tags: true, status: true, createdAt: true,
-} as const;
-
-const ingredientNutritionWith = {
-  ingredients: {
-    columns: { calories: true, proteinG: true, carbsG: true, fatG: true },
-  },
-} as const;
-
-function toRecipeListItem(r: RawRecipeWithIngredients): RecipeListItem {
-  const nutrition = computeNutrition(r.ingredients);
-  return {
-    id: r.id,
-    name: r.name,
-    description: r.description,
-    imageUrl: r.imageUrl,
-    servings: r.servings,
-    prepTimeMinutes: r.prepTimeMinutes,
-    cookTimeMinutes: r.cookTimeMinutes,
-    ...nutrition,
-    tags: r.tags,
-    status: r.status,
-    createdAt: r.createdAt,
-  };
-}
+const recipeListSelect = {
+  id: recipes.id,
+  name: recipes.name,
+  description: recipes.description,
+  imageUrl: recipes.imageUrl,
+  servings: recipes.servings,
+  prepTimeMinutes: recipes.prepTimeMinutes,
+  cookTimeMinutes: recipes.cookTimeMinutes,
+  tags: recipes.tags,
+  status: recipes.status,
+  createdAt: recipes.createdAt,
+  calories: nutritionSubquery.calories,
+  proteinG: nutritionSubquery.proteinG,
+  carbsG: nutritionSubquery.carbsG,
+  fatG: nutritionSubquery.fatG,
+};
 
 export async function getRecipes(): Promise<RecipeListItem[]> {
-  const rows = await db.query.recipes.findMany({
-    where: eq(recipes.status, 'approved'),
-    columns: recipeListColumns,
-    with: ingredientNutritionWith,
-    orderBy: (r, { desc }) => [desc(r.createdAt)],
-  }) as unknown as RawRecipeWithIngredients[];
-
-  return rows.map(toRecipeListItem);
+  return db
+    .select(recipeListSelect)
+    .from(recipes)
+    .where(eq(recipes.status, 'approved'))
+    .orderBy(sql`${recipes.createdAt} DESC`) as unknown as Promise<RecipeListItem[]>;
 }
 
 export async function getRecipe(id: string): Promise<RecipeDetail | undefined> {
@@ -152,34 +131,25 @@ export async function getRecipe(id: string): Promise<RecipeDetail | undefined> {
 }
 
 export async function getPendingReviewRecipes(): Promise<RecipeListItem[]> {
-  const rows = await db.query.recipes.findMany({
-    where: eq(recipes.status, 'pending_review'),
-    columns: recipeListColumns,
-    with: ingredientNutritionWith,
-    orderBy: (r, { asc }) => [asc(r.createdAt)],
-  }) as unknown as RawRecipeWithIngredients[];
-
-  return rows.map(toRecipeListItem);
+  return db
+    .select(recipeListSelect)
+    .from(recipes)
+    .where(eq(recipes.status, 'pending_review'))
+    .orderBy(sql`${recipes.createdAt} ASC`) as unknown as Promise<RecipeListItem[]>;
 }
 
 export async function getWorkshopRecipes(): Promise<RecipeListItem[]> {
-  const rows = await db.query.recipes.findMany({
-    where: inArray(recipes.status, ['submitted', 'pending_review']),
-    columns: recipeListColumns,
-    with: ingredientNutritionWith,
-    orderBy: (r, { desc }) => [desc(r.createdAt)],
-  }) as unknown as RawRecipeWithIngredients[];
-
-  return rows.map(toRecipeListItem);
+  return db
+    .select(recipeListSelect)
+    .from(recipes)
+    .where(inArray(recipes.status, ['submitted', 'pending_review']))
+    .orderBy(sql`${recipes.createdAt} DESC`) as unknown as Promise<RecipeListItem[]>;
 }
 
 export async function getMyRecipes(userId: string): Promise<RecipeListItem[]> {
-  const rows = await db.query.recipes.findMany({
-    where: eq(recipes.createdBy, userId),
-    columns: recipeListColumns,
-    with: ingredientNutritionWith,
-    orderBy: (r, { desc }) => [desc(r.createdAt)],
-  }) as unknown as RawRecipeWithIngredients[];
-
-  return rows.map(toRecipeListItem);
+  return db
+    .select(recipeListSelect)
+    .from(recipes)
+    .where(eq(recipes.createdBy, userId))
+    .orderBy(sql`${recipes.createdAt} DESC`) as unknown as Promise<RecipeListItem[]>;
 }

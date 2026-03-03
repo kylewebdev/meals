@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useTransition } from 'react';
+import { fetchNotifications } from '@/actions/notifications';
 import { NotificationList } from './notification-list';
 import { cn } from '@/lib/utils';
 
@@ -16,19 +17,17 @@ interface Notification {
 
 interface NotificationBellProps {
   unreadCount: number;
-  inboxNotifications: Notification[];
-  archivedNotifications: Notification[];
 }
 
 type Tab = 'inbox' | 'archive';
 
-export function NotificationBell({
-  unreadCount,
-  inboxNotifications,
-  archivedNotifications,
-}: NotificationBellProps) {
+export function NotificationBell({ unreadCount }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('inbox');
+  const [inbox, setInbox] = useState<Notification[]>([]);
+  const [archived, setArchived] = useState<Notification[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,10 +40,28 @@ export function NotificationBell({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  function handleOpen() {
+    const willOpen = !open;
+    setOpen(willOpen);
+
+    if (willOpen) {
+      loadNotifications();
+    }
+  }
+
+  function loadNotifications() {
+    startTransition(async () => {
+      const data = await fetchNotifications();
+      setInbox(data.inbox as Notification[]);
+      setArchived(data.archived as Notification[]);
+      setLoaded(true);
+    });
+  }
+
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
         className="relative rounded-md p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         aria-label="Notifications"
       >
@@ -91,10 +108,15 @@ export function NotificationBell({
             </button>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            <NotificationList
-              notifications={tab === 'inbox' ? inboxNotifications : archivedNotifications}
-              mode={tab}
-            />
+            {!loaded && isPending ? (
+              <p className="px-4 py-6 text-center text-sm text-zinc-500">Loading...</p>
+            ) : (
+              <NotificationList
+                notifications={tab === 'inbox' ? inbox : archived}
+                mode={tab}
+                onMutate={loadNotifications}
+              />
+            )}
           </div>
         </div>
       )}
