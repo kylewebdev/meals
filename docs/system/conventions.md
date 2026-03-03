@@ -73,8 +73,9 @@ Placement rules:
 
 ## Layout
 
-- `<main>` has `max-w-5xl mx-auto` — the single global width ceiling
-- No per-page max-width wrappers; pages fill the 5xl container
+- `<main>` provides padding only (`p-4 md:p-6`) — no max-width constraint
+- Each page's outermost `<div>` applies `mx-auto max-w-5xl` (or a wider max for sidebar layouts)
+- Pages that need a sidebar (e.g. household) can widen to `2xl:max-w-[83.5rem]` and use `2xl:flex` to place a sidebar beside the top card
 - Header is sticky (`sticky top-0 z-40`)
 
 ## Toast Feedback

@@ -28,7 +28,7 @@ export default async function AdminSwapConfigPage() {
     ]);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <Link href="/admin" className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; Admin

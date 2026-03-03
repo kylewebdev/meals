@@ -11,6 +11,7 @@ interface Member {
   name: string;
   email: string;
   role?: string;
+  portionsPerMeal: number;
 }
 
 interface MemberListProps {
@@ -39,6 +40,9 @@ export function MemberList({ members, householdId, headId, canManage, currentUse
           <div>
             <span className="font-medium">{member.name}</span>
             <span className="ml-2 text-sm text-zinc-500">{member.email}</span>
+            <span className="ml-2 text-sm text-zinc-500">
+              ({member.portionsPerMeal} {member.portionsPerMeal === 1 ? 'portion' : 'portions'})
+            </span>
             {member.id === headId && (
               <Badge variant="success" className="ml-2">Head</Badge>
             )}

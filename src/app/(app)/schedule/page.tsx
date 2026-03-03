@@ -48,7 +48,7 @@ export default async function SchedulePage({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Schedule</h2>
         {isAdmin && (

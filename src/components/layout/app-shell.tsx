@@ -33,7 +33,7 @@ export function AppShell({ children, userName, userRole, notificationSlot }: App
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl p-4 md:p-6">{children}</main>
+      <main className="p-4 md:p-6">{children}</main>
     </div>
   );
 }

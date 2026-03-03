@@ -65,7 +65,7 @@ export default async function RecipeDetailPage({
   const showRatings = recipe.status === 'approved';
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <Link href={weekId ? `/week/${weekId}` : '/recipes'} className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; {weekId ? 'Back to Week' : 'Recipes'}

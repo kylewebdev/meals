@@ -8,7 +8,7 @@ export default async function AdminPage() {
   if (!auth.success) redirect('/dashboard');
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <h2 className="text-2xl font-bold">Admin</h2>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

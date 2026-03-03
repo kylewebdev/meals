@@ -24,7 +24,7 @@ export default async function EditRecipePage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <h2 className="text-2xl font-bold">Edit Recipe</h2>
       <RecipeForm recipe={recipe} isAdmin={isAdmin} />
     </div>

@@ -21,7 +21,7 @@ export default async function ProfilePage() {
   if (!userData) redirect('/login');
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <h2 className="text-2xl font-bold">My Profile</h2>
 
       <Card>

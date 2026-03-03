@@ -13,7 +13,7 @@ export default async function RecipeReviewPage() {
   const pending = await getPendingRecipes();
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <h2 className="text-2xl font-bold">Recipe Review Queue</h2>
 
       {pending.length === 0 ? (

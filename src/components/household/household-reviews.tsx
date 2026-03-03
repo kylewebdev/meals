@@ -1,19 +1,20 @@
-import type { HouseholdRating } from '@/lib/queries/ratings';
+import type { HouseholdReview } from '@/lib/queries/ratings';
 import { ratingDotStyles, ratingLabels, ratingTextStyles } from '@/lib/rating-styles';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
-interface RatingListProps {
-  ratings: HouseholdRating[];
+interface HouseholdReviewsProps {
+  reviews: HouseholdReview[];
 }
 
-export function RatingList({ ratings }: RatingListProps) {
-  if (ratings.length === 0) {
-    return <p className="text-sm text-zinc-500">No ratings yet.</p>;
+export function HouseholdReviews({ reviews }: HouseholdReviewsProps) {
+  if (reviews.length === 0) {
+    return <p className="text-sm text-zinc-500">No reviews yet.</p>;
   }
 
   return (
     <ul className="space-y-3">
-      {ratings.map((r) => (
+      {reviews.map((r) => (
         <li key={r.id} className="flex items-start gap-2.5">
           <span
             className={cn(
@@ -23,9 +24,12 @@ export function RatingList({ ratings }: RatingListProps) {
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {r.householdName}
-              </span>
+              <Link
+                href={`/recipes/${r.recipeId}`}
+                className="text-sm font-medium text-zinc-900 hover:underline dark:text-zinc-100"
+              >
+                {r.recipeName}
+              </Link>
               <span className={cn('shrink-0 text-xs font-medium', ratingTextStyles[r.rating])}>
                 {ratingLabels[r.rating]}
               </span>

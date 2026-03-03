@@ -1,10 +1,11 @@
 import { db } from '@/lib/db';
 import { recipeRatings, recipes, households, user } from '@/lib/db/schema';
-import { eq, sql, count } from 'drizzle-orm';
+import type { RatingValue } from '@/lib/rating-styles';
+import { eq, sql, count, desc } from 'drizzle-orm';
 
 export interface HouseholdRating {
   id: string;
-  rating: 'love' | 'fine' | 'dislike';
+  rating: RatingValue;
   comment: string | null;
   householdName: string;
   raterName: string;
@@ -81,4 +82,29 @@ export async function getRecipeRatingSummaries(): Promise<RecipeRatingSummary[]>
     dislike: Number(r.dislike),
     total: Number(r.total),
   }));
+}
+
+export interface HouseholdReview {
+  id: string;
+  recipeId: string;
+  recipeName: string;
+  rating: RatingValue;
+  comment: string | null;
+}
+
+export async function getHouseholdReviews(householdId: string): Promise<HouseholdReview[]> {
+  const rows = await db
+    .select({
+      id: recipeRatings.id,
+      recipeId: recipeRatings.recipeId,
+      recipeName: recipes.name,
+      rating: recipeRatings.rating,
+      comment: recipeRatings.comment,
+    })
+    .from(recipeRatings)
+    .innerJoin(recipes, eq(recipeRatings.recipeId, recipes.id))
+    .where(eq(recipeRatings.householdId, householdId))
+    .orderBy(desc(recipeRatings.createdAt));
+
+  return rows as HouseholdReview[];
 }

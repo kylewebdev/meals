@@ -25,7 +25,7 @@ export default async function EditWeekPage({
   if (!week) notFound();
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <Link href={`/week/${weekId}`} className="text-sm text-zinc-500 hover:text-zinc-700">
           &larr; {formatWeekRange(week.startDate)}

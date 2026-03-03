@@ -10,7 +10,7 @@ export default async function NewRecipePage() {
   const isAdmin = session.user.role === 'admin';
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <Link href="/recipes" className="text-sm text-zinc-500 hover:text-zinc-700">
         &larr; Recipes
       </Link>
