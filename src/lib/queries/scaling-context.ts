@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { contributions, households, user } from '@/lib/db/schema';
 import { getPortionCount } from '@/lib/schedule-utils';
 import { getHeadcount } from './contributions';
-import { and, count, eq, isNotNull, sum } from 'drizzle-orm';
+import { and, count, eq, gt, isNotNull, sum } from 'drizzle-orm';
 
 export interface HouseholdPortion {
   householdId: string;
@@ -40,7 +40,7 @@ async function getHouseholdPortions(
     })
     .from(user)
     .innerJoin(households, eq(user.householdId, households.id))
-    .where(isNotNull(user.householdId))
+    .where(and(isNotNull(user.householdId), gt(user.portionsPerMeal, 0)))
     .groupBy(households.id, households.name, households.extraPortions)
     .orderBy(households.name);
 

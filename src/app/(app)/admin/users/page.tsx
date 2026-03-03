@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth-utils';
 import { RoleSelect } from '@/components/admin/role-select';
 import { ResetPasswordButton } from '@/components/admin/reset-password-button';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
+import { PortionsSelect } from '@/components/admin/portions-select';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -38,6 +39,7 @@ export default async function AdminUsersPage() {
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Name</th>
                     <th className="hidden pb-2 pr-4 font-medium text-zinc-500 md:table-cell">Email</th>
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Household</th>
+                    <th className="pb-2 pr-4 font-medium text-zinc-500">Portions</th>
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Role</th>
                     <th className="pb-2 font-medium text-zinc-500">Actions</th>
                   </tr>
@@ -65,6 +67,12 @@ export default async function AdminUsersPage() {
                         ) : (
                           <span className="text-zinc-400">Unassigned</span>
                         )}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <PortionsSelect
+                          userId={u.id}
+                          currentPortions={u.portionsPerMeal}
+                        />
                       </td>
                       <td className="py-3 pr-4">
                         <RoleSelect

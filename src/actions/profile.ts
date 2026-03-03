@@ -10,8 +10,8 @@ export async function updatePortionsPerMeal(portions: number) {
   const auth = await requireSession();
   if (!auth.success) return auth;
 
-  if (!Number.isInteger(portions) || portions < 1 || portions > 3) {
-    return { success: false as const, error: 'Portions must be 1, 2, or 3' };
+  if (!Number.isInteger(portions) || portions < 0 || portions > 3) {
+    return { success: false as const, error: 'Portions must be 0, 1, 2, or 3' };
   }
 
   await db
@@ -19,7 +19,7 @@ export async function updatePortionsPerMeal(portions: number) {
     .set({ portionsPerMeal: portions, updatedAt: new Date() })
     .where(eq(user.id, auth.data.user.id));
 
-  revalidatePath('/profile');
+  revalidatePath('/', 'layout');
   return { success: true as const, data: null };
 }
 

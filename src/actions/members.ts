@@ -88,6 +88,7 @@ export async function getAllUsersWithDetails() {
       role: user.role,
       householdId: user.householdId,
       householdName: households.name,
+      portionsPerMeal: user.portionsPerMeal,
       createdAt: user.createdAt,
     })
     .from(user)
@@ -95,6 +96,33 @@ export async function getAllUsersWithDetails() {
     .orderBy(user.name);
 
   return rows;
+}
+
+export async function adminUpdatePortions(userId: string, portions: number) {
+  const auth = await requireAdmin();
+  if (!auth.success) return auth;
+
+  if (!Number.isInteger(portions) || portions < 0 || portions > 3) {
+    return { success: false as const, error: 'Portions must be 0, 1, 2, or 3' };
+  }
+
+  const [target] = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+
+  if (!target) {
+    return { success: false as const, error: 'User not found' };
+  }
+
+  await db
+    .update(user)
+    .set({ portionsPerMeal: portions, updatedAt: new Date() })
+    .where(eq(user.id, userId));
+
+  revalidatePath('/', 'layout');
+  return { success: true as const, data: null };
 }
 
 export async function updateUserRole(userId: string, role: 'admin' | 'member') {

@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
-const OPTIONS = [1, 2, 3] as const;
+const OPTIONS = [0, 1, 2, 3] as const;
 
 interface PortionsFormProps {
   currentPortions: number;
