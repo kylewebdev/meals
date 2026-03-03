@@ -28,7 +28,7 @@ export function ContributionCard({
   fatG,
   weekId,
 }: ContributionCardProps) {
-  const displayName = dishName || recipeName || 'Untitled dish';
+  const displayName = dishName || recipeName || 'TBD';
 
   return (
     <div className="rounded-lg bg-zinc-50 p-3 md:p-4 dark:bg-zinc-900">
