@@ -11,7 +11,7 @@ src/
       dashboard/
       household/
       profile/
-      recipes/            #   catalog, [recipeId], [recipeId]/edit, mine, new
+      recipes/            #   catalog, [recipeId], [recipeId]/edit, mine, new, workshop
       schedule/
       week/[weekId]/      #   detail + edit
     api/                  # Auth catch-all, invite accept
@@ -24,14 +24,14 @@ src/
     layout/               # App shell, nav, user menu, opt-out banner, providers
     notifications/        # Bell, item, list
     profile/              # Opt-out toggle, portions
-    recipe/               # Form, card, grid, search, ingredients, review, ratings, scaling
+    recipe/               # Form, card, grid, search, ingredients, review, ratings, scaling, discussion, workshop nav
     schedule/             # Week list, month nav, settings, recipe/household order
     swap/                 # Swap day form, info, section
   lib/
     db/
-      schema.ts           # 15 tables, single source of truth
+      schema.ts           # 18 tables, single source of truth
       index.ts            # Neon serverless client
-      migrations/         # 0000–0014
+      migrations/         # 0000–0019
     queries/              # Read-only, by domain
     auth.ts               # Better Auth server config
     auth-client.ts        # Better Auth client
@@ -77,6 +77,12 @@ Placement rules:
 - Each page's outermost `<div>` applies `mx-auto max-w-5xl` (or a wider max for sidebar layouts)
 - Pages that need a sidebar (e.g. household) can widen to `2xl:max-w-[83.5rem]` and use `2xl:flex` to place a sidebar beside the top card
 - Header is sticky (`sticky top-0 z-40`)
+
+## Recipe Workflow
+
+`submitted → pending_review → approved`. Admin can send back or demote to `submitted`.
+- Any member can edit/comment non-approved recipes; only admin edits approved
+- All notifications go through `src/lib/notifications.ts` (batch inserts for multi-recipient)
 
 ## Toast Feedback
 
