@@ -34,40 +34,42 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
   const [name, setName] = useState(recipe?.name ?? '');
   const [description, setDescription] = useState(recipe?.description ?? '');
   const [instructions, setInstructions] = useState(recipe?.instructions ?? '');
-  const [servings, setServings] = useState(recipe?.servings?.toString() ?? '');
-  const [prepTime, setPrepTime] = useState(recipe?.prepTimeMinutes?.toString() ?? '');
-  const [cookTime, setCookTime] = useState(recipe?.cookTimeMinutes?.toString() ?? '');
-  const [tagsInput, setTagsInput] = useState(recipe?.tags?.join(', ') ?? '');
+  const [servings, setServings] = useState(recipe ? recipe.servings?.toString() ?? '' : '');
+  const [prepTime, setPrepTime] = useState(recipe ? recipe.prepTimeMinutes?.toString() ?? '' : '');
+  const [cookTime, setCookTime] = useState(recipe ? recipe.cookTimeMinutes?.toString() ?? '' : '');
+  const [tagsInput, setTagsInput] = useState(recipe ? recipe.tags?.join(', ') ?? '' : '');
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const recipeId = recipe?.id ?? '';
+
   const handleGetUploadUrl = useCallback(
     (file: { fileType: string; fileSize: number }) =>
-      getUploadUrl({ recipeId: recipe!.id, ...file }),
-    [recipe],
+      getUploadUrl({ recipeId, ...file }),
+    [recipeId],
   );
 
   const handleUploadComplete = useCallback(
     async (publicUrl: string) => {
-      const res = await updateRecipeImage(recipe!.id, publicUrl);
+      const res = await updateRecipeImage(recipeId, publicUrl);
       if (!res.success) {
         toast(res.error);
         return;
       }
       setImageUrl(publicUrl);
     },
-    [recipe, toast],
+    [recipeId, toast],
   );
 
   const handleRemoveImage = useCallback(async () => {
-    const res = await removeRecipeImage(recipe!.id);
+    const res = await removeRecipeImage(recipeId);
     if (!res.success) {
       toast(res.error);
       return;
     }
     setImageUrl(null);
-  }, [recipe, toast]);
+  }, [recipeId, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +93,7 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
     };
 
     const res = isEdit
-      ? await updateRecipe(recipe.id, data)
+      ? await updateRecipe(recipeId, data)
       : await createRecipe(data);
 
     if (!res.success) {
@@ -102,7 +104,7 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
 
     if (isEdit) {
       toast('Recipe updated');
-      router.push(`/recipes/${recipe.id}`);
+      router.push(`/recipes/${recipeId}`);
     } else if (isAdmin) {
       toast('Recipe created');
       router.push(`/recipes/${res.data!.id}`);

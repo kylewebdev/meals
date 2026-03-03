@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/auth-utils';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ResetRecipesButton } from '@/components/admin/reset-recipes-button';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -63,6 +64,21 @@ export default async function AdminPage() {
             </CardContent>
           </Card>
         </Link>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Data Management</h3>
+        <Card>
+          <CardContent className="flex items-center justify-between px-4 py-4 md:px-5">
+            <div>
+              <p className="text-sm font-medium">Reset Recipes</p>
+              <p className="text-sm text-zinc-500">
+                Delete all recipes, ingredients, ratings, and comments. Useful for clearing seed data.
+              </p>
+            </div>
+            <ResetRecipesButton />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
