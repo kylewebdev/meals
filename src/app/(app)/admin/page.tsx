@@ -63,6 +63,19 @@ export default async function AdminPage() {
             </CardContent>
           </Card>
         </Link>
+
+        <Link href="/admin/view-as">
+          <Card variant="interactive" className="transition-colors">
+            <CardHeader className="px-4 pt-4 md:px-5">
+              <h3 className="text-lg font-semibold">View as Member</h3>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 md:px-5">
+              <p className="text-sm text-zinc-500">
+                Preview the app as a specific member to see their experience.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );

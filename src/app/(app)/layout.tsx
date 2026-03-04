@@ -1,16 +1,15 @@
-import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { contributions, notifications, recipes, swapDays, weeks } from '@/lib/db/schema';
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/layout/providers';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { getEffectiveSession } from '@/lib/auth-utils';
 import { and, eq, gte, isNull, count } from 'drizzle-orm';
 import { getThisMonday } from '@/lib/schedule-utils';
-import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const { session, isViewingAs, viewAsName } = await getEffectiveSession();
 
   if (!session) {
     redirect('/login');
@@ -18,7 +17,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const userId = session.user.id;
   const householdId = session.user.householdId;
-  const isAdmin = session.user.role === 'admin';
+  const userRole = session.user.role ?? 'member';
+  const isAdmin = userRole === 'admin';
 
   const [unreadResult, pendingReviewResult, hasUpcomingCook] = await Promise.all([
     db
@@ -57,9 +57,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <Providers>
       <AppShell
         userName={session.user.name}
-        userRole={session.user.role ?? 'member'}
+        userRole={userRole}
         pendingRecipeCount={pendingReviewResult}
         hasUpcomingCook={hasUpcomingCook}
+        viewAsName={isViewingAs ? viewAsName : null}
         notificationSlot={
           <NotificationBell
             unreadCount={unreadResult}

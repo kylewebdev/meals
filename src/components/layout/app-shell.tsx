@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { UserMenu } from './user-menu';
+import { ViewAsBanner } from './view-as-banner';
 
 interface AppShellProps {
   children: ReactNode;
@@ -10,6 +11,7 @@ interface AppShellProps {
   notificationSlot?: ReactNode;
   pendingRecipeCount?: number;
   hasUpcomingCook?: boolean;
+  viewAsName?: string | null;
 }
 
 export function AppShell({
@@ -19,6 +21,7 @@ export function AppShell({
   notificationSlot,
   pendingRecipeCount,
   hasUpcomingCook,
+  viewAsName,
 }: AppShellProps) {
   const isAdmin = userRole === 'admin';
 
@@ -42,6 +45,7 @@ export function AppShell({
           </div>
         </div>
       </header>
+      {viewAsName && <ViewAsBanner name={viewAsName} />}
       <main className="px-4 pt-6 pb-20 md:px-6 md:pt-8 md:pb-12">{children}</main>
       <MobileNav
         pendingRecipeCount={isAdmin ? pendingRecipeCount : undefined}
