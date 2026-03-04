@@ -26,7 +26,7 @@ export function MealsForm({ currentMeals }: MealsFormProps) {
   };
 
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="space-y-3">
       <div className="space-y-1">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Meals

@@ -27,15 +27,15 @@ export default async function ProfilePage() {
         <h3 className="text-lg font-semibold pb-3">Account</h3>
         <dl className="space-y-2">
           <div className="flex items-center gap-6">
-            <dt className="w-[100px] shrink-0 text-right text-sm text-zinc-500">Name</dt>
+            <dt className="w-12 shrink-0 text-sm text-zinc-500">Name</dt>
             <dd className="font-medium">{userData.name}</dd>
           </div>
           <div className="flex items-center gap-6">
-            <dt className="w-[100px] shrink-0 text-right text-sm text-zinc-500">Email</dt>
+            <dt className="w-12 shrink-0 text-sm text-zinc-500">Email</dt>
             <dd className="font-medium">{userData.email}</dd>
           </div>
           <div className="flex items-center gap-6">
-            <dt className="w-[100px] shrink-0 text-right text-sm text-zinc-500">Role</dt>
+            <dt className="w-12 shrink-0 text-sm text-zinc-500">Role</dt>
             <dd><Badge>{userData.role}</Badge></dd>
           </div>
           <hr className="my-4 border-zinc-100 dark:border-zinc-800" />
