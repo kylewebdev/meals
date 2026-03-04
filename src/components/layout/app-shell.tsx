@@ -30,7 +30,7 @@ export function AppShell({
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
         <div className="flex items-center justify-between px-4 py-4 md:px-6">
-          <div className="flex items-center gap-2 md:gap-6">
+          <div className="flex items-center gap-2 md:gap-3">
             <Image
               src="/meal-logo.svg"
               alt=""
@@ -39,7 +39,7 @@ export function AppShell({
               className="dark:invert"
             />
             <span className="text-lg font-semibold">Meals</span>
-            <nav className="hidden items-center gap-1 md:flex">
+            <nav className="hidden items-center gap-1 md:flex md:ml-3">
               <NavLink href="/up-next" dot={hasUpcomingCook}>Up Next</NavLink>
               <NavLink href="/recipes" badge={isAdmin ? pendingRecipeCount : undefined}>
                 Recipes
