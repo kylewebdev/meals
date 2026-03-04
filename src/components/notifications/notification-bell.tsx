@@ -84,7 +84,7 @@ export function NotificationBell({ unreadCount: initialCount }: NotificationBell
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="fixed inset-x-2 top-14 z-50 sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-80 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex border-b border-zinc-200 dark:border-zinc-800">
             <button
               onClick={() => setTab('inbox')}
