@@ -1,6 +1,7 @@
 'use server';
 
 import { auth as betterAuth } from '@/lib/auth';
+import { VIEW_AS_COOKIE } from '@/lib/constants';
 import { cookies, headers } from 'next/headers';
 
 export async function enableViewAs(userId: string) {
@@ -12,7 +13,7 @@ export async function enableViewAs(userId: string) {
   }
 
   const cookieStore = await cookies();
-  cookieStore.set('meals-view-as', userId, {
+  cookieStore.set(VIEW_AS_COOKIE, userId, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
@@ -24,6 +25,6 @@ export async function enableViewAs(userId: string) {
 
 export async function disableViewAs() {
   const cookieStore = await cookies();
-  cookieStore.delete('meals-view-as');
+  cookieStore.delete(VIEW_AS_COOKIE);
   return { success: true as const, data: null };
 }

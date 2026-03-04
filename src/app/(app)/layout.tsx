@@ -9,7 +9,7 @@ import { getThisMonday } from '@/lib/schedule-utils';
 import { redirect } from 'next/navigation';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { session, isViewingAs, viewAsName } = await getEffectiveSession();
+  const { session, viewAsName } = await getEffectiveSession();
 
   if (!session) {
     redirect('/login');
@@ -60,7 +60,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         userRole={userRole}
         pendingRecipeCount={pendingReviewResult}
         hasUpcomingCook={hasUpcomingCook}
-        viewAsName={isViewingAs ? viewAsName : null}
+        viewAsName={viewAsName}
         notificationSlot={
           <NotificationBell
             unreadCount={unreadResult}

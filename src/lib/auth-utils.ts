@@ -5,6 +5,8 @@ import { db } from '@/lib/db';
 import { households, user } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { cookies, headers } from 'next/headers';
+import { cache } from 'react';
+import { VIEW_AS_COOKIE } from '@/lib/constants';
 
 type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
 type AuthenticatedSession = NonNullable<Session>;
@@ -15,7 +17,6 @@ type ActionResult<T> =
 
 export type EffectiveSessionResult = {
   session: Session;
-  isViewingAs: boolean;
   viewAsName: string | null;
 };
 
@@ -25,20 +26,20 @@ export type EffectiveSessionResult = {
  * returned session has the target user's identity (id, name, email, role,
  * householdId). The layout uses this to render the app as that user.
  */
-export async function getEffectiveSession(): Promise<EffectiveSessionResult> {
+export const getEffectiveSession = cache(async (): Promise<EffectiveSessionResult> => {
   const realSession = await auth.api.getSession({ headers: await headers() });
   if (!realSession) {
-    return { session: null, isViewingAs: false, viewAsName: null };
+    return { session: null, viewAsName: null };
   }
 
   if (realSession.user.role !== 'admin') {
-    return { session: realSession, isViewingAs: false, viewAsName: null };
+    return { session: realSession, viewAsName: null };
   }
 
   const cookieStore = await cookies();
-  const viewAsUserId = cookieStore.get('meals-view-as')?.value;
+  const viewAsUserId = cookieStore.get(VIEW_AS_COOKIE)?.value;
   if (!viewAsUserId) {
-    return { session: realSession, isViewingAs: false, viewAsName: null };
+    return { session: realSession, viewAsName: null };
   }
 
   const [targetUser] = await db
@@ -55,8 +56,8 @@ export async function getEffectiveSession(): Promise<EffectiveSessionResult> {
 
   if (!targetUser) {
     // Target user deleted — clear stale cookie and fall back
-    cookieStore.delete('meals-view-as');
-    return { session: realSession, isViewingAs: false, viewAsName: null };
+    cookieStore.delete(VIEW_AS_COOKIE);
+    return { session: realSession, viewAsName: null };
   }
 
   return {
@@ -71,10 +72,9 @@ export async function getEffectiveSession(): Promise<EffectiveSessionResult> {
         householdId: targetUser.householdId,
       },
     },
-    isViewingAs: true,
     viewAsName: targetUser.name,
   };
-}
+});
 
 export async function getSession(): Promise<Session> {
   const { session } = await getEffectiveSession();
