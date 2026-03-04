@@ -36,7 +36,7 @@ import { TagList } from '@/components/recipe/tag-list';
 import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import Image from 'next/image';
+import { ImageBackdrop } from '@/components/ui/image-backdrop';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { DeleteRecipeButton } from './delete-button';
@@ -88,28 +88,7 @@ export default async function RecipeDetailPage({
       {recipe.imageUrl && (
         <div className="-mx-4 -mt-6 -mb-16 md:-mx-6 md:-mt-8" aria-hidden="true">
           <div className="relative h-[33vh] min-h-48 overflow-hidden">
-            <Image
-              src={recipe.imageUrl}
-              alt=""
-              fill
-              sizes="100vw"
-              priority
-              className="object-cover"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(ellipse at center top, transparent 0%, color-mix(in srgb, var(--background) 20%, transparent) 35%, color-mix(in srgb, var(--background) 50%, transparent) 55%, var(--background) 85%)',
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(to bottom, transparent 40%, var(--background) 100%)',
-              }}
-            />
+            <ImageBackdrop src={recipe.imageUrl} sizes="100vw" priority variant="hero" />
           </div>
         </div>
       )}
@@ -230,7 +209,11 @@ export default async function RecipeDetailPage({
             <>
               <h3 className="text-lg font-semibold pb-3">Ingredients</h3>
               {recipe.ingredients.length === 0 ? (
-                <p className="text-sm text-zinc-500">No ingredients listed.</p>
+                canEdit ? (
+                  <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
+                ) : (
+                  <p className="text-sm text-zinc-500">No ingredients listed.</p>
+                )
               ) : (
                 <IngredientTable
                   ingredients={recipe.ingredients}
@@ -238,9 +221,6 @@ export default async function RecipeDetailPage({
                   editable={canEdit}
                   scaleFactor={scaleFactor}
                 />
-              )}
-              {canEdit && recipe.ingredients.length === 0 && (
-                <IngredientTable ingredients={[]} recipeId={recipeId} editable={true} />
               )}
             </>
           )}

@@ -1,7 +1,7 @@
 import { formatDateRange, getSwapDate } from '@/lib/schedule-utils';
 import type { UpcomingSwapDay } from '@/lib/queries/contributions';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import { ImageBackdrop } from '@/components/ui/image-backdrop';
 import Link from 'next/link';
 
 interface YourCookProps {
@@ -30,30 +30,11 @@ export function YourCook({ upcomingCooks }: YourCookProps) {
       {/* Primary card */}
       <div className="relative overflow-hidden rounded-lg border-2 border-zinc-900 p-4 dark:border-zinc-100">
         {next.assignedRecipe?.imageUrl && (
-          <>
-            <Image
-              src={next.assignedRecipe.imageUrl}
-              alt=""
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-cover"
-              aria-hidden="true"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(ellipse at center, transparent 0%, var(--background) 90%)',
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(to bottom, color-mix(in srgb, var(--background) 40%, transparent) 0%, var(--background) 100%)',
-              }}
-            />
-          </>
+          <ImageBackdrop
+            src={next.assignedRecipe.imageUrl}
+            sizes="(min-width: 768px) 50vw, 100vw"
+            variant="card"
+          />
         )}
         <div className="relative">
           <div className="flex items-start justify-between">
