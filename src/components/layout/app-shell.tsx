@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { type ReactNode } from 'react';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
@@ -30,6 +31,13 @@ export function AppShell({
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
         <div className="flex items-center justify-between px-4 py-4 md:px-6">
           <div className="flex items-center gap-2 md:gap-6">
+            <Image
+              src="/meal-logo.svg"
+              alt=""
+              width={28}
+              height={19}
+              className="dark:invert"
+            />
             <span className="text-lg font-semibold">Meals</span>
             <nav className="hidden items-center gap-1 md:flex">
               <NavLink href="/up-next" dot={hasUpcomingCook}>Up Next</NavLink>
