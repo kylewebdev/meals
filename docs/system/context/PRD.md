@@ -39,9 +39,9 @@ Web app for an extended family meal-swap co-op. Every household cooks one dish (
 | Swap Day | id, week_id, day_of_week, label, covers_from, covers_to, location, time, notes |
 | Contribution | id, week_id, household_id, swap_day_id, recipe_id, dish_name, notes, servings |
 | Swap Settings | singleton: start_date, swap_mode, recipe_order[], household_order[], household_order_mode, defaults |
-| Week Opt-Out | id, user_id, week_id |
+Opt-out is a boolean on the user record (not a separate table).
 
 Nutrition is computed from ingredients at query time (no per-recipe columns).
 
 ## Future Enhancements
-Grocery list generation, photo sharing, recipe import, push notifications, per-day opt-out, cost sharing.
+Photo sharing, recipe import, push notifications, per-day opt-out, cost sharing.

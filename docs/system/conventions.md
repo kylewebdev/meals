@@ -8,18 +8,20 @@ src/
     (auth)/               # Login, register
     (app)/                # Authenticated routes
       admin/              #   swap-config, recipe-review, recipe-ratings, rotation, users, households
-      dashboard/
-      household/
+      co-op/              #   Household roster, swap settings
+      up-next/            #   Default landing — your cook, swap, recent cooks
       profile/
       recipes/            #   catalog, [recipeId], [recipeId]/edit, mine, new, workshop
-      schedule/
       week/[weekId]/      #   detail + edit
+      dashboard/          #   redirect → /up-next
+      household/          #   redirect → /co-op
+      schedule/           #   redirect → /up-next
     api/                  # Auth catch-all, invite accept
   components/
     ui/                   # Primitives (Button, Card, Input, Dialog, Toast, etc.)
     admin/                # Role select, delete/reset user
     contributions/        # Cards, lists, headcount, nutrition chart
-    dashboard/            # My-tasks, stats row
+    grocery/              # Grocery list tab, ingredient/grocery tabs
     household/            # CRUD, invites, members, extra portions
     layout/               # App shell, nav, user menu, opt-out banner, providers
     notifications/        # Bell, item, list
@@ -27,11 +29,12 @@ src/
     recipe/               # Form, card, grid, search, ingredients, review, ratings, scaling, discussion, workshop nav
     schedule/             # Week list, month nav, settings, recipe/household order
     swap/                 # Swap day form, info, section
+    up-next/              # Your cook, this week's swap, recent cooks
   lib/
     db/
       schema.ts           # 18 tables, single source of truth
       index.ts            # Neon serverless client
-      migrations/         # 0000–0019
+      migrations/         # 0000–0021
     queries/              # Read-only, by domain
     auth.ts               # Better Auth server config
     auth-client.ts        # Better Auth client
