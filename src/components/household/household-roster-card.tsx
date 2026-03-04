@@ -14,7 +14,7 @@ export function HouseholdRosterCard({ household, headcount }: HouseholdRosterCar
       <div className="flex items-center justify-between">
         <h4 className="font-semibold">{household.name}</h4>
         <span className="text-sm text-zinc-500">
-          {meals} {meals === 1 ? 'meal' : 'meals'}
+          {meals} {meals === 1 ? 'meal' : 'meals'} per day
         </span>
       </div>
       {household.members.length > 0 && (
