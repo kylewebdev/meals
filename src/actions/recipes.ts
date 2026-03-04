@@ -71,13 +71,16 @@ export async function updateRecipe(recipeId: string, data: RecipeInput) {
   // Any member can edit non-approved recipes; only admin can edit approved
   if (!isAdmin) {
     const [recipe] = await db
-      .select({ status: recipes.status })
+      .select({ status: recipes.status, createdBy: recipes.createdBy })
       .from(recipes)
       .where(eq(recipes.id, recipeId))
       .limit(1);
 
     if (!recipe) {
       return { success: false as const, error: 'Recipe not found' };
+    }
+    if (recipe.createdBy !== auth.data.user.id) {
+      return { success: false as const, error: 'Not authorized to edit this recipe' };
     }
     if (recipe.status === 'approved') {
       return { success: false as const, error: 'Cannot edit an approved recipe' };
@@ -188,15 +191,17 @@ export async function requireRecipeAccess(recipeId: string) {
   const isAdmin = auth.data.user.role === 'admin';
   if (isAdmin) return auth;
 
-  // Any member can modify non-approved recipes
   const [recipe] = await db
-    .select({ status: recipes.status })
+    .select({ status: recipes.status, createdBy: recipes.createdBy })
     .from(recipes)
     .where(eq(recipes.id, recipeId))
     .limit(1);
 
   if (!recipe) {
     return { success: false as const, error: 'Recipe not found' };
+  }
+  if (recipe.createdBy !== auth.data.user.id) {
+    return { success: false as const, error: 'Not authorized to modify this recipe' };
   }
   if (recipe.status === 'approved') {
     return { success: false as const, error: 'Cannot modify an approved recipe' };
