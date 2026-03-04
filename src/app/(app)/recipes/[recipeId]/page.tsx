@@ -40,7 +40,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { DeleteRecipeButton } from './delete-button';
-import { RecipeImageSection } from './recipe-image-section';
 
 export default async function RecipeDetailPage({
   params,
@@ -159,27 +158,18 @@ export default async function RecipeDetailPage({
         </div>
       )}
 
-      {/* Meta + image side-by-side on desktop (edit mode), stacked on mobile */}
-      <div className={`mt-5 grid gap-6 ${canEdit ? 'md:grid-cols-2' : ''}`}>
-        <div className="space-y-3">
-          {recipe.description && (
-            <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
-          )}
-          <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
-            {recipe.servings && <span>Servings: {recipe.servings}</span>}
-            {recipe.prepTimeMinutes && <span>Prep: {recipe.prepTimeMinutes} min</span>}
-            {recipe.cookTimeMinutes && <span>Cook: {recipe.cookTimeMinutes} min</span>}
-            {totalTime > 0 && <span>Total: {totalTime} min</span>}
-          </div>
-          <TagList tags={recipe.tags} />
-        </div>
-        {canEdit && (
-          <RecipeImageSection
-            recipeId={recipeId}
-            imageUrl={recipe.imageUrl}
-            canEdit={canEdit}
-          />
+      {/* Meta info */}
+      <div className="mt-5 space-y-3">
+        {recipe.description && (
+          <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
         )}
+        <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
+          {recipe.servings && <span>Servings: {recipe.servings}</span>}
+          {recipe.prepTimeMinutes && <span>Prep: {recipe.prepTimeMinutes} min</span>}
+          {recipe.cookTimeMinutes && <span>Cook: {recipe.cookTimeMinutes} min</span>}
+          {totalTime > 0 && <span>Total: {totalTime} min</span>}
+        </div>
+        <TagList tags={recipe.tags} />
       </div>
 
       {/* Content sections */}
