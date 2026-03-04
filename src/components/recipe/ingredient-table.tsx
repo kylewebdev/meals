@@ -48,9 +48,11 @@ export function IngredientTable({
     name: '', quantity: '', unit: '', calories: '', protein: '', carbs: '', fat: '',
   });
   const [saving, setSaving] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
   const startEditingIngredient = (ing: Ingredient) => {
     setEditingIngredientId(ing.id);
+    setConfirmRemoveId(null);
     setEditFields({
       name: ing.name,
       quantity: ing.quantity ?? '',
@@ -113,7 +115,12 @@ export function IngredientTable({
   };
 
   const handleRemove = async (ingredientId: string) => {
+    if (confirmRemoveId !== ingredientId) {
+      setConfirmRemoveId(ingredientId);
+      return;
+    }
     setRemovingId(ingredientId);
+    setConfirmRemoveId(null);
     await removeIngredient(ingredientId, recipeId);
     setRemovingId(null);
     toast('Ingredient removed');
@@ -140,7 +147,82 @@ export function IngredientTable({
               const isEditingRow = editingIngredientId === ing.id;
               return isEditingRow ? (
                 <tr key={ing.id}>
-                  <td className="py-2">
+                  {/* Mobile: stacked form in a single cell */}
+                  <td colSpan={editable ? 4 : 3} className="py-2 md:hidden">
+                    <div className="space-y-2">
+                      <Input
+                        value={editFields.name}
+                        onChange={(e) => setEditFields({ ...editFields, name: e.target.value })}
+                        placeholder="Ingredient name"
+                        required
+                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={editFields.quantity}
+                          onChange={(e) => setEditFields({ ...editFields, quantity: e.target.value })}
+                          className="flex-1"
+                          placeholder="Qty"
+                        />
+                        <Input
+                          value={editFields.unit}
+                          onChange={(e) => setEditFields({ ...editFields, unit: e.target.value })}
+                          className="flex-1"
+                          placeholder="Unit"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        <Input
+                          type="number"
+                          value={editFields.calories}
+                          onChange={(e) => setEditFields({ ...editFields, calories: e.target.value })}
+                          placeholder="Cal"
+                        />
+                        <Input
+                          type="number"
+                          value={editFields.protein}
+                          onChange={(e) => setEditFields({ ...editFields, protein: e.target.value })}
+                          placeholder="Pro"
+                        />
+                        <Input
+                          type="number"
+                          value={editFields.carbs}
+                          onChange={(e) => setEditFields({ ...editFields, carbs: e.target.value })}
+                          placeholder="Carb"
+                        />
+                        <Input
+                          type="number"
+                          value={editFields.fat}
+                          onChange={(e) => setEditFields({ ...editFields, fat: e.target.value })}
+                          placeholder="Fat"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          loading={saving}
+                          onClick={() => handleSaveIngredient(ing)}
+                        >
+                          Save
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { cancelEditingIngredient(); setConfirmRemoveId(null); }}>
+                          Cancel
+                        </Button>
+                        <div className="flex-1" />
+                        <Button
+                          variant={confirmRemoveId === ing.id ? 'destructive' : 'ghost'}
+                          size="sm"
+                          loading={removingId === ing.id}
+                          onClick={() => handleRemove(ing.id)}
+                          className={confirmRemoveId !== ing.id ? 'text-red-600 dark:text-red-400' : ''}
+                        >
+                          {confirmRemoveId === ing.id ? 'Confirm remove?' : 'Remove'}
+                        </Button>
+                      </div>
+                    </div>
+                  </td>
+                  {/* Desktop: inline cells */}
+                  <td className="hidden py-2 md:table-cell">
                     <Input
                       value={editFields.name}
                       onChange={(e) => setEditFields({ ...editFields, name: e.target.value })}
@@ -148,7 +230,7 @@ export function IngredientTable({
                       required
                     />
                   </td>
-                  <td className="py-2">
+                  <td className="hidden py-2 md:table-cell">
                     <Input
                       value={editFields.quantity}
                       onChange={(e) => setEditFields({ ...editFields, quantity: e.target.value })}
@@ -156,7 +238,7 @@ export function IngredientTable({
                       placeholder="Qty"
                     />
                   </td>
-                  <td className="py-2">
+                  <td className="hidden py-2 md:table-cell">
                     <Input
                       value={editFields.unit}
                       onChange={(e) => setEditFields({ ...editFields, unit: e.target.value })}
@@ -200,7 +282,7 @@ export function IngredientTable({
                       placeholder="g"
                     />
                   </td>
-                  <td className="py-2 text-right">
+                  <td className="hidden py-2 text-right md:table-cell">
                     <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
@@ -210,17 +292,17 @@ export function IngredientTable({
                       >
                         Save
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={cancelEditingIngredient}>
+                      <Button variant="ghost" size="sm" onClick={() => { cancelEditingIngredient(); setConfirmRemoveId(null); }}>
                         Cancel
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant={confirmRemoveId === ing.id ? 'destructive' : 'ghost'}
                         size="sm"
                         loading={removingId === ing.id}
                         onClick={() => handleRemove(ing.id)}
-                        className="text-red-500"
+                        className={confirmRemoveId !== ing.id ? 'text-red-600 dark:text-red-400' : ''}
                       >
-                        Remove
+                        {confirmRemoveId === ing.id ? 'Confirm remove?' : 'Remove'}
                       </Button>
                     </div>
                   </td>
