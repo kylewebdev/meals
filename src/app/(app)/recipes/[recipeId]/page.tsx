@@ -118,28 +118,14 @@ export default async function RecipeDetailPage({
         </div>
       )}
 
-      {/* Admin review card for pending_review recipes */}
-      {isAdmin && recipe.status === 'pending_review' && (
-        <Card className="mt-6">
-          <CardHeader>
-            <h3 className="text-lg font-semibold">Admin Review</h3>
-          </CardHeader>
-          <CardContent>
-            <ReviewActions recipeId={recipeId} currentStatus="pending_review" />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Admin demote card for approved recipes */}
-      {isAdmin && recipe.status === 'approved' && (
-        <Card className="mt-6">
-          <CardHeader>
-            <h3 className="text-lg font-semibold">Admin Actions</h3>
-          </CardHeader>
-          <CardContent>
-            <ReviewActions recipeId={recipeId} currentStatus="approved" />
-          </CardContent>
-        </Card>
+      {/* Admin actions */}
+      {isAdmin && (recipe.status === 'pending_review' || recipe.status === 'approved') && (
+        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-purple-200 bg-purple-50 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-purple-800 dark:bg-purple-950/50">
+          <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
+            Admin {recipe.status === 'pending_review' ? 'Review' : 'Actions'}
+          </h3>
+          <ReviewActions recipeId={recipeId} currentStatus={recipe.status} />
+        </div>
       )}
 
       {/* Meta + image side-by-side on desktop, stacked on mobile */}
