@@ -137,7 +137,7 @@ export function NutritionChart({
           <div>
             <h3 className="mb-3 text-sm font-medium text-zinc-500">Macros</h3>
             <div className="h-52 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <PieChart>
                   <Pie
                     data={macrosData}
@@ -186,7 +186,7 @@ export function NutritionChart({
         <div>
           <h3 className="mb-3 text-sm font-medium text-zinc-500">Macros</h3>
           <div className="h-32 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={macrosData} layout="vertical" margin={{ left: 0, right: 16 }}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} tickMargin={8} />
