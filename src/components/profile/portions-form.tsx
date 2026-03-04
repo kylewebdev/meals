@@ -29,10 +29,10 @@ export function PortionsForm({ currentPortions }: PortionsFormProps) {
     <div className="flex items-center justify-between gap-4">
       <div className="space-y-1">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Portions per meal
+          Meals
         </p>
         <p className="text-xs text-zinc-400 dark:text-zinc-500">
-          Increase for extra mouths or leftovers.
+          How many meals you'd like to get per day.
         </p>
       </div>
       <div className="inline-flex overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700">
