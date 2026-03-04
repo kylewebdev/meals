@@ -1,6 +1,7 @@
 import { formatDateRange, getSwapDate } from '@/lib/schedule-utils';
 import type { UpcomingSwapDay } from '@/lib/queries/contributions';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface YourCookProps {
@@ -27,39 +28,67 @@ export function YourCook({ upcomingCooks }: YourCookProps) {
       <h3 className="text-lg font-semibold">Your Cook</h3>
 
       {/* Primary card */}
-      <div className="rounded-lg border-2 border-zinc-900 p-4 dark:border-zinc-100">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-zinc-500">
-              {next.label} &middot; {swapDate.toLocaleDateString('en-US', dateFmt)}
-            </p>
-            <p className="text-xs text-zinc-400">
-              Week of {formatDateRange(next.weekStartDate, next.coversFrom - 1, next.coversTo - 1)}
-            </p>
-          </div>
-          <Link
-            href={`/week/${next.weekId}`}
-            className="text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
-          >
-            View week
-          </Link>
-        </div>
-
-        {next.assignedRecipe ? (
-          <div className="mt-3 space-y-3">
-            <p className="font-semibold">{next.assignedRecipe.name}</p>
-            <div className="flex gap-2">
-              <Link href={`/recipes/${next.assignedRecipe.id}?weekId=${next.weekId}`}>
-                <Button size="sm">View Recipe</Button>
-              </Link>
-              <Link href={`/recipes/${next.assignedRecipe.id}?weekId=${next.weekId}&tab=grocery`}>
-                <Button variant="secondary" size="sm">Shopping List</Button>
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-zinc-400">Recipe not yet assigned</p>
+      <div className="relative overflow-hidden rounded-lg border-2 border-zinc-900 p-4 dark:border-zinc-100">
+        {next.assignedRecipe?.imageUrl && (
+          <>
+            <Image
+              src={next.assignedRecipe.imageUrl}
+              alt=""
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="object-cover"
+              aria-hidden="true"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(ellipse at center, transparent 0%, var(--background) 90%)',
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(to bottom, color-mix(in srgb, var(--background) 40%, transparent) 0%, var(--background) 100%)',
+              }}
+            />
+          </>
         )}
+        <div className="relative">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-zinc-500">
+                {next.label} &middot; {swapDate.toLocaleDateString('en-US', dateFmt)}
+              </p>
+              <p className="text-xs text-zinc-400">
+                Week of {formatDateRange(next.weekStartDate, next.coversFrom - 1, next.coversTo - 1)}
+              </p>
+            </div>
+            <Link
+              href={`/week/${next.weekId}`}
+              className="text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
+            >
+              View week
+            </Link>
+          </div>
+
+          {next.assignedRecipe ? (
+            <div className="mt-3 space-y-3">
+              <p className="font-semibold">{next.assignedRecipe.name}</p>
+              <div className="flex gap-2">
+                <Link href={`/recipes/${next.assignedRecipe.id}?weekId=${next.weekId}`}>
+                  <Button size="sm">View Recipe</Button>
+                </Link>
+                <Link href={`/recipes/${next.assignedRecipe.id}?weekId=${next.weekId}&tab=grocery`}>
+                  <Button variant="secondary" size="sm">Shopping List</Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-zinc-400">Recipe not yet assigned</p>
+          )}
+        </div>
       </div>
 
       {/* Upcoming list */}

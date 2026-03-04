@@ -126,7 +126,7 @@ export interface UpcomingSwapDay {
   coversFrom: number;
   coversTo: number;
   weekStartDate: Date;
-  assignedRecipe: { id: string; name: string } | null;
+  assignedRecipe: { id: string; name: string; imageUrl: string | null } | null;
 }
 
 export async function getUpcomingSwapDays(householdId: string): Promise<UpcomingSwapDay[]> {
@@ -140,7 +140,7 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
           contributions: {
             where: eq(contributions.householdId, householdId),
             with: {
-              recipe: { columns: { id: true, name: true } },
+              recipe: { columns: { id: true, name: true, imageUrl: true } },
             },
           },
         },
@@ -158,7 +158,7 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
       coversFrom: number;
       coversTo: number;
       contributions: {
-        recipe: { id: string; name: string } | null;
+        recipe: { id: string; name: string; imageUrl: string | null } | null;
       }[];
     }[];
   }[];

@@ -36,6 +36,7 @@ import { TagList } from '@/components/recipe/tag-list';
 import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { DeleteRecipeButton } from './delete-button';
@@ -83,7 +84,37 @@ export default async function RecipeDetailPage({
   const showDiscussion = recipe.status !== 'approved';
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <>
+      {/* Hero background image */}
+      {recipe.imageUrl && (
+        <div className="-mx-4 -mt-6 -mb-16 md:-mx-6 md:-mt-8" aria-hidden="true">
+          <div className="relative h-[33vh] min-h-48 overflow-hidden">
+            <Image
+              src={recipe.imageUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(ellipse at center top, transparent 0%, color-mix(in srgb, var(--background) 20%, transparent) 35%, color-mix(in srgb, var(--background) 50%, transparent) 55%, var(--background) 85%)',
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(to bottom, transparent 40%, var(--background) 100%)',
+              }}
+            />
+          </div>
+        </div>
+      )}
+      <div className="relative mx-auto max-w-5xl">
       {/* Header: breadcrumb, title, action buttons */}
       <div>
         <BackLink href={weekId ? `/week/${weekId}` : '/recipes'}>
@@ -128,8 +159,8 @@ export default async function RecipeDetailPage({
         </div>
       )}
 
-      {/* Meta + image side-by-side on desktop, stacked on mobile */}
-      <div className="mt-5 grid gap-6 md:grid-cols-2">
+      {/* Meta + image side-by-side on desktop (edit mode), stacked on mobile */}
+      <div className={`mt-5 grid gap-6 ${canEdit ? 'md:grid-cols-2' : ''}`}>
         <div className="space-y-3">
           {recipe.description && (
             <p className="text-zinc-600 dark:text-zinc-400">{recipe.description}</p>
@@ -142,11 +173,13 @@ export default async function RecipeDetailPage({
           </div>
           <TagList tags={recipe.tags} />
         </div>
-        <RecipeImageSection
-          recipeId={recipeId}
-          imageUrl={recipe.imageUrl}
-          canEdit={canEdit}
-        />
+        {canEdit && (
+          <RecipeImageSection
+            recipeId={recipeId}
+            imageUrl={recipe.imageUrl}
+            canEdit={canEdit}
+          />
+        )}
       </div>
 
       {/* Content sections */}
@@ -261,6 +294,7 @@ export default async function RecipeDetailPage({
         </p>
       </div>
     </div>
+    </>
   );
 }
 
