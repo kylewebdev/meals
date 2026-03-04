@@ -1,41 +1,41 @@
 'use client';
 
-import { adminUpdatePortions } from '@/actions/members';
+import { adminUpdateMeals } from '@/actions/members';
 import { Select } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { useState } from 'react';
 
-interface PortionsSelectProps {
+interface MealsSelectProps {
   userId: string;
-  currentPortions: number;
+  currentMeals: number;
 }
 
-export function PortionsSelect({ userId, currentPortions }: PortionsSelectProps) {
+export function MealsSelect({ userId, currentMeals }: MealsSelectProps) {
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
   async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newPortions = Number(e.target.value);
-    if (newPortions === currentPortions) return;
+    const newMeals = Number(e.target.value);
+    if (newMeals === currentMeals) return;
 
     setPending(true);
     setError('');
-    const result = await adminUpdatePortions(userId, newPortions);
+    const result = await adminUpdateMeals(userId, newMeals);
     setPending(false);
 
     if (!result.success) {
       setError(result.error);
-      e.target.value = String(currentPortions);
+      e.target.value = String(currentMeals);
     } else {
-      toast('Portions updated');
+      toast('Meals updated');
     }
   }
 
   return (
     <div>
       <Select
-        defaultValue={String(currentPortions)}
+        defaultValue={String(currentMeals)}
         onChange={handleChange}
         disabled={pending}
         className="w-16"

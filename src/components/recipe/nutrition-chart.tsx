@@ -1,17 +1,44 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer,
   Cell,
   PieChart,
   Pie,
 } from 'recharts';
+
+function ChartContainer({
+  children,
+  className,
+}: {
+  children: (size: { width: number; height: number }) => ReactElement;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setSize({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={className}>
+      {size && children(size)}
+    </div>
+  );
+}
 
 interface NutritionChartProps {
   calories: number | null;
@@ -136,9 +163,9 @@ export function NutritionChart({
         {hasMacros && (
           <div>
             <h3 className="mb-3 text-sm font-medium text-zinc-500">Macros</h3>
-            <div className="h-52 w-full">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                <PieChart>
+            <ChartContainer className="h-52 w-full">
+              {({ width, height }) => (
+                <PieChart width={width} height={height}>
                   <Pie
                     data={macrosData}
                     dataKey="value"
@@ -161,8 +188,8 @@ export function NutritionChart({
                     formatter={(value, name) => [`${value}g`, name]}
                   />
                 </PieChart>
-              </ResponsiveContainer>
-            </div>
+              )}
+            </ChartContainer>
           </div>
         )}
       </div>
@@ -185,9 +212,9 @@ export function NutritionChart({
       {hasMacros && (
         <div>
           <h3 className="mb-3 text-sm font-medium text-zinc-500">Macros</h3>
-          <div className="h-32 w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={macrosData} layout="vertical" margin={{ left: 0, right: 16 }}>
+          <ChartContainer className="h-32 w-full">
+            {({ width, height }) => (
+              <BarChart data={macrosData} width={width} height={height} layout="vertical" margin={{ left: 0, right: 16 }}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} tickMargin={8} />
                 <Tooltip
@@ -205,8 +232,8 @@ export function NutritionChart({
                   ))}
                 </Bar>
               </BarChart>
-            </ResponsiveContainer>
-          </div>
+            )}
+          </ChartContainer>
         </div>
       )}
     </div>

@@ -2,40 +2,40 @@
 
 import { useState } from 'react';
 import { formatWeekRange } from '@/lib/schedule-utils';
-import type { HouseholdPortion } from '@/lib/queries/scaling-context';
+import type { HouseholdMeals } from '@/lib/queries/scaling-context';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 interface ScalingBannerProps {
-  portionCount: number;
-  totalPortions: number;
+  mealCount: number;
+  totalMeals: number;
   recipeServings: number;
   swapDayLabel: string;
   weekStartDate: Date;
   weekId: string;
-  householdPortions: HouseholdPortion[];
+  householdMeals: HouseholdMeals[];
   className?: string;
 }
 
 export function ScalingBanner({
-  portionCount,
-  totalPortions,
+  mealCount,
+  totalMeals,
   recipeServings,
   swapDayLabel,
   weekStartDate,
   weekId,
-  householdPortions,
+  householdMeals,
   className,
 }: ScalingBannerProps) {
   const [open, setOpen] = useState(false);
-  const householdCount = householdPortions.length || 1;
+  const householdCount = householdMeals.length || 1;
   return (
     <div className={cn(
       'rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950',
       className,
     )}>
       <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-        Cook <span className="text-2xl font-bold">{portionCount}</span> portions
+        Cook <span className="text-2xl font-bold">{mealCount}</span> meals
       </p>
       <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
         {swapDayLabel} &middot;{' '}
@@ -60,7 +60,7 @@ export function ScalingBanner({
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-        {totalPortions} total &divide; {householdCount} households
+        {totalMeals} total &divide; {householdCount} households
       </button>
       {open && (
         <div className="mt-2 overflow-x-auto">
@@ -69,20 +69,20 @@ export function ScalingBanner({
               <tr className="border-b border-blue-200 dark:border-blue-800">
                 <th className="py-1 pr-4 text-left font-medium">Household</th>
                 <th className="py-1 pr-4 text-right font-medium">People</th>
-                <th className="py-1 text-right font-medium">Portions</th>
+                <th className="py-1 text-right font-medium">Meals</th>
               </tr>
             </thead>
             <tbody>
-              {householdPortions.map((hp) => (
+              {householdMeals.map((hp) => (
                 <tr key={hp.householdId} className="border-b border-blue-100 last:border-0 dark:border-blue-900">
                   <td className="py-1 pr-4 font-medium">{hp.householdName}</td>
                   <td className="py-1 pr-4 text-right">
                     {hp.memberCount}
-                    {hp.extraPortions > 0 && (
-                      <span className="text-blue-500 dark:text-blue-400"> (+{hp.extraPortions})</span>
+                    {hp.extraMeals > 0 && (
+                      <span className="text-blue-500 dark:text-blue-400"> (+{hp.extraMeals})</span>
                     )}
                   </td>
-                  <td className="py-1 text-right">{hp.portions}</td>
+                  <td className="py-1 text-right">{hp.meals}</td>
                 </tr>
               ))}
             </tbody>

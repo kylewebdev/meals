@@ -7,7 +7,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
-const PORTION_OPTIONS = [0, 1, 2, 3] as const;
+const MEAL_OPTIONS = [0, 1, 2, 3] as const;
 
 interface ExtraPeopleFormProps {
   householdId: string;
@@ -29,14 +29,14 @@ export function ExtraPeopleForm({ householdId, extraPeople: initial }: ExtraPeop
     setLoading(null);
   };
 
-  const handlePortionChange = async (id: string, portions: number) => {
-    setPeople((prev) => prev.map((p) => (p.id === id ? { ...p, portions } : p)));
+  const handleMealChange = async (id: string, meals: number) => {
+    setPeople((prev) => prev.map((p) => (p.id === id ? { ...p, meals } : p)));
     setLoading(id);
-    const res = await updateExtraPerson(id, { portions });
+    const res = await updateExtraPerson(id, { meals });
     if (!res.success) {
-      setPeople((prev) => prev.map((p) => (p.id === id ? { ...p, portions: initial.find((i) => i.id === id)?.portions ?? p.portions } : p)));
+      setPeople((prev) => prev.map((p) => (p.id === id ? { ...p, meals: initial.find((i) => i.id === id)?.meals ?? p.meals } : p)));
     } else {
-      toast('Portions updated');
+      toast('Meals updated');
     }
     setLoading(null);
   };
@@ -87,17 +87,17 @@ export function ExtraPeopleForm({ householdId, extraPeople: initial }: ExtraPeop
                 disabled={loading === person.id}
               />
               <div className="inline-flex shrink-0 overflow-hidden rounded-md border border-zinc-300 dark:border-zinc-700">
-                {PORTION_OPTIONS.map((n) => (
+                {MEAL_OPTIONS.map((n) => (
                   <button
                     key={n}
                     type="button"
                     disabled={loading === person.id}
-                    onClick={() => handlePortionChange(person.id, n)}
+                    onClick={() => handleMealChange(person.id, n)}
                     className={cn(
                       'px-3 py-1 text-sm font-medium transition-colors',
                       'disabled:cursor-not-allowed',
                       'not-first:border-l not-first:border-zinc-300 dark:not-first:border-zinc-700',
-                      n === person.portions
+                      n === person.meals
                         ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
                         : 'bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800',
                     )}

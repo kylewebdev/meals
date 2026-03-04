@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import type { UserRole } from '@/lib/db/schema';
 import { account, households, invites, user, userRoleEnum } from '@/lib/db/schema';
 import { requireAdmin, requireHouseholdHead } from '@/lib/auth-utils';
-import { isValidPortions } from '@/lib/validators';
+import { isValidMeals } from '@/lib/validators';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { hashPassword } from 'better-auth/crypto';
@@ -79,7 +79,7 @@ export async function getAllUsersWithDetails() {
       role: user.role,
       householdId: user.householdId,
       householdName: households.name,
-      portionsPerMeal: user.portionsPerMeal,
+      meals: user.meals,
       createdAt: user.createdAt,
     })
     .from(user)
@@ -89,12 +89,12 @@ export async function getAllUsersWithDetails() {
   return rows;
 }
 
-export async function adminUpdatePortions(userId: string, portions: number) {
+export async function adminUpdateMeals(userId: string, meals: number) {
   const auth = await requireAdmin();
   if (!auth.success) return auth;
 
-  if (!isValidPortions(portions)) {
-    return { success: false as const, error: 'Portions must be between 0 and 3' };
+  if (!isValidMeals(meals)) {
+    return { success: false as const, error: 'Meals must be between 0 and 3' };
   }
 
   const [target] = await db
@@ -109,7 +109,7 @@ export async function adminUpdatePortions(userId: string, portions: number) {
 
   await db
     .update(user)
-    .set({ portionsPerMeal: portions, updatedAt: new Date() })
+    .set({ meals: meals, updatedAt: new Date() })
     .where(eq(user.id, userId));
 
   revalidatePath('/', 'layout');

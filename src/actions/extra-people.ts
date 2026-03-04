@@ -3,23 +3,23 @@
 import { db } from '@/lib/db';
 import { extraPeople, households } from '@/lib/db/schema';
 import { requireHouseholdHead } from '@/lib/auth-utils';
-import { isValidPortions } from '@/lib/validators';
+import { isValidMeals } from '@/lib/validators';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-export async function addExtraPerson(householdId: string, name: string, portions: number) {
+export async function addExtraPerson(householdId: string, name: string, meals: number) {
   const auth = await requireHouseholdHead(householdId);
   if (!auth.success) return auth;
 
   const trimmed = name.trim();
   if (!trimmed) return { success: false as const, error: 'Name is required' };
-  if (!isValidPortions(portions)) {
-    return { success: false as const, error: 'Portions must be between 0 and 3' };
+  if (!isValidMeals(meals)) {
+    return { success: false as const, error: 'Meals must be between 0 and 3' };
   }
 
   const result = await db
     .insert(extraPeople)
-    .values({ householdId, name: trimmed, portions })
+    .values({ householdId, name: trimmed, meals })
     .returning() as (typeof extraPeople.$inferSelect)[];
 
   revalidatePath('/co-op');
@@ -29,7 +29,7 @@ export async function addExtraPerson(householdId: string, name: string, portions
 
 export async function updateExtraPerson(
   id: string,
-  data: { name?: string; portions?: number },
+  data: { name?: string; meals?: number },
 ) {
   // Look up the person to find their household
   const [person] = await db
@@ -51,11 +51,11 @@ export async function updateExtraPerson(
     updates.name = trimmed;
   }
 
-  if (data.portions !== undefined) {
-    if (!isValidPortions(data.portions)) {
-      return { success: false as const, error: 'Portions must be between 0 and 3' };
+  if (data.meals !== undefined) {
+    if (!isValidMeals(data.meals)) {
+      return { success: false as const, error: 'Meals must be between 0 and 3' };
     }
-    updates.portions = data.portions;
+    updates.meals = data.meals;
   }
 
   await db.update(extraPeople).set(updates).where(eq(extraPeople.id, id));

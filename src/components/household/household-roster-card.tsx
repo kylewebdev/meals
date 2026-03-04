@@ -7,14 +7,14 @@ interface HouseholdRosterCardProps {
 }
 
 export function HouseholdRosterCard({ household, headcount }: HouseholdRosterCardProps) {
-  const portions = headcount?.basePortions ?? household.members.length;
+  const meals = headcount?.baseMeals ?? household.members.length;
 
   return (
     <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold">{household.name}</h4>
         <span className="text-sm text-zinc-500">
-          {portions} {portions === 1 ? 'portion' : 'portions'}
+          {meals} {meals === 1 ? 'meal' : 'meals'}
         </span>
       </div>
       {household.members.length > 0 && (

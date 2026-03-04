@@ -1,28 +1,28 @@
 'use client';
 
-import { updatePortionsPerMeal } from '@/actions/profile';
+import { updateMeals } from '@/actions/profile';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const OPTIONS = [0, 1, 2, 3] as const;
 
-interface PortionsFormProps {
-  currentPortions: number;
+interface MealsFormProps {
+  currentMeals: number;
 }
 
-export function PortionsForm({ currentPortions }: PortionsFormProps) {
+export function MealsForm({ currentMeals }: MealsFormProps) {
   const { toast } = useToast();
-  const [portions, setPortions] = useState(currentPortions);
+  const [meals, setMeals] = useState(currentMeals);
   const [loading, setLoading] = useState(false);
 
   const handleSelect = async (value: number) => {
-    if (value === portions || loading) return;
-    setPortions(value);
+    if (value === meals || loading) return;
+    setMeals(value);
     setLoading(true);
-    await updatePortionsPerMeal(value);
+    await updateMeals(value);
     setLoading(false);
-    toast('Portions updated');
+    toast('Meals updated');
   };
 
   return (
@@ -46,7 +46,7 @@ export function PortionsForm({ currentPortions }: PortionsFormProps) {
               'px-4 py-1.5 text-sm font-medium transition-colors',
               'disabled:cursor-not-allowed',
               'not-first:border-l not-first:border-zinc-300 dark:not-first:border-zinc-700',
-              n === portions
+              n === meals
                 ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
                 : 'bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800',
             )}

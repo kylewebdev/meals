@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export function isValidPortions(n: number): boolean {
+export function isValidMeals(n: number): boolean {
   return Number.isInteger(n) && n >= 0 && n <= 3;
 }
 

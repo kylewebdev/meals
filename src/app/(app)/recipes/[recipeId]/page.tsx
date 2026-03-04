@@ -66,7 +66,7 @@ export default async function RecipeDetailPage({
   if (weekId && recipe.servings) {
     scalingCtx = await getScalingContext(weekId, recipeId);
     if (scalingCtx) {
-      scaleFactor = scalingCtx.portionCount / recipe.servings;
+      scaleFactor = scalingCtx.mealCount / recipe.servings;
     }
   }
 
@@ -184,13 +184,13 @@ export default async function RecipeDetailPage({
 
         {scalingCtx && recipe.servings && (
           <ScalingBanner
-            portionCount={scalingCtx.portionCount}
-            totalPortions={scalingCtx.totalPortions}
+            mealCount={scalingCtx.mealCount}
+            totalMeals={scalingCtx.totalMeals}
             recipeServings={recipe.servings}
             swapDayLabel={scalingCtx.swapDayLabel}
             weekStartDate={scalingCtx.weekStartDate}
             weekId={scalingCtx.weekId}
-            householdPortions={scalingCtx.householdPortions}
+            householdMeals={scalingCtx.householdMeals}
             className="max-w-none"
           />
         )}

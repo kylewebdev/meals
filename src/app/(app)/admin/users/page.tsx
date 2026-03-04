@@ -8,7 +8,7 @@ import { requireAdmin } from '@/lib/auth-utils';
 import { RoleSelect } from '@/components/admin/role-select';
 import { ResetPasswordButton } from '@/components/admin/reset-password-button';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
-import { PortionsSelect } from '@/components/admin/portions-select';
+import { MealsSelect } from '@/components/admin/meals-select';
 import { InviteForm } from '@/components/household/invite-form';
 import { BackLink } from '@/components/ui/back-link';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +40,7 @@ export default async function AdminUsersPage() {
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Name</th>
                     <th className="hidden pb-2 pr-4 font-medium text-zinc-500 md:table-cell">Email</th>
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Household</th>
-                    <th className="pb-2 pr-4 font-medium text-zinc-500">Portions</th>
+                    <th className="pb-2 pr-4 font-medium text-zinc-500">Meals</th>
                     <th className="pb-2 pr-4 font-medium text-zinc-500">Role</th>
                     <th className="pb-2 font-medium text-zinc-500">Actions</th>
                   </tr>
@@ -70,9 +70,9 @@ export default async function AdminUsersPage() {
                         )}
                       </td>
                       <td className="py-3 pr-4">
-                        <PortionsSelect
+                        <MealsSelect
                           userId={u.id}
-                          currentPortions={u.portionsPerMeal}
+                          currentMeals={u.meals}
                         />
                       </td>
                       <td className="py-3 pr-4">

@@ -254,9 +254,9 @@ export async function getRecentCooksForHousehold(
 
 export async function getHeadcount(): Promise<number> {
   const [[userResult], [epResult]] = await Promise.all([
-    db.select({ total: sum(user.portionsPerMeal) }).from(user)
+    db.select({ total: sum(user.meals) }).from(user)
       .where(isNotNull(user.householdId)),
-    db.select({ total: sum(extraPeople.portions) }).from(extraPeople),
+    db.select({ total: sum(extraPeople.meals) }).from(extraPeople),
   ]);
   return (Number(userResult?.total) || 0) + (Number(epResult?.total) || 0);
 }

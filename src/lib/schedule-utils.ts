@@ -93,10 +93,10 @@ export function getMonthCalendarDates(year: number, month: number): Date[][] {
 }
 
 /**
- * Calculate total portions for a swap day.
+ * Calculate total meals for a swap day.
  * headcount x number of days covered.
  */
-export function getPortionCount(headcount: number, coversFrom: number, coversTo: number): number {
+export function getMealCount(headcount: number, coversFrom: number, coversTo: number): number {
   const days = coversTo - coversFrom + 1;
   return headcount * days;
 }

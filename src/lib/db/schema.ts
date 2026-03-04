@@ -33,7 +33,7 @@ export const user = pgTable('user', {
   image: text('image'),
   householdId: text('household_id').references(() => households.id),
   role: userRoleEnum('role').notNull().default('member'),
-  portionsPerMeal: integer('portions_per_meal').notNull().default(1),
+  meals: integer('meals').notNull().default(1),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -112,7 +112,7 @@ export const extraPeople = pgTable(
       .notNull()
       .references(() => households.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
-    portions: integer('portions').notNull().default(1),
+    meals: integer('meals').notNull().default(1),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },

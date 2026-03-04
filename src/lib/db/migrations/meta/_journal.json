@@ -134,6 +134,13 @@
       "when": 1772791200000,
       "tag": "0021_spectator_role",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1772877600000,
+      "tag": "0022_rename_portions_to_meals",
+      "breakpoints": true
     }
   ]
 }

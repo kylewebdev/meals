@@ -83,7 +83,7 @@ export async function getHouseholds(): Promise<HouseholdListItem[]> {
 export interface ExtraPersonItem {
   id: string;
   name: string;
-  portions: number;
+  meals: number;
 }
 
 export interface HouseholdDetail {
@@ -91,7 +91,7 @@ export interface HouseholdDetail {
   name: string;
   headId: string | null;
   head: { id: string; name: string; email: string } | null;
-  members: { id: string; name: string; email: string; role: string; portionsPerMeal: number }[];
+  members: { id: string; name: string; email: string; role: string; meals: number }[];
   extraPeople: ExtraPersonItem[];
   invites: { id: string; email: string; role: string; token: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[];
 }
@@ -101,8 +101,8 @@ export async function getHousehold(id: string): Promise<HouseholdDetail | undefi
     where: eq(households.id, id),
     with: {
       head: { columns: { id: true, name: true, email: true } },
-      members: { columns: { id: true, name: true, email: true, role: true, portionsPerMeal: true } },
-      extraPeople: { columns: { id: true, name: true, portions: true } },
+      members: { columns: { id: true, name: true, email: true, role: true, meals: true } },
+      extraPeople: { columns: { id: true, name: true, meals: true } },
       invites: {
         columns: { id: true, email: true, role: true, token: true, expiresAt: true, usedAt: true, createdAt: true },
       },

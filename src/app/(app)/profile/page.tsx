@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import { user } from '@/lib/db/schema';
-import { PortionsForm } from '@/components/profile/portions-form';
+import { MealsForm } from '@/components/profile/meals-form';
 import { Badge } from '@/components/ui/badge';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
@@ -39,7 +39,7 @@ export default async function ProfilePage() {
             <dd><Badge>{userData.role}</Badge></dd>
           </div>
           <hr className="my-4 border-zinc-100 dark:border-zinc-800" />
-          <PortionsForm currentPortions={userData.portionsPerMeal} />
+          <MealsForm currentMeals={userData.meals} />
         </dl>
       </div>
     </div>

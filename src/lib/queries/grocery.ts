@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { contributions, groceryItems, groceryLists, recipeIngredients, recipes, households, user } from '@/lib/db/schema';
 import { countDistinct, eq, isNotNull } from 'drizzle-orm';
 import { getHeadcount } from './contributions';
-import { getPortionCount } from '@/lib/schedule-utils';
+import { getMealCount } from '@/lib/schedule-utils';
 import { scaleQuantity } from '@/lib/quantity-utils';
 
 export interface GroceryItem {
@@ -50,14 +50,14 @@ async function buildScaledItems(contribution: ContributionWithRecipe) {
         .from(user)
         .where(isNotNull(user.householdId)),
     ]);
-    const totalPortions = getPortionCount(
+    const totalMeals = getMealCount(
       headcount,
       contribution.swapDay.coversFrom,
       contribution.swapDay.coversTo,
     );
     const householdCount = householdResult[0]?.count || 1;
-    const perHouseholdPortions = Math.ceil(totalPortions / householdCount);
-    scaleFactor = perHouseholdPortions / recipeServings;
+    const perHouseholdMeals = Math.ceil(totalMeals / householdCount);
+    scaleFactor = perHouseholdMeals / recipeServings;
   }
 
   return recipe.ingredients

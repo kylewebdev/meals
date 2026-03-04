@@ -1,45 +1,45 @@
 import { db } from '@/lib/db';
 import { contributions, extraPeople, households, user } from '@/lib/db/schema';
-import { getPortionCount } from '@/lib/schedule-utils';
+import { getMealCount } from '@/lib/schedule-utils';
 import { and, count, eq, gt, isNotNull, sum } from 'drizzle-orm';
 
-export interface HouseholdPortion {
+export interface HouseholdMeals {
   householdId: string;
   householdName: string;
   memberCount: number;
-  portions: number;
-  /** Extra portions beyond 1-per-member (from user portionsPerMeal > 1 + extra people) */
-  extraPortions: number;
+  meals: number;
+  /** Extra meals beyond 1-per-member (from user meals > 1 + extra people) */
+  extraMeals: number;
 }
 
 export interface ScalingContext {
   contributionId: string;
-  /** Portions this household needs to cook (total ÷ households) */
-  portionCount: number;
-  /** Total portions needed across all households */
-  totalPortions: number;
+  /** Meals this household needs to cook (total ÷ households) */
+  mealCount: number;
+  /** Total meals needed across all households */
+  totalMeals: number;
   swapDayLabel: string;
   weekStartDate: Date;
   weekId: string;
-  householdPortions: HouseholdPortion[];
+  householdMeals: HouseholdMeals[];
 }
 
 export interface BaseHouseholdData {
   householdId: string;
   householdName: string;
   memberCount: number;
-  /** Per-day headcount (portionsPerMeal sum + extra people) */
-  basePortions: number;
-  extraPortions: number;
+  /** Per-day headcount (meals sum + extra people) */
+  baseMeals: number;
+  extraMeals: number;
 }
 
 /** Fetch per-household headcount data (DB call, independent of day coverage). */
 export async function getBaseHouseholdData(): Promise<BaseHouseholdData[]> {
-  // Subquery for extra_people portions per household
+  // Subquery for extra_people meals per household
   const epSub = db
     .select({
       householdId: extraPeople.householdId,
-      total: sum(extraPeople.portions).as('ep_total'),
+      total: sum(extraPeople.meals).as('ep_total'),
     })
     .from(extraPeople)
     .groupBy(extraPeople.householdId)
@@ -49,26 +49,26 @@ export async function getBaseHouseholdData(): Promise<BaseHouseholdData[]> {
     .select({
       householdId: households.id,
       householdName: households.name,
-      epPortions: epSub.total,
+      epMeals: epSub.total,
       memberCount: count(user.id),
-      portionCount: sum(user.portionsPerMeal),
+      mealCount: sum(user.meals),
     })
     .from(user)
     .innerJoin(households, eq(user.householdId, households.id))
     .leftJoin(epSub, eq(households.id, epSub.householdId))
-    .where(and(isNotNull(user.householdId), gt(user.portionsPerMeal, 0)))
+    .where(and(isNotNull(user.householdId), gt(user.meals, 0)))
     .groupBy(households.id, households.name, epSub.total)
     .orderBy(households.name);
 
   return rows.map((r) => {
-    const portionSum = Number(r.portionCount) || 0;
-    const epPortions = Number(r.epPortions) || 0;
+    const mealSum = Number(r.mealCount) || 0;
+    const epMeals = Number(r.epMeals) || 0;
     return {
       householdId: r.householdId,
       householdName: r.householdName,
       memberCount: r.memberCount,
-      basePortions: portionSum + epPortions,
-      extraPortions: (portionSum - r.memberCount) + epPortions,
+      baseMeals: mealSum + epMeals,
+      extraMeals: (mealSum - r.memberCount) + epMeals,
     };
   });
 }
@@ -78,21 +78,21 @@ export function applyDayCoverage(
   base: BaseHouseholdData[],
   coversFrom: number,
   coversTo: number,
-): HouseholdPortion[] {
+): HouseholdMeals[] {
   return base.map((b) => ({
     householdId: b.householdId,
     householdName: b.householdName,
     memberCount: b.memberCount,
-    portions: getPortionCount(b.basePortions, coversFrom, coversTo),
-    extraPortions: b.extraPortions,
+    meals: getMealCount(b.baseMeals, coversFrom, coversTo),
+    extraMeals: b.extraMeals,
   }));
 }
 
 /** Convenience: single DB call + day-coverage in one step. */
-export async function getHouseholdPortions(
+export async function getHouseholdMeals(
   coversFrom: number,
   coversTo: number,
-): Promise<HouseholdPortion[]> {
+): Promise<HouseholdMeals[]> {
   const base = await getBaseHouseholdData();
   return applyDayCoverage(base, coversFrom, coversTo);
 }
@@ -123,23 +123,23 @@ export async function getScalingContext(
 
   if (!contribution) return null;
 
-  const householdPortions = await getHouseholdPortions(
+  const householdMeals = await getHouseholdMeals(
     contribution.swapDay.coversFrom,
     contribution.swapDay.coversTo,
   );
 
-  const totalPortions = householdPortions.reduce((sum, hp) => sum + hp.portions, 0);
+  const totalMeals = householdMeals.reduce((sum, hp) => sum + hp.meals, 0);
 
-  const householdCount = householdPortions.length || 1;
-  const portionCount = Math.ceil(totalPortions / householdCount);
+  const householdCount = householdMeals.length || 1;
+  const mealCount = Math.ceil(totalMeals / householdCount);
 
   return {
     contributionId: contribution.id,
-    portionCount,
-    totalPortions,
+    mealCount,
+    totalMeals,
     swapDayLabel: contribution.swapDay.label,
     weekStartDate: contribution.week.startDate,
     weekId,
-    householdPortions,
+    householdMeals,
   };
 }

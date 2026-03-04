@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 import { getWeekWithContributions } from '@/lib/queries/contributions';
 import { applyDayCoverage, getBaseHouseholdData } from '@/lib/queries/scaling-context';
 import { WeekNutritionChart } from '@/components/contributions/week-nutrition-chart';
-import { PortionBreakdownTable } from '@/components/contributions/portion-breakdown-table';
+import { MealBreakdownTable } from '@/components/contributions/meal-breakdown-table';
 import { SwapDaySection } from '@/components/swap/swap-day-section';
 import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ export default async function WeekDetailPage({
               contributions={sd.contributions}
               weekId={weekId}
             />
-            <PortionBreakdownTable householdPortions={applyDayCoverage(baseHouseholdData, sd.coversFrom, sd.coversTo)} />
+            <MealBreakdownTable householdMeals={applyDayCoverage(baseHouseholdData, sd.coversFrom, sd.coversTo)} />
           </div>
         ))
       )}

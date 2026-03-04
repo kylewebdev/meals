@@ -11,7 +11,7 @@ interface Member {
   name: string;
   email: string;
   role?: string;
-  portionsPerMeal: number;
+  meals: number;
 }
 
 interface MemberListProps {
@@ -41,7 +41,7 @@ export function MemberList({ members, householdId, headId, canManage, currentUse
             <div className="flex items-center gap-2">
               <span className="font-medium">{member.name}</span>
               <Badge variant="outline" className="border-0">
-                {member.portionsPerMeal} {member.portionsPerMeal === 1 ? 'portion' : 'portions'}
+                {member.meals} {member.meals === 1 ? 'meal' : 'meals'}
               </Badge>
               {member.id === headId && (
                 <Badge variant="success">Head</Badge>
