@@ -62,7 +62,7 @@ export function UserMenu({ userName, isAdmin }: UserMenuProps) {
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="flex w-full items-center px-3 py-2 text-sm font-medium text-white bg-purple-800 transition-colors hover:bg-purple-900 dark:bg-purple-900 dark:hover:bg-purple-800"
             >
               Admin
             </Link>

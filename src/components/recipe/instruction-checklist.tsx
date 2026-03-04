@@ -28,11 +28,9 @@ export function InstructionChecklist({ instructions }: InstructionChecklistProps
 
   return (
     <div>
-      {done.size > 0 && (
-        <p className="mb-3 text-sm font-medium text-zinc-500">
-          {done.size} of {steps.length} steps done
-        </p>
-      )}
+      <p className="mb-3 text-sm font-medium text-zinc-500">
+        {done.size} of {steps.length} steps done
+      </p>
       <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {steps.map((step, i) => {
           const checked = done.has(i);
