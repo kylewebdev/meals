@@ -22,11 +22,12 @@ src/
     admin/                # Role select, delete/reset user
     contributions/        # Cards, lists, headcount, nutrition chart
     grocery/              # Grocery list tab, ingredient/grocery tabs
-    household/            # CRUD, invites, members, extra portions
+    dashboard/            # Upcoming cooks widget
+    household/            # CRUD, invites, members, extra people, meals
     layout/               # App shell, nav, user menu, opt-out banner, providers
     notifications/        # Bell, item, list
-    profile/              # Opt-out toggle, portions
-    recipe/               # Form, card, grid, search, ingredients, review, ratings, scaling, discussion, workshop nav
+    profile/              # Meals form (per-meal count)
+    recipe/               # Form, card, grid, search, ingredients, review, ratings, scaling, discussion, nav, instruction checklist, nutrition chart, status badge, tags
     schedule/             # Week list, month nav, settings, recipe/household order
     swap/                 # Swap day form, info, section
     up-next/              # Your cook, this week's swap, recent cooks
@@ -34,7 +35,7 @@ src/
     db/
       schema.ts           # 18 tables, single source of truth
       index.ts            # Neon serverless client
-      migrations/         # 0000–0021
+      migrations/         # 0000–0022
     queries/              # Read-only, by domain
     auth.ts               # Better Auth server config
     auth-client.ts        # Better Auth client

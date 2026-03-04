@@ -7,7 +7,7 @@ Phases 0–6 complete. Last updated: 2026-03-03
 **Auth:** user, session, account, verification
 **App:** households, extra_people, weeks, swap_days, contributions, recipes, recipe_ingredients, recipe_ratings, recipe_comments, notifications, invites, swap_settings, grocery_lists, grocery_items
 **Enums:** user_role, week_status, swap_mode, recipe_status, household_order_mode, notification_type, recipe_rating_value
-**Migrations:** 0000–0021
+**Migrations:** 0000–0022
 
 ## Routes
 | Tab | Route | Purpose |
@@ -22,5 +22,5 @@ Phases 0–6 complete. Last updated: 2026-03-03
 Legacy redirects: `/dashboard` → `/up-next`, `/schedule` → `/up-next`, `/household` → `/co-op`
 
 ## Remaining Work
-- [ ] Headcount-based household filtering (portions math per swap day)
-- [ ] PWA (service worker, manifest, offline basics)
+- [ ] Headcount-based household filtering (meals math per swap day)
+- [x] PWA (Serwist service worker, manifest, offline caching)
