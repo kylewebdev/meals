@@ -1,21 +1,32 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useLenis } from 'lenis/react';
 import { cn } from '@/lib/utils';
 
 interface IngredientGroceryTabsProps {
   ingredientsContent: ReactNode;
   groceryContent: ReactNode;
+  defaultTab?: 'ingredients' | 'grocery';
 }
 
 export function IngredientGroceryTabs({
   ingredientsContent,
   groceryContent,
+  defaultTab = 'ingredients',
 }: IngredientGroceryTabsProps) {
-  const [tab, setTab] = useState<'ingredients' | 'grocery'>('ingredients');
+  const [tab, setTab] = useState<'ingredients' | 'grocery'>(defaultTab);
+  const ref = useRef<HTMLDivElement>(null);
+  const lenis = useLenis();
+
+  useEffect(() => {
+    if (defaultTab === 'grocery' && ref.current && lenis) {
+      lenis.scrollTo(ref.current, { offset: -80 });
+    }
+  }, [defaultTab, lenis]);
 
   return (
-    <div>
+    <div ref={ref}>
       <div className="flex border-b border-zinc-200 dark:border-zinc-800">
         <button
           type="button"

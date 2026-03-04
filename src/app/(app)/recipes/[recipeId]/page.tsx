@@ -46,13 +46,13 @@ export default async function RecipeDetailPage({
   searchParams,
 }: {
   params: Promise<{ recipeId: string }>;
-  searchParams: Promise<{ weekId?: string }>;
+  searchParams: Promise<{ weekId?: string; tab?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect('/login');
 
   const { recipeId } = await params;
-  const { weekId } = await searchParams;
+  const { weekId, tab } = await searchParams;
   const recipe = await getRecipe(recipeId);
   if (!recipe) notFound();
 
@@ -200,6 +200,7 @@ export default async function RecipeDetailPage({
         <div>
           {groceryList ? (
             <IngredientGroceryTabs
+              defaultTab={tab === 'grocery' ? 'grocery' : 'ingredients'}
               ingredientsContent={
                 recipe.ingredients.length === 0 ? (
                   <p className="text-sm text-zinc-500">No ingredients listed.</p>
