@@ -3,7 +3,7 @@
 import { db } from '@/lib/db';
 import { households, user } from '@/lib/db/schema';
 import { requireAdmin } from '@/lib/auth-utils';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 export async function createHousehold(data: { name: string }) {
@@ -29,11 +29,11 @@ export async function setHouseholdHead(householdId: string, userId: string | nul
     const [member] = await db
       .select({ id: user.id })
       .from(user)
-      .where(eq(user.id, userId))
+      .where(and(eq(user.id, userId), eq(user.householdId, householdId)))
       .limit(1);
 
     if (!member) {
-      return { success: false as const, error: 'User not found' };
+      return { success: false as const, error: 'User is not a member of this household' };
     }
   }
 

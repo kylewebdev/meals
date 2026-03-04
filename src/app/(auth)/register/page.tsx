@@ -1,6 +1,7 @@
 'use client';
 
 import { signUp } from '@/lib/auth-client';
+import { PASSWORD_RULES } from '@/lib/validators';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -112,12 +113,21 @@ function RegisterForm() {
             id="password"
             type="password"
             required
-            minLength={8}
+            minLength={10}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded border px-3 py-2"
           />
-          <p className="mt-1 text-xs text-zinc-500">Must be at least 8 characters</p>
+          <ul className="mt-2 space-y-1">
+            {PASSWORD_RULES.map((rule) => {
+              const passes = password.length > 0 && rule.test(password);
+              return (
+                <li key={rule.label} className={`text-xs ${passes ? 'text-green-600' : 'text-zinc-400'}`}>
+                  {passes ? '\u2713' : '\u2717'} {rule.label}
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
         <button

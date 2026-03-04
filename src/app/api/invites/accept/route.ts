@@ -3,9 +3,34 @@ import { db } from '@/lib/db';
 import { invites, user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { notifyMemberJoined } from '@/lib/notifications';
+import { validatePassword } from '@/lib/validators';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Simple in-memory rate limiter keyed by IP
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT;
+}
+
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'unknown';
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many attempts. Please try again later.' }, { status: 429 });
+  }
+
   const body = await request.json();
   const { token, name, email, password } = body;
 
@@ -13,8 +38,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  if (password.length < 8) {
-    return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
+  const { valid, errors } = validatePassword(password);
+  if (!valid) {
+    return NextResponse.json(
+      { error: `Password requirements not met: ${errors.join(', ')}` },
+      { status: 400 },
+    );
   }
 
   // Find the invite
