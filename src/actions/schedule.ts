@@ -5,9 +5,9 @@ import { contributions, households, swapDays, swapSettings, weeks } from '@/lib/
 import { requireAdmin } from '@/lib/auth-utils';
 import {
   computeHouseholdRecipeIndex,
-  getEndOfNextMonth,
   getMondaysInRange,
   getSwapDayDefaults,
+  getThisMonday,
 } from '@/lib/schedule-utils';
 import { eq, gte, and, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -32,26 +32,18 @@ export async function ensureWeeksExist() {
     defaultTime: string | null;
   };
 
-  const target = getEndOfNextMonth();
   const recipeOrder = s.recipeOrder;
   const householdOrder = s.householdOrder;
   const swapDayDefs = getSwapDayDefaults();
   const swapDaysPerWeek = swapDayDefs.length;
 
-  // Find the latest existing week
-  const latestWeek = await db.query.weeks.findMany({
-    orderBy: (w, { desc }) => [desc(w.startDate)],
-    limit: 1,
-  });
-
-  const latestDate = latestWeek.length > 0
-    ? new Date(latestWeek[0].startDate)
-    : null;
-
-  // Determine which Mondays need creating
-  const rangeStart = latestDate
-    ? new Date(latestDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-    : new Date(s.startDate);
+  // Rolling window: max(startDate, 4 weeks ago) through thisMonday + 3 weeks
+  const monday = getThisMonday();
+  const fourWeeksAgo = new Date(monday);
+  fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+  const rangeStart = new Date(s.startDate) > fourWeeksAgo ? new Date(s.startDate) : fourWeeksAgo;
+  const target = new Date(monday);
+  target.setDate(target.getDate() + 21);
 
   const mondays = getMondaysInRange(rangeStart, target);
   if (mondays.length === 0) return;
@@ -64,23 +56,42 @@ export async function ensureWeeksExist() {
   let didCreate = false;
 
   for (const monday of mondays) {
-    // Skip if a week already exists for this Monday (prevents duplicates on concurrent calls)
+    // Check if a week already exists for this Monday
     const existing = await db.query.weeks.findFirst({
       where: and(eq(weeks.startDate, monday)),
       columns: { id: true },
-    });
-    if (existing) continue;
+      with: {
+        swapDays: {
+          columns: { id: true, dayOfWeek: true },
+          with: { contributions: { columns: { id: true }, limit: 1 } },
+        },
+      },
+    }) as { id: string; swapDays: { id: string; dayOfWeek: number; contributions: { id: string }[] }[] } | undefined;
 
-    const weekResult = await db
+    // Skip if fully populated (all swap days exist with contributions)
+    if (existing && existing.swapDays.length >= swapDayDefs.length
+        && existing.swapDays.every((sd) => sd.contributions.length > 0)) {
+      continue;
+    }
+
+    // Reuse existing week row or create a new one
+    const week = existing ?? (await db
       .insert(weeks)
       .values({ startDate: monday })
-      .returning() as (typeof weeks.$inferSelect)[];
-    const week = weekResult[0];
+      .returning() as (typeof weeks.$inferSelect)[])[0];
+
+    // Track which swap day defs already have populated swap days
+    const existingDows = new Set(
+      existing?.swapDays.filter((sd) => sd.contributions.length > 0).map((sd) => sd.dayOfWeek) ?? [],
+    );
 
     for (let sdIdx = 0; sdIdx < swapDayDefs.length; sdIdx++) {
       const def = swapDayDefs[sdIdx];
+      if (existingDows.has(def.dayOfWeek)) continue;
 
-      const sdResult = await db
+      // Find existing swap day without contributions, or create one
+      const existingSd = existing?.swapDays.find((sd) => sd.dayOfWeek === def.dayOfWeek && sd.contributions.length === 0);
+      const swapDay = existingSd ?? (await db
         .insert(swapDays)
         .values({
           weekId: week.id,
@@ -91,8 +102,7 @@ export async function ensureWeeksExist() {
           location: s.defaultLocation,
           time: s.defaultTime,
         })
-        .returning() as (typeof swapDays.$inferSelect)[];
-      const swapDay = sdResult[0];
+        .returning() as (typeof swapDays.$inferSelect)[])[0];
 
       // Create contributions for every household in one batch
       const contribValues = allHouseholds.map((hhId, hhIdx) => {
@@ -150,11 +160,7 @@ export async function recalculateWeekAssignments() {
   const hhIndexMap = new Map(allHouseholds.map((id, idx) => [id, idx]));
 
   // Get all future weeks (start date >= today's Monday)
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-  monday.setHours(0, 0, 0, 0);
+  const monday = getThisMonday();
 
   const futureWeeks = await db.query.weeks.findMany({
     where: gte(weeks.startDate, monday),

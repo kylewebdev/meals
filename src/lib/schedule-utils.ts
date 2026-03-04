@@ -7,6 +7,15 @@ export function getNextMonday(fromDate: Date = new Date()): Date {
   return date;
 }
 
+/** Returns the Monday of the current week (Mon-Sun). */
+export function getThisMonday(now: Date = new Date()): Date {
+  const d = new Date(now);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 interface SwapDayDefault {
   dayOfWeek: number;
   label: string;
@@ -90,16 +99,6 @@ export function getMonthCalendarDates(year: number, month: number): Date[][] {
 export function getPortionCount(headcount: number, coversFrom: number, coversTo: number): number {
   const days = coversTo - coversFrom + 1;
   return headcount * days;
-}
-
-/**
- * Returns the last day of the month after the given date's month.
- */
-export function getEndOfNextMonth(from: Date = new Date()): Date {
-  const year = from.getFullYear();
-  const month = from.getMonth();
-  // month + 2 = next month + 1, day 0 = last day of previous month
-  return new Date(year, month + 2, 0);
 }
 
 /**

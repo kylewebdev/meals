@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { weeks } from '@/lib/db/schema';
 import { gte, lte, and } from 'drizzle-orm';
+import { getThisMonday } from '@/lib/schedule-utils';
 import { computeNutrition } from './recipes';
 
 interface ScheduleWeek {
@@ -138,11 +139,7 @@ interface RawCurrentWeek {
 }
 
 export async function getCurrentWeek(): Promise<CurrentWeek | undefined> {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-  monday.setHours(0, 0, 0, 0);
+  const monday = getThisMonday();
 
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);

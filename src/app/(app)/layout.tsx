@@ -4,7 +4,8 @@ import { contributions, notifications, recipes, swapDays, weeks } from '@/lib/db
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/layout/providers';
 import { NotificationBell } from '@/components/notifications/notification-bell';
-import { and, eq, gte, inArray, isNull, count } from 'drizzle-orm';
+import { and, eq, gte, isNull, count } from 'drizzle-orm';
+import { getThisMonday } from '@/lib/schedule-utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -46,7 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           .innerJoin(weeks, eq(swapDays.weekId, weeks.id))
           .where(and(
             eq(contributions.householdId, householdId),
-            inArray(weeks.status, ['active', 'upcoming']),
+            gte(weeks.startDate, getThisMonday()),
           ))
           .then((r) => (r[0]?.count ?? 0) > 0)
       : Promise.resolve(false),

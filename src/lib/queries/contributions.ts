@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { contributions, extraPeople, swapDays, user, weeks } from '@/lib/db/schema';
-import { eq, inArray, sum, isNotNull } from 'drizzle-orm';
+import { eq, sum, isNotNull, gte, lt } from 'drizzle-orm';
+import { getThisMonday } from '@/lib/schedule-utils';
 import { computeNutrition } from './recipes';
 
 export interface ContributionItem {
@@ -125,14 +126,14 @@ export interface UpcomingSwapDay {
   coversFrom: number;
   coversTo: number;
   weekStartDate: Date;
-  weekStatus: string;
   assignedRecipe: { id: string; name: string } | null;
 }
 
 export async function getUpcomingSwapDays(householdId: string): Promise<UpcomingSwapDay[]> {
-  // Get active + upcoming weeks with contributions filtered to this household
+  const monday = getThisMonday();
+  // Get current + future weeks with contributions filtered to this household
   const activeWeeks = await db.query.weeks.findMany({
-    where: inArray(weeks.status, ['active', 'upcoming']),
+    where: gte(weeks.startDate, monday),
     with: {
       swapDays: {
         with: {
@@ -150,7 +151,6 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
   }) as unknown as {
     id: string;
     startDate: Date;
-    status: string;
     swapDays: {
       id: string;
       dayOfWeek: number;
@@ -175,7 +175,6 @@ export async function getUpcomingSwapDays(householdId: string): Promise<Upcoming
         coversFrom: sd.coversFrom,
         coversTo: sd.coversTo,
         weekStartDate: week.startDate,
-        weekStatus: week.status,
         assignedRecipe: myContribution?.recipe ?? null,
       });
     }
@@ -198,8 +197,9 @@ export async function getRecentCooksForHousehold(
   householdId: string,
   limit = 3,
 ): Promise<RecentCook[]> {
+  const monday = getThisMonday();
   const pastWeeks = await db.query.weeks.findMany({
-    where: inArray(weeks.status, ['complete', 'active']),
+    where: lt(weeks.startDate, monday),
     with: {
       swapDays: {
         with: {

@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { contributions, notifications, recipes, swapDays, user, weeks } from '@/lib/db/schema';
-import { getSwapDate } from '@/lib/schedule-utils';
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { getSwapDate, getThisMonday } from '@/lib/schedule-utils';
+import { and, eq, gte, inArray, ne } from 'drizzle-orm';
 
 export async function notifyMemberJoined(
   householdId: string,
@@ -101,9 +101,10 @@ export async function notifySwapDayReminder() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0);
 
-  // Fetch all active/upcoming weeks with their swap days + contributions in one query
+  const monday = getThisMonday();
+  // Fetch current + future weeks with their swap days + contributions in one query
   const activeWeeks = await db.query.weeks.findMany({
-    where: inArray(weeks.status, ['upcoming', 'active']),
+    where: gte(weeks.startDate, monday),
     with: {
       swapDays: {
         with: {
