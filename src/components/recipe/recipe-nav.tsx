@@ -15,8 +15,8 @@ interface RecipeNavLink {
 const links: RecipeNavLink[] = [
   { href: '/recipes', label: 'Recipes', countKey: 'recipes' },
   { href: '/recipes/workshop', label: 'Workshop', countKey: 'workshop' },
-  { href: '/recipes/mine', label: 'My Submissions', countKey: 'mine' },
   { href: '/admin/recipe-review', label: 'Review', countKey: 'pendingReview', adminOnly: true },
+  { href: '/recipes/mine', label: 'My Submissions', countKey: 'mine' },
 ];
 
 interface RecipeNavProps {
@@ -28,7 +28,7 @@ export function RecipeNav({ counts, isAdmin }: RecipeNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-2">
+    <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       {links.map(({ href, label, countKey, adminOnly }) => {
         if (adminOnly && !isAdmin) return null;
         const isActive = pathname === href;
@@ -38,7 +38,7 @@ export function RecipeNav({ counts, isAdmin }: RecipeNavProps) {
             key={href}
             href={href}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+              'shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
               isActive
                 ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
                 : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100',
@@ -46,14 +46,7 @@ export function RecipeNav({ counts, isAdmin }: RecipeNavProps) {
           >
             {label}
             {c != null && (
-              <span
-                className={cn(
-                  'ml-1.5 text-xs',
-                  isActive
-                    ? 'text-zinc-400 dark:text-zinc-500'
-                    : 'text-zinc-400 dark:text-zinc-500',
-                )}
-              >
+              <span className="ml-1.5 text-xs text-zinc-400 dark:text-zinc-500">
                 {c}
               </span>
             )}
