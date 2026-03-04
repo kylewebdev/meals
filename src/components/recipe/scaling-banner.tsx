@@ -51,14 +51,11 @@ export function ScalingBanner({
           <tr className="border-b border-blue-200 dark:border-blue-800">
             <th className="py-1 pr-4 text-left font-medium">Household</th>
             <th className="py-1 pr-4 text-right font-medium">People</th>
-            <th className="py-1 pr-4 text-right font-medium">Portions</th>
-            <th className="py-1 text-right font-medium">Per person</th>
+            <th className="py-1 text-right font-medium">Portions</th>
           </tr>
         </thead>
         <tbody>
-          {householdPortions.map((hp) => {
-            const perPerson = Math.round((hp.portions / hp.memberCount) * 10) / 10;
-            return (
+          {householdPortions.map((hp) => (
               <tr key={hp.householdId} className="border-b border-blue-100 last:border-0 dark:border-blue-900">
                 <td className="py-1 pr-4 font-medium">{hp.householdName}</td>
                 <td className="py-1 pr-4 text-right">
@@ -67,11 +64,9 @@ export function ScalingBanner({
                     <span className="text-blue-500 dark:text-blue-400"> (+{hp.extraPortions})</span>
                   )}
                 </td>
-                <td className="py-1 pr-4 text-right">{hp.portions}</td>
-                <td className="py-1 text-right">{perPerson}</td>
+                <td className="py-1 text-right">{hp.portions}</td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
       </div>
