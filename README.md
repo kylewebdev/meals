@@ -30,38 +30,97 @@ A web app for managing a family meal-swap co-op. Every household cooks one or tw
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm
-- A [Neon](https://neon.tech) Postgres database
+- **Node.js 22+** (recommended — uses React 19 / Next.js 16 features)
+- **pnpm** — install with `npm install -g pnpm` if you don't have it
+- A **[Neon](https://neon.tech)** Postgres database (free tier works fine)
+- A **Cloudflare R2** bucket for recipe image uploads
 
-### Setup
+### 1. Clone and install
 
-1. Clone the repo and install dependencies:
+```bash
+git clone <repo-url>
+cd meals
+pnpm install
+```
 
-   ```bash
-   pnpm install
-   ```
+### 2. Configure environment variables
 
-2. Copy the example env file and fill in your values:
+```bash
+cp .env.example .env
+```
 
-   ```bash
-   cp .env.example .env
-   ```
+Open `.env` and fill in the values:
 
-3. Run database migrations and seed data:
+| Variable | Required | How to get it |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Neon dashboard → your project → Connection string (use the pooled connection string) |
+| `BETTER_AUTH_SECRET` | Yes | Run `openssl rand -base64 32` to generate a random secret |
+| `BETTER_AUTH_URL` | Yes | Already set to `http://localhost:3000` — leave as-is for local dev |
+| `R2_ACCOUNT_ID` | Yes | Cloudflare dashboard → R2 → Account ID |
+| `R2_ACCESS_KEY_ID` | Yes | Cloudflare R2 → Manage R2 API Tokens |
+| `R2_SECRET_ACCESS_KEY` | Yes | Same R2 API token page |
+| `R2_BUCKET_NAME` | Yes | Name of your R2 bucket (default: `meals`) |
+| `R2_PUBLIC_URL` | Yes | Public URL for your R2 bucket |
 
-   ```bash
-   pnpm db:migrate
-   pnpm db:seed
-   ```
+<details>
+<summary><strong>Setting up Neon (database)</strong></summary>
 
-4. Start the dev server:
+1. Sign up at [neon.tech](https://neon.tech) — the free tier is plenty
+2. Click **New Project**, pick a name and the region closest to you
+3. On the project dashboard, find the **Connection string** — make sure **Pooled connection** is toggled on
+4. Copy the full string (starts with `postgresql://`) and paste it as your `DATABASE_URL`
 
-   ```bash
-   pnpm dev
-   ```
+That's it — Drizzle migrations will create all the tables for you.
 
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+</details>
+
+<details>
+<summary><strong>Setting up Cloudflare R2 (image storage)</strong></summary>
+
+1. Sign up at [dash.cloudflare.com](https://dash.cloudflare.com) — R2 has a generous free tier (10 GB storage, 10 million reads/month)
+2. In the sidebar, go to **R2 Object Storage** → **Create bucket** — name it `meals` (or whatever you like)
+3. Enable public access for the bucket:
+   - Go to your bucket → **Settings** → **Public access**
+   - Enable and note the public URL — this is your `R2_PUBLIC_URL`
+4. Grab your **Account ID** from the R2 overview page (right sidebar) → this is `R2_ACCOUNT_ID`
+5. Create an API token:
+   - Go to **R2 Overview** → **Manage R2 API Tokens** → **Create API Token**
+   - Give it **Object Read & Write** permissions, scoped to your `meals` bucket
+   - Save the **Access Key ID** → `R2_ACCESS_KEY_ID`
+   - Save the **Secret Access Key** → `R2_SECRET_ACCESS_KEY`
+
+</details>
+
+### 3. Set up the database
+
+```bash
+# Run all migrations to create tables
+pnpm db:migrate
+
+# (Optional) Seed with sample recipes — requires R2 for images
+pnpm db:seed
+```
+
+You can browse your database anytime with:
+
+```bash
+pnpm db:studio
+```
+
+### 4. Start the dev server
+
+```bash
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) — you'll land on the login page. Register a new account to get started. The first user can be promoted to admin via Drizzle Studio (`pnpm db:studio`) by setting their role to `admin` in the `user` table.
+
+### First-time setup (in the app)
+
+1. **Register** an account at `/register`
+2. **Create a household** — go to Household and set one up
+3. **Invite others** — share the invite link with your co-op members
+4. **Admin setup** — if you're the admin, head to `/admin` to configure swap days, locations, and start the rotation
 
 ## Scripts
 
