@@ -31,6 +31,7 @@ import { RecipeDiscussion } from '@/components/recipe/recipe-discussion';
 import { RecipeStatusBadge } from '@/components/recipe/recipe-status-badge';
 import { ReviewActions } from '@/components/recipe/review-actions';
 import { ScalingBanner } from '@/components/recipe/scaling-banner';
+import { InstructionChecklist } from '@/components/recipe/instruction-checklist';
 import { TagList } from '@/components/recipe/tag-list';
 import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
@@ -241,11 +242,7 @@ export default async function RecipeDetailPage({
             <div>
               <h3 className="text-lg font-semibold pb-3">Instructions</h3>
               <div className="rounded-lg bg-zinc-50 p-5 dark:bg-zinc-900">
-                <div className="space-y-3 font-serif text-base leading-relaxed">
-                  {recipe.instructions.split('\n').filter(Boolean).map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
-                </div>
+                <InstructionChecklist instructions={recipe.instructions} />
               </div>
             </div>
           </>

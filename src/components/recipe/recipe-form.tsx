@@ -33,7 +33,11 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
 
   const [name, setName] = useState(recipe?.name ?? '');
   const [description, setDescription] = useState(recipe?.description ?? '');
-  const [instructions, setInstructions] = useState(recipe?.instructions ?? '');
+  const [steps, setSteps] = useState<string[]>(() => {
+    const raw = recipe?.instructions ?? '';
+    const parsed = raw.split('\n').filter(Boolean);
+    return parsed.length > 0 ? parsed : [''];
+  });
   const [servings, setServings] = useState(recipe ? recipe.servings?.toString() ?? '' : '');
   const [prepTime, setPrepTime] = useState(recipe ? recipe.prepTimeMinutes?.toString() ?? '' : '');
   const [cookTime, setCookTime] = useState(recipe ? recipe.cookTimeMinutes?.toString() ?? '' : '');
@@ -80,6 +84,8 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
+
+    const instructions = steps.map((s) => s.trim()).filter(Boolean).join('\n');
 
     const data = {
       name,
@@ -140,14 +146,42 @@ export function RecipeForm({ recipe, isAdmin = false }: RecipeFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="recipe-instructions">Instructions</Label>
-        <Textarea
-          id="recipe-instructions"
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          placeholder="Step-by-step cooking instructions"
-          className="min-h-[160px]"
-        />
+        <Label>Instructions</Label>
+        <div className="space-y-2">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-6 shrink-0 text-right text-sm text-zinc-400">{i + 1}.</span>
+              <Input
+                value={step}
+                onChange={(e) => {
+                  const next = [...steps];
+                  next[i] = e.target.value;
+                  setSteps(next);
+                }}
+                placeholder={`Step ${i + 1}`}
+              />
+              {steps.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setSteps(steps.filter((_, j) => j !== i))}
+                  className="shrink-0 p-1 text-zinc-400 hover:text-red-500"
+                  aria-label={`Remove step ${i + 1}`}
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setSteps([...steps, ''])}
+            className="text-sm font-medium text-teal-600 hover:text-teal-700"
+          >
+            + Add step
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
